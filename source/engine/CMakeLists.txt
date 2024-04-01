@@ -4,10 +4,10 @@ file(GLOB_RECURSE utils_srcs CONFIGURE_DEPENDS utils/*.cpp)
 
 file(GLOB_RECURSE platform_headers CONFIGURE_DEPENDS platform/*.h platform/*.hpp)
 file(GLOB_RECURSE platform_srcs CONFIGURE_DEPENDS platform/*.cpp)
+file(GLOB_RECURSE resources CONFIGURE_DEPENDS resources/*.h resources/*.hpp resources/*.cpp)
 
 file(GLOB_RECURSE global_headers CONFIGURE_DEPENDS functional/global/*.h functional/global/*.hpp)
 file(GLOB_RECURSE global_srcs CONFIGURE_DEPENDS functional/global/*.cpp)
-
 file(GLOB_RECURSE render CONFIGURE_DEPENDS functional/render/*.h functional/render/*.hpp functional/render/*.cpp)
 
 set(IMGUI_HEADERS

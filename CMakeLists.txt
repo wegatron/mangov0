@@ -20,7 +20,7 @@ endif()
 
 list(APPEND CMAKE_PREFIX_PATH 
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/lib/cmake/glslang
-    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/lib/cmake/VulkanMemoryAllocator
+    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/share/cmake/VulkanMemoryAllocator
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/share/spirv_cross_reflect/cmake
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/share/spirv_cross_core/cmake
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/share/spirv_cross_glsl/cmake

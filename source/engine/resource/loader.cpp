@@ -1,4 +1,4 @@
-#include <engine/resources/loader.h>
+#include <engine/resource/loader.h>
 
 #include <Eigen/Dense>
 #include <queue>
@@ -6,7 +6,7 @@
 
 #include <engine/functional/component/camera.h>
 #include <engine/functional/component/material_pbr.h>
-#include <engine/resources/asset_manager.hpp>
+#include <engine/resource/asset_manager.hpp>
 #include <engine/utils/base/macro.h>
 #include <engine/utils/vk/commands.h>
 

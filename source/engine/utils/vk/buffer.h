@@ -26,7 +26,6 @@ public:
   void update(const void *data, size_t size, size_t offset = 0);
 
   void updateByStaging(void *data, size_t size, size_t offset,
-                       const std::shared_ptr<StagePool> &stage_pool,
                        const std::shared_ptr<CommandBuffer> &cmd_buf);
 
 private:

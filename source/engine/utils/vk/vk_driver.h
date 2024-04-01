@@ -15,7 +15,6 @@ class Swapchain;
 class RenderTarget;
 class DescriptorPool;
 class StagePool;
-class ResourceCache;
 struct RequestedDeviceExtension {
   const char *name;
   bool required;
@@ -95,6 +94,8 @@ public:
                            static_cast<uint32_t>(descriptor_writes.size()),
                            descriptor_writes.data(), 0, nullptr);
   }
+
+  StagePool *getStagePool() const { return stage_pool_; }
 
 private:
   void initInstance();

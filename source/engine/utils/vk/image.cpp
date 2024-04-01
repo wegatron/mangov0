@@ -47,7 +47,6 @@ Image::~Image() {
 }
 
 void Image::updateByStaging(void *data,
-                            const std::shared_ptr<StagePool> &stage_pool,
                             const std::shared_ptr<CommandBuffer> &cmd_buf) {
   uint32_t pixel_size = 0;
   if (format_ == VK_FORMAT_R8G8B8_SRGB) {
@@ -64,6 +63,7 @@ void Image::updateByStaging(void *data,
     throw std::runtime_error("Unsupported image format for update by staging.");
   }
   auto data_size = extent_.width * extent_.height * pixel_size;
+  auto stage_pool = driver_->getStagePool();
   auto stage = stage_pool->acquireStage(data_size);
 
   // cpu data to staging

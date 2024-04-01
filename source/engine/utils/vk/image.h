@@ -26,7 +26,7 @@ public:
    * update image from cpu to gpu, data should be compatiable with image format,
    * and tightly packed.
    */
-  void updateByStaging(void *data, const std::shared_ptr<StagePool> &stage_pool,
+  void updateByStaging(void *data,
                        const std::shared_ptr<CommandBuffer> &cmd_buf);
 
   std::shared_ptr<VkDriver> getDriver() const { return driver_; }

@@ -75,8 +75,7 @@ void UIPass::initImgui() {
             *(reinterpret_cast<VkInstance *>(vulkan_instance)), function_name);
       },
       &instance);
-  bool is_success = ImGui_ImplVulkan_Init(
-      &init_info); // render_pass_
+  bool is_success = ImGui_ImplVulkan_Init(&init_info); // render_pass_
   MANGO_ASSERT(is_success, "failed to init imgui");
 
   // 加载各种font

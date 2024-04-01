@@ -14,7 +14,6 @@
 #include <engine/utils/vk/descriptor_set.h>
 #include <engine/utils/vk/framebuffer.h>
 #include <engine/utils/vk/physical_device.h>
-#include <engine/utils/vk/resource_cache.h>
 #include <engine/utils/vk/stage_pool.h>
 #include <engine/utils/vk/swapchain.h>
 #include <engine/utils/vk/syncs.h>

@@ -65,8 +65,8 @@ void Buffer::update(const void *data, size_t size, size_t offset) {
 }
 
 void Buffer::updateByStaging(void *data, size_t size, size_t offset,
-                             const std::shared_ptr<StagePool> &stage_pool,
                              const std::shared_ptr<CommandBuffer> &cmd_buf) {
+  auto stage_pool = driver_->getStagePool();
   auto stage = stage_pool->acquireStage(size);
   // cpu data to stage
   void *mapped;

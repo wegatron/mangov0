@@ -1,7 +1,7 @@
-#include <engine/resources/asset_manager.hpp>
+#include <engine/resource/asset_manager.hpp>
 
 #include <cassert>
-#include <engine/functional/global/app_context.h>
+#include <engine/functional/global/engine_context.h>
 #include <engine/utils/base/data_reshaper.hpp>
 #include <engine/utils/vk/commands.h>
 #include <engine/utils/vk/image.h>
@@ -25,12 +25,12 @@ createImageView(void *img_data, uint32_t width, uint32_t height,
                               width * height * channel);
   }
 
-  auto driver = getDefaultAppContext().driver;
+  auto driver = g_engine.getDriver();
   auto image = std::make_shared<Image>(
       driver, 0, VK_FORMAT_R8G8B8A8_SRGB, extent, VK_SAMPLE_COUNT_1_BIT,
       VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
       VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE);
-  image->updateByStaging(data_ptr, getDefaultAppContext().stage_pool, cmd_buf);
+  image->updateByStaging(data_ptr, cmd_buf);
   if (data_ptr != img_data)
     delete[] static_cast<uint8_t *>(data_ptr);
   VkImageSubresourceRange range = {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -53,13 +53,13 @@ createImageView(const float *img_data, uint32_t width, uint32_t height,
                 const std::shared_ptr<CommandBuffer> &cmd_buf) {
   VkExtent3D extent{width, height, 1};
   assert(channel == 4);
-  auto driver = getDefaultAppContext().driver;
+  auto driver = g_engine.getDriver();
   auto image = std::make_shared<Image>(
       driver, 0, VK_FORMAT_R32G32B32A32_SFLOAT, extent, VK_SAMPLE_COUNT_1_BIT,
       VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
       VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE);
   void *data_ptr = const_cast<float *>(img_data);
-  image->updateByStaging(data_ptr, getDefaultAppContext().stage_pool, cmd_buf);
+  image->updateByStaging(data_ptr, cmd_buf);
   VkImageSubresourceRange range = {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
                                    .baseMipLevel = 0,
                                    .levelCount = 1,

@@ -1,7 +1,7 @@
 # !/bin/bash
 # apt install vulkan-tools libvulkan-dev vulkan-validationlayers-dev spirv-tools
 # sudo apt install xorg-dev libglu1-mesa-dev
-rebuild_install=true
+rebuild_install=false
 
 if [ $rebuild_install = true ]; then
     echo "rebuilding install"
