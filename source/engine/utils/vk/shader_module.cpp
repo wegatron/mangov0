@@ -2,17 +2,17 @@
 #include <cassert>
 #include <fstream>
 #include <functional>
-#include <glm/gtx/hash.hpp>
 #include <glslang/Public/ResourceLimits.h>
 #include <glslang/Public/ShaderLang.h>
 #include <glslang/SPIRV/GLSL.std.450.h>
 #include <glslang/SPIRV/GlslangToSpv.h>
 #include <map>
+#include <volk.h>
 
+#include <engine/utils/base/hash_combine.h>
 #include <engine/utils/base/macro.h>
 #include <engine/utils/vk/spirv_reflection.h>
-// #include <engine/functional/global/app_context.h>
-#include <volk.h>
+
 
 namespace mango {
 
@@ -29,9 +29,9 @@ size_t ShaderResource::hash(const ShaderResource &resource) noexcept {
   // hash resource part for descriptor binding, no location, location is used
   // for shader input output
   hash_code = hasher(resource.set);
-  glm::detail::hash_combine(hash_code, hasher(resource.binding));
-  glm::detail::hash_combine(hash_code, hasher(static_cast<int>(resource.type)));
-  glm::detail::hash_combine(hash_code, hasher(static_cast<int>(resource.mode)));
+  hash_combine(hash_code, hasher(resource.binding));
+  hash_combine(hash_code, hasher(static_cast<int>(resource.type)));
+  hash_combine(hash_code, hasher(static_cast<int>(resource.mode)));
   return hash_code;
 }
 
@@ -215,7 +215,7 @@ size_t ShaderModule::hash(const std::string &glsl_code,
                           VkShaderStageFlagBits stage) noexcept {
   auto hash_code = std::hash<VkShaderStageFlagBits>{}(stage);
   auto value = std::hash<std::string>{}(glsl_code);
-  glm::detail::hash_combine(hash_code, value);
+  hash_combine(hash_code, value);
   return hash_code;
 }
 

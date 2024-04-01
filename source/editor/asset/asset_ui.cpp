@@ -1,7 +1,7 @@
 #include "asset_ui.h"
-#include "engine/core/base/macro.h"
-#include "engine/core/event/event_system.h"
-#include "engine/platform/timer/timer.h"
+#include "engine/platform/timer.h"
+#include "engine/utils/base/macro.h"
+#include "engine/utils/event/event_system.h"
 #include <queue>
 
 namespace mango {

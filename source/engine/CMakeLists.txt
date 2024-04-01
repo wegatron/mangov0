@@ -37,21 +37,21 @@ ${global_headers} ${global_srcs}
 ${render}
 )
 
-add_library(mango STATIC
+add_library(engine STATIC
     ${utils_headers} ${utils_srcs}
     ${platform_headers} ${platform_srcs}
     ${global_headers} ${global_srcs}
     ${render}
     ${IMGUI_HEADERS} ${IMGUI_SRC}
 )
-target_link_libraries(mango PRIVATE 
+target_link_libraries(engine PRIVATE
 volk
 ${GLFW_LIBRARY}
 ${THREAD}
 glslang::glslang
 glslang::glslang-default-resource-limits
 glslang::SPIRV
-VulkanMemoryAllocator::VulkanMemoryAllocator
+GPUOpen::VulkanMemoryAllocator
 spirv-cross-reflect
 spirv-cross-core
 spirv-cross-glsl

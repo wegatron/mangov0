@@ -1,6 +1,7 @@
 #include <engine/functional/global/engine_context.h>
 #include <engine/functional/render/render_system.h>
 #include <engine/platform/file_system.h>
+#include <engine/platform/timer.h>
 #include <engine/utils/event/event_system.h>
 #include <engine/utils/log/log_system.h>
 #include <engine/utils/vk/resource_cache.h>
@@ -36,6 +37,10 @@ bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
   // render system
   g_engine.render_system_ = std::make_shared<RenderSystem>();
   g_engine.render_system_->init();
+
+  // timer manager
+  g_engine.timer_manager_ = std::make_shared<TimerManager>();
+  g_engine.timer_manager_->init();
 
   // asset manager
 

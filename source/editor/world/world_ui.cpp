@@ -1,6 +1,7 @@
 #include "world_ui.h"
-#include "engine/core/event/event_system.h"
-#include "engine/function/framework/world/world_manager.h"
+#include "engine/function/engine/world/world_manager.h"
+#include "engine/utils/event/event_system.h"
+
 
 namespace mango {
 

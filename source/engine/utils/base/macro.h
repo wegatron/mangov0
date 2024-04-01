@@ -1,12 +1,19 @@
 #pragma once
+
 #include <engine/functional/global/engine_context.h>
 #include <engine/utils/base/strings.h>
+#include <engine/utils/log/log_system.h>
 
-#define LOGI(...)
-#define LOGW(...)
-#define LOGE(...)
-#define LOGF(...)
-#define LOGD(...)
+#define LOGI(...)                                                              \
+  SPDLOG_LOGGER_INFO(g_engine.getLogSystem()->getLogger(), __VA_ARGS__)
+#define LOGW(...)                                                              \
+  SPDLOG_LOGGER_WARN(g_engine.getLogSystem()->getLogger(), __VA_ARGS__)
+#define LOGE(...)                                                              \
+  SPDLOG_LOGGER_ERROR(g_engine.getLogSystem()->getLogger(), __VA_ARGS__)
+#define LOGF(...)                                                              \
+  SPDLOG_LOGGER_CRITICAL(g_engine.getLogSystem()->getLogger(), __VA_ARGS__)
+#define LOGD(...)                                                              \
+  SPDLOG_LOGGER_DEBUG(g_engine.getLogSystem()->getLogger(), __VA_ARGS__)
 
 #define VK_ASSERT(err, msg)                                                    \
   do {                                                                         \

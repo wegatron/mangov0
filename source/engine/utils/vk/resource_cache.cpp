@@ -1,6 +1,6 @@
+#include <engine/utils/base/hash_combine.h>
 #include <engine/utils/vk/resource_cache.h>
 #include <engine/utils/vk/sampler.h>
-#include <glm/gtx/hash.hpp>
 
 namespace mango {
 
@@ -49,7 +49,7 @@ std::shared_ptr<DescriptorSetLayout> ResourceCache::requestDescriptorSetLayout(
   for (const auto &rs : resources) {
     assert(rs.set == set_index || rs.set == 0XFFFFFFFF);
     auto tmp_hash_code = ShaderResource::hash(rs);
-    glm::detail::hash_combine(hash_code, tmp_hash_code);
+    hash_combine(hash_code, tmp_hash_code);
   }
   std::unique_lock<std::mutex> lock(state_.descriptor_set_layouts_mtx);
   auto itr = state_.descriptor_set_layouts.find(hash_code);
@@ -67,7 +67,7 @@ std::shared_ptr<PipelineLayout> ResourceCache::requestPipelineLayout(
     const std::vector<std::shared_ptr<ShaderModule>> &shader_modules) {
   size_t hash_code = 0;
   for (const auto &shader_module : shader_modules) {
-    glm::detail::hash_combine(hash_code, shader_module->getHash());
+    hash_combine(hash_code, shader_module->getHash());
   }
   std::unique_lock<std::mutex> lock(state_.pipeline_layouts_mtx);
   auto itr = state_.pipeline_layouts.find(hash_code);
@@ -87,13 +87,13 @@ std::shared_ptr<RenderPass> ResourceCache::requestRenderPass(
     const std::vector<SubpassInfo> &subpasses) {
   size_t hash_code = 0;
   for (const auto &attachment : attachments) {
-    glm::detail::hash_combine(hash_code, attachment.getHash());
+    hash_combine(hash_code, attachment.getHash());
   }
   for (const auto &load_store_info : load_store_infos) {
-    glm::detail::hash_combine(hash_code, load_store_info.getHash());
+    hash_combine(hash_code, load_store_info.getHash());
   }
   for (const auto &subpass : subpasses) {
-    glm::detail::hash_combine(hash_code, subpass.getHash());
+    hash_combine(hash_code, subpass.getHash());
   }
   std::unique_lock<std::mutex> lock(state_.render_pass_mtx);
   auto itr = state_.render_passes.find(hash_code);
@@ -111,11 +111,11 @@ std::shared_ptr<Sampler> ResourceCache::requestSampler(
     VkFilter min_filter, VkSamplerMipmapMode mipmap_mode,
     VkSamplerAddressMode address_mode_u, VkSamplerAddressMode address_mode_v) {
   size_t hash_code = 0;
-  glm::detail::hash_combine(hash_code, static_cast<size_t>(mag_filter));
-  glm::detail::hash_combine(hash_code, static_cast<size_t>(min_filter));
-  glm::detail::hash_combine(hash_code, static_cast<size_t>(mipmap_mode));
-  glm::detail::hash_combine(hash_code, static_cast<size_t>(address_mode_u));
-  glm::detail::hash_combine(hash_code, static_cast<size_t>(address_mode_v));
+  hash_combine(hash_code, static_cast<size_t>(mag_filter));
+  hash_combine(hash_code, static_cast<size_t>(min_filter));
+  hash_combine(hash_code, static_cast<size_t>(mipmap_mode));
+  hash_combine(hash_code, static_cast<size_t>(address_mode_u));
+  hash_combine(hash_code, static_cast<size_t>(address_mode_v));
 
   std::unique_lock<std::mutex> lock(state_.samples_mtx);
   auto itr = state_.samplers.find(hash_code);

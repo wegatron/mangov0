@@ -1,8 +1,9 @@
 #include "property_ui.h"
 #include "engine/core/color/color.h"
-#include "engine/core/event/event_system.h"
-#include "engine/function/framework/world/world_manager.h"
+#include "engine/function/engine/world/world_manager.h"
 #include "engine/resource/asset/asset_manager.h"
+#include "engine/utils/event/event_system.h"
+
 
 #define DRAG_SPEED 0.1f
 

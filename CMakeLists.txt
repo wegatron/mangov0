@@ -31,7 +31,7 @@ list(APPEND CMAKE_PREFIX_PATH
 
 find_package(glslang REQUIRED)
 
-find_package(VulkanMemoryAllocator REQUIRED)
+find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 
 find_package(spirv_cross_reflect REQUIRED)
 
@@ -80,4 +80,4 @@ endif()
 
 add_subdirectory(source/engine)
 add_subdirectory(source/editor)
-add_subdirectory(source/samples/editor)
+#add_subdirectory(source/samples/editor)

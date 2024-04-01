@@ -17,8 +17,9 @@ namespace mango
         public:
             void init();
             void destroy();
-			auto getLogger() { return m_logger; }
 			std::vector<std::string> getLastestLogs();
+
+			std::shared_ptr<spdlog::logger> getLogger() { return m_logger; }
 
         private:
 			std::string getLogFilename();

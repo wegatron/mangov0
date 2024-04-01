@@ -1,25 +1,26 @@
 #include <cassert>
 
 #include <engine/utils/base/error.h>
+#include <engine/utils/base/hash_combine.h>
 #include <engine/utils/vk/render_pass.h>
 #include <engine/utils/vk/vk_driver.h>
-#include <glm/gtx/hash.hpp>
+
 
 namespace mango {
 
 size_t LoadStoreInfo::getHash() const {
   std::hash<int> hasher;
   size_t hash = hasher(static_cast<int>(load_op));
-  glm::detail::hash_combine(hash, hasher(static_cast<int>(store_op)));
+  hash_combine(hash, hasher(static_cast<int>(store_op)));
   return hash;
 }
 
 size_t Attachment::getHash() const {
   std::hash<int> hasher;
   size_t hash = hasher(static_cast<int>(format));
-  glm::detail::hash_combine(hash, hasher(static_cast<int>(samples)));
-  glm::detail::hash_combine(hash, hasher(static_cast<int>(usage)));
-  glm::detail::hash_combine(hash, hasher(static_cast<int>(initial_layout)));
+  hash_combine(hash, hasher(static_cast<int>(samples)));
+  hash_combine(hash, hasher(static_cast<int>(usage)));
+  hash_combine(hash, hasher(static_cast<int>(initial_layout)));
   return hash;
 }
 
@@ -27,16 +28,16 @@ size_t SubpassInfo::getHash() const {
   size_t hash = 0;
   std::hash<int> hasher;
   for (const auto &input_attachment : input_attachments) {
-    glm::detail::hash_combine(hash, hasher(input_attachment));
+    hash_combine(hash, hasher(input_attachment));
   }
   for (const auto &output_attachment : output_attachments) {
-    glm::detail::hash_combine(hash, hasher(output_attachment));
+    hash_combine(hash, hasher(output_attachment));
   }
   for (const auto &resolve_attachment : color_resolve_attachments) {
-    glm::detail::hash_combine(hash, hasher(resolve_attachment));
+    hash_combine(hash, hasher(resolve_attachment));
   }
   if (depth_stencil_attachment) {
-    glm::detail::hash_combine(hash, hasher(depth_stencil_attachment));
+    hash_combine(hash, hasher(depth_stencil_attachment));
   }
   return hash;
 }
