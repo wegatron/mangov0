@@ -53,11 +53,11 @@ std::shared_ptr<ImageView> load(const float *data, const uint32_t width,
  * \brief GPUAssertManager is used to manage the GPU assert.
  * The assert is load from file, and will not change.
  */
-class GPUAssetManager final {
+class GPUAssetCache final {
 public:
-  GPUAssetManager() = default;
+  GPUAssetCache() = default;
 
-  ~GPUAssetManager() = default;
+  ~GPUAssetCache() = default;
 
   template <typename T>
   [[nondiscard]] std::shared_ptr<T>

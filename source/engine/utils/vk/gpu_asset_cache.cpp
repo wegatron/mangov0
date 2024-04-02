@@ -1,9 +1,8 @@
-#include <engine/resource/asset_manager.hpp>
-
 #include <cassert>
 #include <engine/functional/global/engine_context.h>
 #include <engine/utils/base/data_reshaper.hpp>
 #include <engine/utils/vk/commands.h>
+#include <engine/utils/vk/gpu_asset_cache.hpp>
 #include <engine/utils/vk/image.h>
 #include <engine/utils/vk/vk_driver.h>
 #include <stb_image.h>
@@ -106,7 +105,7 @@ std::shared_ptr<ImageView> load(const float *data, const uint32_t width,
   return ret;
 }
 
-void GPUAssetManager::gc() {
+void GPUAssetCache::gc() {
   if (++current_frame_ < ASSET_TIME_BEFORE_EVICTION)
     return;
   for (auto itr = assets_.begin(); itr != assets_.end();) {
@@ -119,5 +118,5 @@ void GPUAssetManager::gc() {
   }
 }
 
-void GPUAssetManager::reset() { assets_.clear(); }
+void GPUAssetCache::reset() { assets_.clear(); }
 } // namespace mango

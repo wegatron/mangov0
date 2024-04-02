@@ -43,7 +43,7 @@ bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
   resource_cache_ = std::make_shared<ResourceCache>();
 
   // asset manager
-  g_engine.gpu_asset_manager_ = std::make_shared<GPUAssetManager>();
+  g_engine.gpu_asset_manager_ = std::make_shared<GPUAssetCache>();
 
   // render system
   g_engine.render_system_ = std::make_shared<RenderSystem>();

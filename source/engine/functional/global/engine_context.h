@@ -41,7 +41,7 @@ private:
   std::shared_ptr<class LogSystem> log_system_;
   std::shared_ptr<class RenderSystem> render_system_;
   std::shared_ptr<class TimerManager> timer_manager_;
-  std::shared_ptr<class GPUAssetManager> gpu_asset_manager_;
+  std::shared_ptr<class GPUAssetCache> gpu_asset_manager_;
   std::chrono::steady_clock::time_point last_tick_time_point_;
 };
 

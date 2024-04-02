@@ -30,6 +30,11 @@ private:
   VkDevice device_{VK_NULL_HANDLE};
 };
 
+template <typename T> struct Resource {
+  std::shared_ptr<T> data_ptr;
+  mutable uint64_t last_accessed;
+};
+
 struct ResourceCacheState {
   std::mutex shader_modules_mtx;
   std::unordered_map<size_t, std::shared_ptr<ShaderModule>>
@@ -114,7 +119,10 @@ public:
 
   void clear();
 
+  void gc();
+
 private:
   ResourceCacheState state_;
+  uint64_t current_frame_{0};
 };
 } // namespace mango

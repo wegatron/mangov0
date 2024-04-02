@@ -12,7 +12,7 @@ namespace mango {
 
 class CommandBuffer;
 class StagePool;
-class GPUAssetManager;
+class GPUAssetCache;
 class Camera;
 
 // todo Static Mesh, Material TransformRelationship memory management
