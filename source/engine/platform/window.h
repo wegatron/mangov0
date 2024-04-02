@@ -33,6 +33,8 @@ public:
 
   virtual void *getHandle() = 0;
 
+  virtual void getMousePos(int32_t &xpos, int32_t &ypos) = 0;
+
   // virtual std::vector<std::shared_ptr<RenderTarget>> createRenderTargets() =
   // 0;
 

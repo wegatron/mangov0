@@ -2,7 +2,7 @@
 #include <engine/functional/render/render_system.h>
 #include <engine/platform/file_system.h>
 #include <engine/platform/timer.h>
-#include <engine/resources/asset_manager.hpp>
+#include <engine/resource/gpu_asset_manager.hpp>
 #include <engine/utils/event/event_system.h>
 #include <engine/utils/log/log_system.h>
 #include <engine/utils/vk/resource_cache.h>

@@ -1,5 +1,6 @@
 #include "editor_ui.h"
 #include <engine/functional/global/engine_context.h>
+#include <engine/platform/glfw_window.h>
 #include <engine/resource/gpu_asset_manager.hpp>
 #include <engine/utils/vk/image.h>
 #include <engine/utils/vk/resource_cache.h>
@@ -20,8 +21,8 @@ void EditorUI::init() {
 }
 
 void EditorUI::updateWindowRegion() {
-  uint32_t new_pos_x = ImGui::GetCursorScreenPos().x;
-  uint32_t new_pos_y = ImGui::GetCursorScreenPos().y;
+  int32_t new_pos_y = ImGui::GetCursorScreenPos().y;
+  int32_t new_pos_x = ImGui::GetCursorScreenPos().x;
   if (content_region_.x() != new_pos_x || content_region_.y() != new_pos_y) {
     content_region_.x() = new_pos_x;
     content_region_.y() = new_pos_y;
@@ -29,8 +30,8 @@ void EditorUI::updateWindowRegion() {
   }
 
   ImVec2 m_new_size = ImGui::GetContentRegionAvail();
-  uint32_t new_width = static_cast<uint32_t>(m_new_size.x);
-  uint32_t new_height = static_cast<uint32_t>(m_new_size.y);
+  int32_t new_width = static_cast<int32_t>(m_new_size.x);
+  int32_t new_height = static_cast<int32_t>(m_new_size.y);
   if (content_region_.z() != new_width || content_region_.w() != new_height) {
     content_region_.z() = new_width;
     content_region_.w() = new_height;
@@ -69,52 +70,51 @@ EditorUI::loadImGuiImageFromFile(const std::string &filename) {
 //   return image;
 // }
 
-// std::shared_ptr<mango::ImGuiImage>
-// EditorUI::loadImGuiImageFromImageViewSampler(
-//     const VmaImageViewSampler &image_view_sampler) {
-//   std::shared_ptr<ImGuiImage> image = std::make_shared<ImGuiImage>();
-//   image->image_view_sampler = image_view_sampler;
-//   image->tex_id = ImGui_ImplVulkan_AddTexture(
-//       image->image_view_sampler.sampler, image->image_view_sampler.view,
-//       VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-//   image->is_owned = false;
+std::shared_ptr<mango::ImGuiImage> EditorUI::loadImGuiImageFromImageViewSampler(
+    const std::shared_ptr<ImageView> &image_view,
+    const std::shared_ptr<Sampler> &sampler) {
+  std::shared_ptr<ImGuiImage> image = std::make_shared<ImGuiImage>();
+  image->image_view = image_view;
+  image->sampler = sampler;
+  image->tex_id =
+      ImGui_ImplVulkan_AddTexture(sampler->getHandle(), image_view->getHandle(),
+                                  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  uint64_t hash_id = reinterpret_cast<uint64_t>(image_view->getHandle());
+  std::string hash_str = std::to_string(hash_id);
+  imgui_images_[hash_str] = image;
+  return image;
+}
 
-//   uint64_t hash_id = reinterpret_cast<uint64_t>(image_view_sampler.view);
-//   std::string hash_str = std::to_string(hash_id);
-//   m_imgui_images[hash_str] = image;
+std::shared_ptr<mango::ImGuiImage>
+EditorUI::getImGuiImageFromCache(const std::string &url) {
+  return imgui_images_[url];
+}
 
-//   return image;
-// }
+ImFont *EditorUI::defaultFont() { return ImGui::GetIO().Fonts->Fonts[0]; }
 
-// std::shared_ptr<mango::ImGuiImage>
-// EditorUI::getImGuiImageFromCache(const URL &url) {
-//   return m_imgui_images[url];
-// }
+ImFont *EditorUI::smallFont() { return ImGui::GetIO().Fonts->Fonts[1]; }
 
-// ImFont *EditorUI::defaultFont() { return ImGui::GetIO().Fonts->Fonts[0]; }
+ImFont *EditorUI::bigIconFont() { return ImGui::GetIO().Fonts->Fonts[2]; }
 
-// ImFont *EditorUI::smallFont() { return ImGui::GetIO().Fonts->Fonts[1]; }
+bool EditorUI::isFocused() { return !isPoppingUp() && isMouseFocused(); }
 
-// ImFont *EditorUI::bigIconFont() { return ImGui::GetIO().Fonts->Fonts[2]; }
+bool EditorUI::isPoppingUp() {
+  ImGuiContext &g = *GImGui;
+  return !g.OpenPopupStack.empty();
+}
 
-// bool EditorUI::isFocused() { return !isPoppingUp() && isMouseFocused(); }
+bool EditorUI::isImGuiImageLoaded(const std::string &url) {
+  return imgui_images_.find(url) != imgui_images_.end();
+}
 
-// bool EditorUI::isPoppingUp() {
-//   ImGuiContext &g = *GImGui;
-//   return !g.OpenPopupStack.empty();
-// }
-
-// bool EditorUI::isImGuiImageLoaded(const URL &url) {
-//   return m_imgui_images.find(url) != m_imgui_images.end();
-// }
-
-// bool EditorUI::isMouseFocused() {
-//   int xpos, ypos;
-//   g_engine.windowSystem()->getMousePos(xpos, ypos);
-//   return xpos > m_content_region.x &&
-//          xpos < m_content_region.x + m_content_region.z &&
-//          ypos > m_content_region.y &&
-//          ypos < m_content_region.y + m_content_region.w;
-// }
+bool EditorUI::isMouseFocused() {
+  int32_t xpos = 0;
+  int32_t ypos = 0;
+  g_engine.getWindow()->getMousePos(xpos, ypos);
+  return xpos > content_region_.x() &&
+         xpos < content_region_.x() + content_region_.z() &&
+         ypos > content_region_.y() &&
+         ypos < content_region_.y() + content_region_.w();
+}
 
 } // namespace mango

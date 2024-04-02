@@ -8,7 +8,7 @@ add_library(${TARGET_NAME} ${HEADER_FILES} ${SOURCE_FILES})
 
 #set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "editorf")
 
-target_link_libraries(${TARGET_NAME} PRIVATE engine)
+target_link_libraries(${TARGET_NAME} PRIVATE engine volk)
 
 # install(TARGETS ${TARGET_NAME} DESTINATION "bin/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>")
 # install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/editor.h"

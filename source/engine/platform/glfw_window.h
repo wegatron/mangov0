@@ -13,8 +13,6 @@ public:
   GlfwWindow(const std::string &window_title, const int width,
              const int height);
 
-  bool init(const std::shared_ptr<VkConfig> &config, VkFormat ds_format);
-
   ~GlfwWindow() override;
 
   bool shouldClose() override;
@@ -29,15 +27,15 @@ public:
 
   void getWindowSize(uint32_t &width, uint32_t &height) override;
 
+  void getMousePos(int32_t &xpos, int32_t &ypos) override;
+
   VkSurfaceKHR createSurface(VkInstance instance) override;
 
-  void *getHandle() { return window_; }
+  void *getHandle() override { return window_; }
 
 private:
   void setupCallback();
 
   GLFWwindow *window_;
-  VkFormat ds_format_;
-  std::vector<std::shared_ptr<Image>> depth_images_;
 };
 } // namespace mango

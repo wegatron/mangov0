@@ -34,8 +34,8 @@ protected:
   void updateWindowRegion();
   std::shared_ptr<ImGuiImage>
   loadImGuiImageFromFile(const std::string &filename);
-  std::shared_ptr<ImGuiImage>
-  loadImGuiImageFromTexture2D(std::shared_ptr<class Texture2D> &texture);
+  // std::shared_ptr<ImGuiImage>
+  // loadImGuiImageFromTexture2D(std::shared_ptr<class Texture2D> &texture);
   std::shared_ptr<ImGuiImage> loadImGuiImageFromImageViewSampler(
       const std::shared_ptr<ImageView> &image_view,
       const std::shared_ptr<Sampler> &sampler);
@@ -50,7 +50,7 @@ protected:
 
   std::string title_;
   char title_buf_[128];
-  Eigen::Vector<uint32_t, 4> content_region_;
+  Eigen::Vector<int32_t, 4> content_region_;
 
 private:
   bool isMouseFocused();
