@@ -1,6 +1,7 @@
 #pragma once
 
 #include <engine/functional/global/engine_context.h>
+#include <engine/utils/vk/commands.h>
 #include <map>
 #include <memory>
 #include <stdexcept>
@@ -71,7 +72,7 @@ public:
       auto ccmd_buf = driver->requestCommandBuffer(
           VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
       auto ret = load<T>(path, ccmd_buf);
-      driver->getGraphicsQueue()->submit(ccmd_buf);
+      driver->getGraphicsQueue()->submit(ccmd_buf, VK_NULL_HANDLE);
       driver->getGraphicsQueue()->waitIdle();
       assets_.emplace(path, Asset{ret, current_frame_});
       return ret;
@@ -90,7 +91,7 @@ public:
       auto ccmd_buf = driver->requestCommandBuffer(
           VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
       auto ret = load<T>(data, size, ccmd_buf);
-      driver->getGraphicsQueue()->submit(ccmd_buf);
+      driver->getGraphicsQueue()->submit(ccmd_buf, VK_NULL_HANDLE);
       driver->getGraphicsQueue()->waitIdle();
       return ret;
     }
@@ -107,7 +108,7 @@ public:
       auto ccmd_buf = driver->requestCommandBuffer(
           VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
       auto ret = load<T>(data, width, height, channel, ccmd_buf);
-      driver->getGraphicsQueue()->submit(ccmd_buf);
+      driver->getGraphicsQueue()->submit(ccmd_buf, VK_NULL_HANDLE);
       driver->getGraphicsQueue()->waitIdle();
       return ret;
     }

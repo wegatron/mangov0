@@ -8,7 +8,6 @@
 // #include "editor/tool/tool_ui.h"
 // #include "editor/world/world_ui.h"
 #include <engine/functional/global/engine_context.h>
-#include <engine/platform/glfw_window.h>
 #include <engine/utils/base/macro.h>
 #include <engine/utils/event/event_system.h>
 
@@ -31,8 +30,7 @@ void Editor::init() {
       mango::VkConfig::FeatureExtension::KHR_VALIDATION_LAYER,
       mango::VkConfig::EnableState::REQUIRED);
 #endif
-  auto window = std::make_shared<mango::GlfwWindow>("viewer", 800, 600);
-  g_engine->init(vk_config, window);
+  g_engine.init(vk_config, "editor");
 
   // create editor ui
   // std::shared_ptr<EditorUI> menu_ui = std::make_shared<MenuUI>();
@@ -89,6 +87,6 @@ void Editor::constructUI() {
   //       editor_ui->construct();
   //     }
   //   }
-  // }
+}
 
 } // namespace mango

@@ -1,6 +1,7 @@
 #include <engine/functional/global/engine_context.h>
 #include <engine/functional/render/render_system.h>
 #include <engine/platform/file_system.h>
+#include <engine/platform/glfw_window.h>
 #include <engine/platform/timer.h>
 #include <engine/resource/gpu_asset_manager.hpp>
 #include <engine/utils/event/event_system.h>
@@ -12,9 +13,8 @@ namespace mango {
 EngineContext g_engine;
 
 bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
-                         const std::shared_ptr<class Window> &window) {
+                         const std::string &window_title) {
   vk_config_ = vk_config;
-  window_ = window;
 
   // file system
   file_system_ = std::make_shared<FileSystem>();
@@ -28,6 +28,13 @@ bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
   event_system_ = std::make_shared<EventSystem>();
   event_system_->init();
 
+  // timer manager
+  g_engine.timer_manager_ = std::make_shared<TimerManager>();
+  g_engine.timer_manager_->init();
+
+  // window
+  window_ = std::make_shared<GlfwWindow>(window_title, 800, 600);
+
   // vulkan driver
   driver_ = std::make_shared<VkDriver>();
   driver_->init();
@@ -35,16 +42,12 @@ bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
   // resource cache
   resource_cache_ = std::make_shared<ResourceCache>();
 
+  // asset manager
+  g_engine.gpu_asset_manager_ = std::make_shared<GPUAssetManager>();
+
   // render system
   g_engine.render_system_ = std::make_shared<RenderSystem>();
   g_engine.render_system_->init();
-
-  // timer manager
-  g_engine.timer_manager_ = std::make_shared<TimerManager>();
-  g_engine.timer_manager_->init();
-
-  // asset manager
-  g_engine.gpu_asset_manager_ = std::make_shared<GPUAssetManager>();
 
   // world manager
 

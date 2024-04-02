@@ -13,7 +13,7 @@ public:
   ~EngineContext() = default;
 
   bool init(const std::shared_ptr<class VkConfig> &vk_config,
-            const std::shared_ptr<class Window> &window);
+            const std::string &window_title);
 
   void destroy();
 

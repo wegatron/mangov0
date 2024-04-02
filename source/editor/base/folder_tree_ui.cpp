@@ -1,5 +1,6 @@
 #include "folder_tree_ui.h"
-#include <engine/resource/asset_manager.hpp>
+#include <engine/platform/file_system.h>
+#include <engine/resource/gpu_asset_manager.hpp>
 #include <engine/utils/base/macro.h>
 
 #include <IconsFontAwesome5.h>
@@ -10,7 +11,7 @@ namespace mango {
 
 void IFolderTreeUI::pollFolders() {
   // recursively traverse the root folder by a queue
-  const auto &fs = g_engine.fileSystem();
+  const auto &fs = g_engine.getFileSystem();
 
   m_folder_nodes.clear();
   std::queue<std::string> folder_queue;
@@ -35,7 +36,7 @@ void IFolderTreeUI::pollFolders() {
 
         if (file.is_regular_file()) {
           // don't show invalid asset type
-          if (g_engine.assetManager()->getAssetType(filename) !=
+          if (g_engine.getAssetManager()->getAssetType(filename) !=
               EAssetType::Invalid) {
             folder_node.child_files.push_back(filename);
           }
@@ -120,16 +121,16 @@ void IFolderTreeUI::constructFolderTree(
 
 void IFolderTreeUI::openFolder(std::string folder) {
   if (!folder.empty()) {
-    m_selected_folder = g_engine.fileSystem()->relative(folder);
+    m_selected_folder = g_engine.getFileSystem()->relative(folder);
   }
 }
 
 std::string IFolderTreeUI::createFolder() {
-  LOG_INFO("create folder");
+  LOGI("create folder");
   std::string new_folder_name = m_selected_folder + "/NewFolder";
 
   int index = 1;
-  while (!g_engine.fileSystem()->createDir(new_folder_name)) {
+  while (!g_engine.getFileSystem()->createDir(new_folder_name)) {
     new_folder_name =
         m_selected_folder + "/NewFolder_" + std::to_string(index++);
   }
@@ -138,15 +139,15 @@ std::string IFolderTreeUI::createFolder() {
 }
 
 bool IFolderTreeUI::deleteFolder(const std::string &folder_name) {
-  LOG_INFO("delete folder: {}", folder_name);
-  g_engine.fileSystem()->removeDir(folder_name, true);
+  LOGI("delete folder: {}", folder_name);
+  g_engine.getFileSystem()->removeDir(folder_name, true);
   pollFolders();
   return true;
 }
 
 bool IFolderTreeUI::rename(const std::string &filename, const ImVec2 &size) {
-  std::string basename = g_engine.fileSystem()->basename(filename);
-  std::string dir = g_engine.fileSystem()->dir(filename) + "/";
+  std::string basename = g_engine.getFileSystem()->basename(filename);
+  std::string dir = g_engine.getFileSystem()->dir(filename) + "/";
   ImGui::PushItemWidth(size.x);
   strcpy(new_name_buffer, basename.c_str());
 
@@ -161,7 +162,7 @@ bool IFolderTreeUI::rename(const std::string &filename, const ImVec2 &size) {
       ImGui::IsKeyPressed(ImGuiKey_KeypadEnter) ||
       (!ImGui::IsItemHovered() &&
        ImGui::IsMouseClicked(ImGuiMouseButton_Left))) {
-    g_engine.fileSystem()->renameFile(dir, basename, new_name_buffer);
+    g_engine.getFileSystem()->renameFile(dir, basename, new_name_buffer);
     pollFolders();
     return false;
   }
