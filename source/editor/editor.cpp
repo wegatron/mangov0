@@ -84,6 +84,9 @@ void Editor::constructUI() {
   //       editor_ui->construct();
   //     }
   //   }
+  for (auto &editor_ui : editor_uis_) {
+    editor_ui->construct();
+  }
 }
 
 } // namespace mango

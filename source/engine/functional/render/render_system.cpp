@@ -23,6 +23,7 @@ void RenderSystem::tick(float delta_time) {
   // collect render datas
   auto driver = g_engine.getDriver();
   driver->waitFrame();
+
   auto cmd_buffer = driver->requestCommandBuffer(
       VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
   cmd_buffer->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);

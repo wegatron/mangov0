@@ -12,10 +12,10 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 if(WIN32)
-    set(GLFW_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/install/lib/glfw3.lib)
+    set(GLFW_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/lib/glfw3.lib)
     add_definitions(-DNOMINMAX)
 else()
-    set(GLFW_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/install/lib/libglfw3.a)
+    set(GLFW_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/lib/libglfw3.a)
 endif()
 
 list(APPEND CMAKE_PREFIX_PATH 
@@ -52,8 +52,9 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/Vulkan-Hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/eigen
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/stbi
+    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/cereal/include
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/imgui
-    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty # for imgui    
+    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty # for imgui
 )
 
 if (NOT APPLE AND ${CMAKE_CXX_COMPILER} MATCHES "(C|c?)lang")
@@ -80,4 +81,4 @@ endif()
 
 add_subdirectory(source/engine)
 add_subdirectory(source/editor)
-#add_subdirectory(source/samples/editor)
+add_subdirectory(source/samples/editor)

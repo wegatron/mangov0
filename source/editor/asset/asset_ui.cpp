@@ -129,7 +129,7 @@ void AssetUI::construct() {
   folder_rect_.z() = ImGui::GetItemRectMin().y;
   folder_rect_.w() = ImGui::GetItemRectMax().y;
 
-  ImGui::EndChild();
+  // ImGui::EndChild();
 
   ImGui::PopStyleVar();
   ImGui::PopStyleVar();
