@@ -1,17 +1,18 @@
 #pragma once
 
-#include "editor/base/editor_ui.h"
-#include "editor/base/folder_tree_ui.h"
-#include "engine/resource/asset/asset_manager.h"
+#include <Eigen/Dense>
+#include <editor/base/editor_ui.h>
+#include <editor/base/folder_tree_ui.h>
+#include <engine/asset/asset_manager.h>
 
 namespace mango {
 class AssetUI : public EditorUI, public IFolderTreeUI {
 public:
   AssetUI() = default;
+  ~AssetUI() override;
 
   virtual void init() override;
   virtual void construct() override;
-  virtual void destroy() override;
 
 private:
   void constructAssetNavigator();
@@ -31,9 +32,9 @@ private:
   void createCustomSeperatorText(const std::string &text);
 
   // icon images
-  std::map<EAssetType, std::shared_ptr<ImGuiImage>> m_asset_images;
-  std::shared_ptr<ImGuiImage> m_empty_folder_image;
-  std::shared_ptr<ImGuiImage> m_non_empty_folder_image;
+  std::map<EAssetType, std::shared_ptr<ImGuiImage>> asset_images_;
+  std::shared_ptr<ImGuiImage> empty_folder_image_;
+  std::shared_ptr<ImGuiImage> non_empty_folder_image_;
 
   // folder infos
   uint32_t m_poll_folder_timer_handle;
@@ -44,7 +45,7 @@ private:
   std::map<std::string, HoverState> m_selected_file_hover_states;
 
   // import files
-  glm::vec4 m_folder_rect;
+  Eigen::Vector4i folder_rect_;
   std::vector<std::string> m_imported_files;
 
   bool is_asset_hovered = false;

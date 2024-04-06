@@ -10,7 +10,7 @@
 #include <engine/utils/vk/descriptor_set.h>
 #include <engine/utils/vk/pipeline.h>
 #include <engine/utils/vk/render_pass.h>
-#include <engine/utils/vk/resource_cache.h>
+#include <engine/utils/vk/resource_cache.hpp>
 #include <engine/utils/vk/vk_driver.h>
 #include <imgui/backends/imgui_impl_glfw.h>
 #include <imgui/backends/imgui_impl_vulkan.h>
@@ -66,6 +66,7 @@ void UIPass::initImgui() {
   init_info.MinImageCount = image_count;
   init_info.ImageCount = image_count;
   init_info.CheckVkResultFn = check_vk_result;
+  init_info.RenderPass = render_pass_->getHandle();
 
   // 若要与volk一起使用的话, 参考: https://zhuanlan.zhihu.com/p/634912614
   auto instance = driver->getInstance();

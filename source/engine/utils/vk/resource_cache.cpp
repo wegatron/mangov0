@@ -1,9 +1,8 @@
 #include <engine/utils/base/hash_combine.h>
-#include <engine/utils/vk/resource_cache.h>
+#include <engine/utils/vk/resource_cache.hpp>
 #include <engine/utils/vk/sampler.h>
 
 namespace mango {
-
 std::shared_ptr<ShaderModule>
 ResourceCache::requestShaderModule(VkShaderStageFlagBits stage,
                                    const std::string &glsl_source,
@@ -147,6 +146,21 @@ void ResourceCache::clear() {
 
   std::unique_lock<std::mutex> lock6(state_.samples_mtx);
   state_.samplers.clear();
+}
+
+void ResourceCache::gc() {
+  if (++current_frame_ < DATA_RESOURCE_TIME_BEFORE_EVICTION)
+    return;
+  auto data_resource = state_.data_resources;
+  for (auto itr = data_resource.begin(); itr != data_resource.end();) {
+    auto &a = itr->second;
+    if (a.data_ptr.use_count() == 1 &&
+        a.last_accessed + DATA_RESOURCE_TIME_BEFORE_EVICTION <=
+            current_frame_) {
+      itr = data_resource.erase(itr);
+    } else
+      ++itr;
+  }
 }
 
 VkPipelineCacheWraper::VkPipelineCacheWraper(VkDevice device)

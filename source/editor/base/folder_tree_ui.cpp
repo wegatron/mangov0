@@ -1,8 +1,7 @@
 #include "folder_tree_ui.h"
 #include <engine/platform/file_system.h>
-#include <engine/resource/gpu_asset_manager.hpp>
 #include <engine/utils/base/macro.h>
-
+#include <engine/asset/asset_manager.h>
 #include <IconsFontAwesome5.h>
 #include <imgui/backends/imgui_impl_vulkan.h>
 #include <queue>
@@ -37,7 +36,7 @@ void IFolderTreeUI::pollFolders() {
         if (file.is_regular_file()) {
           // don't show invalid asset type
           if (g_engine.getAssetManager()->getAssetType(filename) !=
-              EAssetType::Invalid) {
+              EAssetType::INVALID) {
             folder_node.child_files.push_back(filename);
           }
         } else if (file.is_directory()) {

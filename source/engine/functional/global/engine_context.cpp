@@ -1,12 +1,12 @@
+#include <engine/asset/asset_manager.h>
 #include <engine/functional/global/engine_context.h>
 #include <engine/functional/render/render_system.h>
 #include <engine/platform/file_system.h>
 #include <engine/platform/glfw_window.h>
-#include <engine/platform/timer.h>
-#include <engine/resource/gpu_asset_manager.hpp>
+#include <engine/utils/base/timer.h>
 #include <engine/utils/event/event_system.h>
 #include <engine/utils/log/log_system.h>
-#include <engine/utils/vk/resource_cache.h>
+#include <engine/utils/vk/resource_cache.hpp>
 #include <engine/utils/vk/vk_driver.h>
 
 namespace mango {
@@ -43,7 +43,10 @@ bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
   resource_cache_ = std::make_shared<ResourceCache>();
 
   // asset manager
-  g_engine.gpu_asset_manager_ = std::make_shared<GPUAssetCache>();
+  asset_manager_ = std::make_shared<AssetManager>();
+  asset_manager_->init();
+
+  // asset manager
 
   // render system
   g_engine.render_system_ = std::make_shared<RenderSystem>();
@@ -81,6 +84,8 @@ float EngineContext::calcDeltaTime() {
   return delta_time;
 }
 void EngineContext::logicTick(float delta_time) {}
-void EngineContext::renderTick(float delta_time) {}
+void EngineContext::renderTick(float delta_time) {
+  render_system_->tick(delta_time);
+}
 
 } // namespace mango

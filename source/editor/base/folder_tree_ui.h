@@ -24,6 +24,10 @@ struct HoverState {
 };
 
 class IFolderTreeUI {
+public:
+  IFolderTreeUI() = default;
+  virtual ~IFolderTreeUI() = default;
+
 protected:
   void pollFolders();
   void constructFolderTree();

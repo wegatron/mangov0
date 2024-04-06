@@ -3,6 +3,7 @@
 #include <engine/functional/global/engine_context.h>
 #include <engine/utils/base/strings.h>
 #include <engine/utils/log/log_system.h>
+#include <engine/platform/file_system.h>
 
 #define LOGI(...)                                                              \
   SPDLOG_LOGGER_INFO(g_engine.getLogSystem()->getLogger(), __VA_ARGS__)
@@ -31,4 +32,4 @@
     }                                                                          \
   } while (0)
 
-// #define TO_ABSOLUTE(path) g_engine.getFileSystem()->absolute(path)
+#define TO_ABSOLUTE(path) g_engine.getFileSystem()->absolute(path)

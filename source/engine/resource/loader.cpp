@@ -1,14 +1,12 @@
 #include <engine/resource/loader.h>
 
 #include <Eigen/Dense>
-#include <queue>
-#include <stbi/stb_image.h>
-
 #include <engine/functional/component/camera.h>
 #include <engine/functional/component/material_pbr.h>
-#include <engine/resource/asset_manager.hpp>
 #include <engine/utils/base/macro.h>
 #include <engine/utils/vk/commands.h>
+#include <queue>
+#include <stbi/stb_image.h>
 
 namespace mango {
 

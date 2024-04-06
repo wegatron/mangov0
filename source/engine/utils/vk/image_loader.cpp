@@ -2,14 +2,12 @@
 #include <engine/functional/global/engine_context.h>
 #include <engine/utils/base/data_reshaper.hpp>
 #include <engine/utils/vk/commands.h>
-#include <engine/utils/vk/gpu_asset_cache.hpp>
 #include <engine/utils/vk/image.h>
+#include <engine/utils/vk/image_loader.hpp>
 #include <engine/utils/vk/vk_driver.h>
 #include <stb_image.h>
 
 namespace mango {
-static constexpr uint32_t ASSET_TIME_BEFORE_EVICTION = 100;
-
 std::shared_ptr<ImageView>
 createImageView(void *img_data, uint32_t width, uint32_t height,
                 uint32_t channel,
@@ -104,19 +102,4 @@ std::shared_ptr<ImageView> load(const float *data, const uint32_t width,
   auto ret = createImageView(data, width, height, channel, cmd_buf);
   return ret;
 }
-
-void GPUAssetCache::gc() {
-  if (++current_frame_ < ASSET_TIME_BEFORE_EVICTION)
-    return;
-  for (auto itr = assets_.begin(); itr != assets_.end();) {
-    auto &a = itr->second;
-    if (a.data_ptr.use_count() == 1 &&
-        a.last_accessed + ASSET_TIME_BEFORE_EVICTION <= current_frame_) {
-      itr = assets_.erase(itr);
-    } else
-      ++itr;
-  }
-}
-
-void GPUAssetCache::reset() { assets_.clear(); }
 } // namespace mango

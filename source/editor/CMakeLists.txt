@@ -1,7 +1,7 @@
 set(TARGET_NAME editor)
 
-file(GLOB_RECURSE HEADER_FILES CONFIGURE_DEPENDS "base/*.h" editor.h)
-file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS "base/*.cpp" editor.cpp)
+file(GLOB_RECURSE HEADER_FILES CONFIGURE_DEPENDS "base/*.h" "asset/*.h" editor.h)
+file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS "base/*.cpp" "asset/*.cpp" editor.cpp)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${HEADER_FILES} ${SOURCE_FILES})
 
 add_library(${TARGET_NAME} ${HEADER_FILES} ${SOURCE_FILES})

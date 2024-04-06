@@ -1,42 +1,43 @@
 #include "asset_ui.h"
-#include "engine/platform/timer.h"
-#include "engine/utils/base/macro.h"
-#include "engine/utils/event/event_system.h"
+#include <engine/utils/base/macro.h>
+#include <engine/utils/base/string_util.h>
+#include <engine/utils/base/timer.h>
+#include <engine/utils/event/event_system.h>
 #include <queue>
 
 namespace mango {
 void AssetUI::init() {
   EditorUI::init();
-  m_title = "Asset";
+  title_ = "Asset";
 
   // set poll folder timer
   const float k_poll_folder_time = 1.0f;
-  m_poll_folder_timer_handle = g_engine.timerManager()->addTimer(
+  m_poll_folder_timer_handle = g_engine.getTimerManager()->addTimer(
       k_poll_folder_time, [this]() { pollFolders(); }, true, true);
-  openFolder(g_engine.fileSystem()->getAssetDir());
+  openFolder(g_engine.getFileSystem()->getAssetDir());
 
   // load icon images
-  m_asset_images[EAssetType::Invalid] =
+  asset_images_[EAssetType::INVALID] =
       loadImGuiImageFromFile("asset/engine/texture/ui/invalid.png");
-  m_asset_images[EAssetType::Texture2D] =
+  asset_images_[EAssetType::TEXTURE2D] =
       loadImGuiImageFromFile("asset/engine/texture/ui/texture_2d.png");
-  m_asset_images[EAssetType::TextureCube] =
+  asset_images_[EAssetType::TEXTURECUBE] =
       loadImGuiImageFromFile("asset/engine/texture/ui/texture_cube.png");
-  m_asset_images[EAssetType::Material] =
+  asset_images_[EAssetType::MATERIAL] =
       loadImGuiImageFromFile("asset/engine/texture/ui/material.png");
-  m_asset_images[EAssetType::Skeleton] =
+  asset_images_[EAssetType::SKELETON] =
       loadImGuiImageFromFile("asset/engine/texture/ui/skeleton.png");
-  m_asset_images[EAssetType::StaticMesh] =
+  asset_images_[EAssetType::STATICMESH] =
       loadImGuiImageFromFile("asset/engine/texture/ui/static_mesh.png");
-  m_asset_images[EAssetType::SkeletalMesh] =
+  asset_images_[EAssetType::SKELETALMESH] =
       loadImGuiImageFromFile("asset/engine/texture/ui/skeletal_mesh.png");
-  m_asset_images[EAssetType::Animation] =
+  asset_images_[EAssetType::ANIMATION] =
       loadImGuiImageFromFile("asset/engine/texture/ui/animation.png");
-  m_asset_images[EAssetType::World] =
+  asset_images_[EAssetType::WORLD] =
       loadImGuiImageFromFile("asset/engine/texture/ui/world.png");
-  m_empty_folder_image =
+  empty_folder_image_ =
       loadImGuiImageFromFile("asset/engine/texture/ui/empty_folder.png");
-  m_non_empty_folder_image =
+  non_empty_folder_image_ =
       loadImGuiImageFromFile("asset/engine/texture/ui/non_empty_folder.png");
 
   // register drop callback
@@ -47,9 +48,9 @@ void AssetUI::init() {
 
 void AssetUI::construct() {
   // draw asset widget
-  sprintf(m_title_buf, "%s %s###%s", ICON_FA_FAN, m_title.c_str(),
-          m_title.c_str());
-  if (!ImGui::Begin(m_title_buf)) {
+  sprintf(title_buf_, "%s %s###%s", ICON_FA_FAN, title_.c_str(),
+          title_.c_str());
+  if (!ImGui::Begin(title_buf_)) {
     m_imported_files.clear();
     ImGui::End();
     return;
@@ -86,45 +87,47 @@ void AssetUI::construct() {
 
   ImGui::SameLine();
 
-  // folder files
-  ImGui::BeginChild(
-      "folder_files",
-      ImVec2(content_size.x * (1 - k_folder_tree_width_scale), content_size.y),
-      true);
+  // // folder files
+  // ImGui::BeginChild(
+  //     "folder_files",
+  //     ImVec2(content_size.x * (1 - k_folder_tree_width_scale),
+  //     content_size.y), true);
 
-  ImGui::Spacing();
-  ImGui::Indent(k_spacing);
+  // ImGui::Spacing();
+  // ImGui::Indent(k_spacing);
 
-  ImGui::BeginChild(
-      "asset_navigator",
-      ImVec2(content_size.x * (1 - k_folder_tree_width_scale) - k_spacing * 3,
-             24),
-      true);
-  constructAssetNavigator();
-  ImGui::EndChild();
+  // ImGui::BeginChild(
+  //     "asset_navigator",
+  //     ImVec2(content_size.x * (1 - k_folder_tree_width_scale) - k_spacing *
+  //     3,
+  //            24),
+  //     true);
+  // constructAssetNavigator();
+  // ImGui::EndChild();
 
-  ImGui::BeginChild("folder_files");
-  ImGui::Indent(k_spacing);
-  ImGui::PushFont(smallFont());
-  constructFolderFiles();
-  ImGui::PopFont();
-  ImGui::EndChild();
+  // ImGui::BeginChild("folder_files");
+  // ImGui::Indent(k_spacing);
+  // ImGui::PushFont(smallFont());
+  // constructFolderFiles();
+  // ImGui::PopFont();
+  // ImGui::EndChild();
 
-  ImGui::BeginChild("folder_files");
-  if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right) &&
-      !is_asset_hovered) {
-    ImGui::OpenPopup("folder_op_background_hovered_popups");
-  }
-  constructFolderOpPopups("folder_op_background_hovered_popups");
-  constructFolderOpPopups("folder_op_dir_hovered_popups", true);
-  constructFolderOpPopupModal(m_selected_file);
-  ImGui::EndChild();
+  // ImGui::BeginChild("folder_files");
+  // if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)
+  // &&
+  //     !is_asset_hovered) {
+  //   ImGui::OpenPopup("folder_op_background_hovered_popups");
+  // }
+  // constructFolderOpPopups("folder_op_background_hovered_popups");
+  // constructFolderOpPopups("folder_op_dir_hovered_popups", true);
+  // constructFolderOpPopupModal(m_selected_file);
+  // ImGui::EndChild();
 
   // get folder window rect
-  m_folder_rect.x = ImGui::GetItemRectMin().x;
-  m_folder_rect.y = ImGui::GetItemRectMax().x;
-  m_folder_rect.z = ImGui::GetItemRectMin().y;
-  m_folder_rect.w = ImGui::GetItemRectMax().y;
+  folder_rect_.x() = ImGui::GetItemRectMin().x;
+  folder_rect_.y() = ImGui::GetItemRectMax().x;
+  folder_rect_.z() = ImGui::GetItemRectMin().y;
+  folder_rect_.w() = ImGui::GetItemRectMax().y;
 
   ImGui::EndChild();
 
@@ -133,17 +136,15 @@ void AssetUI::construct() {
   ImGui::End();
 
   // construct popup modal windows
-  constructImportPopups();
+  // constructImportPopups();
 
   // reset bool status
   is_folder_tree_hovered = false;
   is_asset_hovered = false;
 }
 
-void AssetUI::destroy() {
-  EditorUI::destroy();
-
-  g_engine.timerManager()->removeTimer(m_poll_folder_timer_handle);
+AssetUI::~AssetUI() {
+  g_engine.getTimerManager()->removeTimer(m_poll_folder_timer_handle);
 }
 
 void AssetUI::constructAssetNavigator() {
@@ -220,217 +221,222 @@ void AssetUI::constructFolderFiles() {
 }
 
 void AssetUI::constructAsset(const std::string &filename, const ImVec2 &size) {
-  ImTextureID tex_id = nullptr;
-  std::string basename = g_engine.fileSystem()->basename(filename);
+  // ImTextureID tex_id = nullptr;
+  // std::string basename = g_engine.getFileSystem()->basename(filename);
 
-  const auto &asset_manager = g_engine.assetManager();
+  // const auto &asset_manager = g_engine.getAssetManager();
 
-  if (g_engine.fileSystem()->isFile(filename)) {
-    EAssetType asset_type = asset_manager->getAssetType(filename);
-    tex_id = m_asset_images[asset_type]->tex_id;
-    if (asset_type == EAssetType::Texture2D) {
-      if (isImGuiImageLoaded(filename)) {
-        tex_id = getImGuiImageFromCache(filename)->tex_id;
-      } else {
-        std::shared_ptr<Texture2D> tex =
-            asset_manager->loadAsset<Texture2D>(filename);
-        auto imgui_tex = loadImGuiImageFromTexture2D(tex);
-        tex_id = imgui_tex->tex_id;
-      }
-    }
-  } else if (g_engine.fileSystem()->isDir(filename)) {
-    bool is_empty = g_engine.fileSystem()->isEmptyDir(filename);
-    tex_id = is_empty ? m_empty_folder_image->tex_id
-                      : m_non_empty_folder_image->tex_id;
-  } else {
-    return;
-  }
+  // if (g_engine.getFileSystem()->isFile(filename)) {
+  //   EAssetType asset_type = asset_manager->getAssetType(filename);
+  //   tex_id = asset_images_[asset_type]->tex_id;
+  //   if (asset_type == EAssetType::TEXTURE2D) {
+  //     if (isImGuiImageLoaded(filename)) {
+  //       tex_id = getImGuiImageFromCache(filename)->tex_id;
+  //     } else {
+  //       std::shared_ptr<Texture2D> tex =
+  //           asset_manager->loadAsset<Texture2D>(filename);
+  //       auto imgui_tex = loadImGuiImageFromTexture2D(tex);
+  //       tex_id = imgui_tex->tex_id;
+  //     }
+  //   }
+  // } else if (g_engine.getFileSystem()->isDir(filename)) {
+  //   bool is_empty = g_engine.getFileSystem()->isEmptyDir(filename);
+  //   tex_id = is_empty ? empty_folder_image_->tex_id
+  //                     : non_empty_folder_image_->tex_id;
+  // } else {
+  //   return;
+  // }
 
-  ImGui::BeginGroup();
+  // ImGui::BeginGroup();
 
-  // draw hovered/selected background rect
-  HoverState &hover_state = m_selected_file_hover_states[filename];
-  bool is_hovered = hover_state.is_hovered;
-  bool is_selected = m_selected_file == filename;
-  if (is_hovered || is_selected) {
-    ImVec4 color = ImVec4(50, 50, 50, 255);
-    if (!is_hovered && is_selected) {
-      color = ImVec4(0, 112, 224, 255);
-    } else if (is_hovered && is_selected) {
-      color = ImVec4(14, 134, 255, 255);
-    }
+  //// draw hovered/selected background rect
+  // HoverState &hover_state = m_selected_file_hover_states[filename];
+  // bool is_hovered = hover_state.is_hovered;
+  // bool is_selected = m_selected_file == filename;
+  // if (is_hovered || is_selected) {
+  //   ImVec4 color = ImVec4(50, 50, 50, 255);
+  //   if (!is_hovered && is_selected) {
+  //     color = ImVec4(0, 112, 224, 255);
+  //   } else if (is_hovered && is_selected) {
+  //     color = ImVec4(14, 134, 255, 255);
+  //   }
 
-    ImDrawFlags draw_flags = ImDrawFlags_RoundCornersBottom;
-    const float k_margin = 4;
-    ImGui::GetWindowDrawList()->AddRectFilled(
-        ImVec2(hover_state.rect_min.x - k_margin,
-               hover_state.rect_min.y - k_margin),
-        ImVec2(hover_state.rect_max.x + k_margin,
-               hover_state.rect_max.y + k_margin),
-        IM_COL32(color.x, color.y, color.z, color.w), 3.0f, draw_flags);
-  }
+  //  ImDrawFlags draw_flags = ImDrawFlags_RoundCornersBottom;
+  //  const float k_margin = 4;
+  //  ImGui::GetWindowDrawList()->AddRectFilled(
+  //      ImVec2(hover_state.rect_min.x - k_margin,
+  //             hover_state.rect_min.y - k_margin),
+  //      ImVec2(hover_state.rect_max.x + k_margin,
+  //             hover_state.rect_max.y + k_margin),
+  //      IM_COL32(color.x, color.y, color.z, color.w), 3.0f, draw_flags);
+  //}
 
-  // draw image
-  ImGui::Image(tex_id, size);
+  //// draw image
+  // ImGui::Image(tex_id, size);
 
-  // draw asset name text
-  ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 20.0f);
-  float text_width = ImGui::CalcTextSize(basename.c_str()).x;
+  //// draw asset name text
+  // ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 20.0f);
+  // float text_width = ImGui::CalcTextSize(basename.c_str()).x;
 
-  if (is_renaming && m_selected_file == filename) {
-    is_renaming = rename(filename, size);
-  } else if (text_width > size.x) {
-    ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + size.x);
-    ImGui::Text(basename.c_str());
-    ImGui::PopTextWrapPos();
-  } else {
-    ImGui::SetCursorPosX(ImGui::GetCursorPos().x +
-                         (size.x - text_width) * 0.5f);
-    ImGui::Text(basename.c_str());
-  }
-  ImGui::EndGroup();
+  // if (is_renaming && m_selected_file == filename) {
+  //   is_renaming = rename(filename, size);
+  // } else if (text_width > size.x) {
+  //   ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + size.x);
+  //   ImGui::Text(basename.c_str());
+  //   ImGui::PopTextWrapPos();
+  // } else {
+  //   ImGui::SetCursorPosX(ImGui::GetCursorPos().x +
+  //                        (size.x - text_width) * 0.5f);
+  //   ImGui::Text(basename.c_str());
+  // }
+  // ImGui::EndGroup();
 
-  // update asset hover and selection status
-  is_asset_hovered |= hover_state.is_hovered = ImGui::IsItemHovered();
-  if (ImGui::IsItemClicked(ImGuiMouseButton_Left) ||
-      ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-    m_selected_file = filename;
-  }
+  //// update asset hover and selection status
+  // is_asset_hovered |= hover_state.is_hovered = ImGui::IsItemHovered();
+  // if (ImGui::IsItemClicked(ImGuiMouseButton_Left) ||
+  //     ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+  //   m_selected_file = filename;
+  // }
 
-  // set drag source
-  if (g_engine.fileSystem()->isFile(filename)) {
-    EAssetType asset_type = g_engine.assetManager()->getAssetType(filename);
-    if ((asset_type == EAssetType::StaticMesh ||
-         asset_type == EAssetType::SkeletalMesh) &&
-        ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID |
-                                   ImGuiDragDropFlags_SourceNoPreviewTooltip)) {
-      std::string ref_filename = g_engine.fileSystem()->relative(filename);
-      ImGui::SetDragDropPayload("load_asset", ref_filename.data(),
-                                ref_filename.size());
-      ImGui::EndDragDropSource();
-    }
-  }
+  //// set drag source
+  // if (g_engine.getFileSystem()->isFile(filename)) {
+  //   EAssetType asset_type =
+  //   g_engine.getAssetManager()->getAssetType(filename); if ((asset_type ==
+  //   EAssetType::STATICMESH ||
+  //        asset_type == EAssetType::SKELETALMESH) &&
+  //       ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID |
+  //                                  ImGuiDragDropFlags_SourceNoPreviewTooltip))
+  //                                  {
+  //     std::string ref_filename =
+  //     g_engine.getFileSystem()->relative(filename);
+  //     ImGui::SetDragDropPayload("load_asset", ref_filename.data(),
+  //                               ref_filename.size());
+  //     ImGui::EndDragDropSource();
+  //   }
+  // }
 
-  onAssetRightClick(filename);
+  // onAssetRightClick(filename);
 }
 
 void AssetUI::constructImportPopups() {
-  if (m_imported_files.empty()) {
-    return;
-  }
-
-  const auto &as = g_engine.assetManager();
-  std::string import_folder =
-      g_engine.fileSystem()->relative(m_selected_folder);
-  for (auto iter = m_imported_files.begin(); iter != m_imported_files.end();) {
-    // check import file type
-    const std::string &import_file = *iter;
-    if (as->isGltfFile(import_file)) {
-      ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(),
-                              ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-      ImGui::OpenPopup("Import Asset");
-      if (ImGui::BeginPopupModal("Import Asset", nullptr,
-                                 ImGuiWindowFlags_AlwaysAutoResize |
-                                     ImGuiWindowFlags_NoMove)) {
-        ImGui::Text("Importing gltf: %s", import_file.c_str());
-        ImGui::Separator();
-
-        ImGui::SeparatorText("Mesh");
-        static bool force_static_mesh = false;
-        ImGui::Checkbox("force static mesh", &force_static_mesh);
-
-        static bool combine_meshes = true;
-        ImGui::Checkbox("combine meshes", &combine_meshes);
-
-        ImGui::SeparatorText("Material");
-        static bool contains_occlusion_channel = true;
-        ImGui::Checkbox("contain occlusion channel",
-                        &contains_occlusion_channel);
-
-        if (ImGui::Button("OK", ImVec2(120, 0))) {
-          ImGui::CloseCurrentPopup();
-
-          StopWatch stop_watch;
-          stop_watch.start();
-
-          as->importGltf(
-              import_file, import_folder,
-              {combine_meshes, force_static_mesh, contains_occlusion_channel});
-          LOG_INFO("import gltf {} to {}, elapsed time: {}ms", import_file,
-                   import_folder, stop_watch.stopMs());
-          iter = m_imported_files.erase(iter);
-        }
-
-        ImGui::SameLine();
-
-        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
-          ImGui::CloseCurrentPopup();
-          iter = m_imported_files.erase(iter);
-        }
-        ImGui::EndPopup();
-      }
-      break;
-    } else if (as->isTexture2DFile(import_file)) {
-      StopWatch stop_watch;
-      stop_watch.start();
-
-      as->importTexture2D(import_file, import_folder);
-      LOG_INFO("import texture 2d {} to {}, elapsed time: {}ms", import_file,
-               import_folder, stop_watch.stopMs());
-      iter = m_imported_files.erase(iter);
-    } else if (as->isTextureCubeFile(import_file)) {
-      StopWatch stop_watch;
-      stop_watch.start();
-
-      as->importTextureCube(import_file, import_folder);
-      LOG_INFO("import texture cube {} to {}, elapsed time: {}ms", import_file,
-               import_folder, stop_watch.stopMs());
-      iter = m_imported_files.erase(iter);
-    } else {
-      LOG_WARNING("unknown asset format: {}", import_file);
-      iter = m_imported_files.erase(iter);
-    }
-  }
+  //  if (m_imported_files.empty()) {
+  //    return;
+  //  }
+  //
+  //  const auto &as = g_engine.getAssetManager();
+  //  std::string import_folder =
+  //      g_engine.getFileSystem()->relative(m_selected_folder);
+  //  for (auto iter = m_imported_files.begin(); iter !=
+  //  m_imported_files.end();) {
+  //    // check import file type
+  //    const std::string &import_file = *iter;
+  //    if (as->isGltfFile(import_file)) {
+  //      ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(),
+  //                              ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+  //      ImGui::OpenPopup("Import Asset");
+  //      if (ImGui::BeginPopupModal("Import Asset", nullptr,
+  //                                 ImGuiWindowFlags_AlwaysAutoResize |
+  //                                     ImGuiWindowFlags_NoMove)) {
+  //        ImGui::Text("Importing gltf: %s", import_file.c_str());
+  //        ImGui::Separator();
+  //
+  //        ImGui::SeparatorText("Mesh");
+  //        static bool force_static_mesh = false;
+  //        ImGui::Checkbox("force static mesh", &force_static_mesh);
+  //
+  //        static bool combine_meshes = true;
+  //        ImGui::Checkbox("combine meshes", &combine_meshes);
+  //
+  //        ImGui::SeparatorText("Material");
+  //        static bool contains_occlusion_channel = true;
+  //        ImGui::Checkbox("contain occlusion channel",
+  //                        &contains_occlusion_channel);
+  //
+  //        if (ImGui::Button("OK", ImVec2(120, 0))) {
+  //          ImGui::CloseCurrentPopup();
+  //
+  //          StopWatch stop_watch;
+  //          stop_watch.start();
+  //
+  //          as->importGltf(
+  //              import_file, import_folder,
+  //              {combine_meshes, force_static_mesh,
+  //              contains_occlusion_channel});
+  //          LOGI("import 3d file {} to {}, elapsed time: {}ms", import_file,
+  //               import_folder, stop_watch.stopMs());
+  //          iter = m_imported_files.erase(iter);
+  //        }
+  //
+  //        ImGui::SameLine();
+  //
+  //        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+  //          ImGui::CloseCurrentPopup();
+  //          iter = m_imported_files.erase(iter);
+  //        }
+  //        ImGui::EndPopup();
+  //      }
+  //      break;
+  //    } else if (as->isTexture2DFile(import_file)) {
+  //      StopWatch stop_watch;
+  //      stop_watch.start();
+  //
+  //      as->importTexture2D(import_file, import_folder);
+  //      LOGI("import texture 2d {} to {}, elapsed time: {}ms", import_file,
+  //           import_folder, stop_watch.stopMs());
+  //      iter = m_imported_files.erase(iter);
+  //    } else if (as->isTextureCubeFile(import_file)) {
+  //      StopWatch stop_watch;
+  //      stop_watch.start();
+  //
+  //      as->importTextureCube(import_file, import_folder);
+  //      LOGI("import texture cube {} to {}, elapsed time: {}ms", import_file,
+  //           import_folder, stop_watch.stopMs());
+  //      iter = m_imported_files.erase(iter);
+  //    } else {
+  //      LOGW(("unknown asset format: {}", import_file);
+  //      iter = m_imported_files.erase(iter);
+  //    }
+  //  }
 }
 
 void AssetUI::constructAssetFilePopups() {
-  // right click option
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {2.0f, 8.0f});
-  ImGui::PushStyleColor(ImGuiCol_PopupBg, {0.2f, 0.2f, 0.2f, 1.0f});
-  ImGui::PushFont(defaultFont());
-  if (ImGui::BeginPopup("AssetPopups")) {
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {8.0f, 8.0f});
-    createCustomSeperatorText("COMMON");
-    if (ImGui::MenuItem("  Edit")) {
-      LOG_INFO("Edit");
-    }
-    if (ImGui::MenuItem("  Delete")) {
-      LOG_INFO("Delete");
-    }
-    if (ImGui::MenuItem("  Export")) {
-      LOG_INFO("Export");
-    }
-    ImGui::Separator();
-
-    createCustomSeperatorText("EXPLORE");
-    if (ImGui::MenuItem("  Show in Explorer")) {
-      LOG_INFO("Show in Explorer");
-    }
-    ImGui::Separator();
-
-    createCustomSeperatorText("REFERENCES");
-    if (ImGui::MenuItem("  Copy URL")) {
-      LOG_INFO("Copy URL");
-    }
-    if (ImGui::MenuItem("  Copy File Path")) {
-      LOG_INFO("Copy file path");
-    }
-    ImGui::PopStyleVar();
-    ImGui::EndPopup();
-  }
-  ImGui::PopFont();
-  ImGui::PopStyleColor();
-  ImGui::PopStyleVar();
+  //  // right click option
+  //  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {2.0f, 8.0f});
+  //  ImGui::PushStyleColor(ImGuiCol_PopupBg, {0.2f, 0.2f, 0.2f, 1.0f});
+  //  ImGui::PushFont(defaultFont());
+  //  if (ImGui::BeginPopup("AssetPopups")) {
+  //    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {8.0f, 8.0f});
+  //    createCustomSeperatorText("COMMON");
+  //    if (ImGui::MenuItem("  Edit")) {
+  //      LOGI("Edit");
+  //    }
+  //    if (ImGui::MenuItem("  Delete")) {
+  //      LOGI("Delete");
+  //    }
+  //    if (ImGui::MenuItem("  Export")) {
+  //      LOGI("Export");
+  //    }
+  //    ImGui::Separator();
+  //
+  //    createCustomSeperatorText("EXPLORE");
+  //    if (ImGui::MenuItem("  Show in Explorer")) {
+  //      LOGI("Show in Explorer");
+  //    }
+  //    ImGui::Separator();
+  //
+  //    createCustomSeperatorText("REFERENCES");
+  //    if (ImGui::MenuItem("  Copy URL")) {
+  //      LOGI("Copy URL");
+  //    }
+  //    if (ImGui::MenuItem("  Copy File Path")) {
+  //      LOGI("Copy file path");
+  //    }
+  //    ImGui::PopStyleVar();
+  //    ImGui::EndPopup();
+  //  }
+  //  ImGui::PopFont();
+  //  ImGui::PopStyleColor();
+  //  ImGui::PopStyleVar();
 }
 
 void AssetUI::constructFolderOpPopups(const std::string &str_id,
@@ -475,7 +481,7 @@ void AssetUI::constructFolderOpPopupModal(const std::string &path) {
                              ImGuiWindowFlags_AlwaysAutoResize |
                                  ImGuiWindowFlags_NoMove)) {
     std::string text = " Do you really want to delete " +
-                       g_engine.fileSystem()->relative(path) + "? ";
+                       g_engine.getFileSystem()->relative(path) + "? ";
     ImGui::Text(text.c_str());
     ImGui::Separator();
 
@@ -502,15 +508,15 @@ void AssetUI::constructFolderOpPopupModal(const std::string &path) {
 }
 
 void AssetUI::openFolder(std::string folder) {
-  if (!g_engine.fileSystem()->exists(m_selected_folder)) {
-    folder = g_engine.fileSystem()->getAssetDir();
+  if (!g_engine.getFileSystem()->exists(m_selected_folder)) {
+    folder = g_engine.getFileSystem()->getAssetDir();
   }
 
   if (!folder.empty() && m_selected_folder != folder) {
     m_selected_folder = folder;
 
     m_formatted_selected_folder =
-        g_engine.fileSystem()->relative(m_selected_folder);
+        g_engine.getFileSystem()->relative(m_selected_folder);
     StringUtil::replace_all(m_formatted_selected_folder, "/",
                             std::string(" ") + ICON_FA_ANGLE_RIGHT + " ");
   }
@@ -539,10 +545,10 @@ void AssetUI::openFolder(std::string folder) {
 void AssetUI::onDropFiles(const std::shared_ptr<class Event> &event) {
   const WindowDropEvent *drop_event =
       static_cast<const WindowDropEvent *>(event.get());
-  if (drop_event->xpos < m_folder_rect.x ||
-      drop_event->xpos > m_folder_rect.y ||
-      drop_event->ypos < m_folder_rect.z ||
-      drop_event->ypos > m_folder_rect.w) {
+  if (drop_event->xpos < folder_rect_.x() ||
+      drop_event->xpos > folder_rect_.y() ||
+      drop_event->ypos < folder_rect_.z() ||
+      drop_event->ypos > folder_rect_.w()) {
     return;
   }
 
@@ -552,14 +558,14 @@ void AssetUI::onDropFiles(const std::shared_ptr<class Event> &event) {
 void AssetUI::onAssetRightClick(const std::string &filename) {
   if (ImGui::IsItemHovered()) {
     if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-      if (g_engine.fileSystem()->isDir(filename)) {
+      if (g_engine.getFileSystem()->isDir(filename)) {
         openFolder(filename);
       } else {
-        std::string basename = g_engine.fileSystem()->basename(filename);
-        LOG_INFO("open asset {}", basename);
+        std::string basename = g_engine.getFileSystem()->basename(filename);
+        LOGI("open asset {}", basename);
       }
     } else if (ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
-      if (g_engine.fileSystem()->isDir(filename)) {
+      if (g_engine.getFileSystem()->isDir(filename)) {
         // Dir right-click event
         ImGui::OpenPopup("folder_op_dir_hovered_popups");
       } else {

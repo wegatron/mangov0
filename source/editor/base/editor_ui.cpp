@@ -1,9 +1,8 @@
 #include "editor_ui.h"
 #include <engine/functional/global/engine_context.h>
 #include <engine/platform/glfw_window.h>
-#include <engine/resource/gpu_asset_manager.hpp>
 #include <engine/utils/vk/image.h>
-#include <engine/utils/vk/resource_cache.h>
+#include <engine/utils/vk/resource_cache.hpp>
 #include <engine/utils/vk/sampler.h>
 #include <imgui/backends/imgui_impl_vulkan.h>
 #include <imgui/imgui_internal.h>
@@ -46,9 +45,9 @@ EditorUI::loadImGuiImageFromFile(const std::string &filename) {
   }
 
   auto driver = g_engine.getDriver();
-  auto gpu_asset_manager = g_engine.getGPUAssetManager();
+  auto resource_cache = g_engine.getResourceCache();
   std::shared_ptr<ImGuiImage> image = std::make_shared<ImGuiImage>();
-  image->image_view = gpu_asset_manager->request<ImageView>(filename, nullptr);
+  image->image_view = resource_cache->request<ImageView>(filename, nullptr);
   image->sampler = texture_2d_sampler_;
   image->tex_id = ImGui_ImplVulkan_AddTexture(
       image->sampler->getHandle(), image->image_view->getHandle(),

@@ -4,7 +4,9 @@ file(GLOB_RECURSE utils_srcs CONFIGURE_DEPENDS utils/*.cpp)
 
 file(GLOB_RECURSE platform_headers CONFIGURE_DEPENDS platform/*.h platform/*.hpp)
 file(GLOB_RECURSE platform_srcs CONFIGURE_DEPENDS platform/*.cpp)
-file(GLOB_RECURSE resources CONFIGURE_DEPENDS resources/*.h resources/*.hpp resources/*.cpp)
+#file(GLOB_RECURSE resource CONFIGURE_DEPENDS resource/*.h resource/*.hpp resource/*.cpp)
+file(GLOB_RECURSE resource CONFIGURE_DEPENDS resource/stb_image.cpp)
+file(GLOB_RECURSE asset CONFIGURE_DEPENDS asset/*.h asset/*.hpp asset/*.cpp)
 
 file(GLOB_RECURSE global_headers CONFIGURE_DEPENDS functional/global/*.h functional/global/*.hpp)
 file(GLOB_RECURSE global_srcs CONFIGURE_DEPENDS functional/global/*.cpp)
@@ -34,17 +36,19 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES
 ${utils_headers} ${utils_srcs}
 ${platform_headers} ${platform_srcs}
 ${global_headers} ${global_srcs}
-${render}
+${asset} ${render}
+${resource}
 )
 
 add_library(engine STATIC
     ${utils_headers} ${utils_srcs}
     ${platform_headers} ${platform_srcs}
     ${global_headers} ${global_srcs}
-    ${render}
+    ${render} ${asset}
+    ${resource}
     ${IMGUI_HEADERS} ${IMGUI_SRC}
 )
-target_link_libraries(engine PRIVATE
+target_link_libraries(engine PUBLIC
 volk
 ${GLFW_LIBRARY}
 ${THREAD}
