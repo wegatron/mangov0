@@ -87,41 +87,42 @@ void AssetUI::construct() {
 
   ImGui::SameLine();
 
-  // // folder files
-  // ImGui::BeginChild(
-  //     "folder_files",
-  //     ImVec2(content_size.x * (1 - k_folder_tree_width_scale),
-  //     content_size.y), true);
+  //// folder files
+  ImGui::BeginChild(
+      "folder_files",
+      ImVec2(content_size.x * (1 - k_folder_tree_width_scale), content_size.y),
+      true);
 
-  // ImGui::Spacing();
-  // ImGui::Indent(k_spacing);
+  ImGui::Spacing();
+  ImGui::Indent(k_spacing);
 
-  // ImGui::BeginChild(
-  //     "asset_navigator",
-  //     ImVec2(content_size.x * (1 - k_folder_tree_width_scale) - k_spacing *
-  //     3,
-  //            24),
-  //     true);
-  // constructAssetNavigator();
-  // ImGui::EndChild();
+  // 导航栏
+  ImGui::BeginChild(
+      "asset_navigator",
+      ImVec2(content_size.x * (1 - k_folder_tree_width_scale) - k_spacing * 3,
+             24),
+      true);
+  constructAssetNavigator();
+  ImGui::EndChild();
 
-  // ImGui::BeginChild("folder_files");
-  // ImGui::Indent(k_spacing);
-  // ImGui::PushFont(smallFont());
-  // constructFolderFiles();
-  // ImGui::PopFont();
-  // ImGui::EndChild();
+  // 显示文件列表
+  ImGui::BeginChild("folder_files");
+  ImGui::Indent(k_spacing);
+  ImGui::PushFont(smallFont());
+  constructFolderFiles();
+  ImGui::PopFont();
+  ImGui::EndChild();
 
-  // ImGui::BeginChild("folder_files");
-  // if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)
-  // &&
-  //     !is_asset_hovered) {
-  //   ImGui::OpenPopup("folder_op_background_hovered_popups");
-  // }
-  // constructFolderOpPopups("folder_op_background_hovered_popups");
-  // constructFolderOpPopups("folder_op_dir_hovered_popups", true);
-  // constructFolderOpPopupModal(m_selected_file);
-  // ImGui::EndChild();
+  ImGui::BeginChild("folder_files");
+  if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right) &&
+      !is_asset_hovered) {
+    ImGui::OpenPopup("folder_op_background_hovered_popups");
+  }
+  constructFolderOpPopups("folder_op_background_hovered_popups");
+  constructFolderOpPopups("folder_op_dir_hovered_popups", true);
+  constructFolderOpPopupModal(m_selected_file);
+  ImGui::EndChild();
+  ImGui::EndChild();
 
   // get folder window rect
   folder_rect_.x() = ImGui::GetItemRectMin().x;
@@ -129,11 +130,9 @@ void AssetUI::construct() {
   folder_rect_.z() = ImGui::GetItemRectMin().y;
   folder_rect_.w() = ImGui::GetItemRectMax().y;
 
-  // ImGui::EndChild();
-
   ImGui::PopStyleVar();
   ImGui::PopStyleVar();
-  ImGui::End();
+  ImGui::End(); // end of foler files full
 
   // construct popup modal windows
   // constructImportPopups();

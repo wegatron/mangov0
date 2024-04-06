@@ -41,11 +41,12 @@ void UIPass::initImgui() {
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-  io.IniFilename = nullptr;
+  // io.IniFilename = nullptr;
 
   // setup Dear ImGui style
   ImGui::StyleColorsDark();
   // ImGui::StyleColorsLight();
+  ImGui::GetStyle().WindowMenuButtonPosition = ImGuiDir_None;
 
   ImGui_ImplGlfw_InitForVulkan(
       reinterpret_cast<GLFWwindow *>(g_engine.getWindow()->getHandle()), true);

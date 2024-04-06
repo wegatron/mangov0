@@ -21,9 +21,9 @@ struct RequestedDeviceExtension {
 };
 
 struct FrameData {
-  std::shared_ptr<class Fence> render_fence;
-  std::shared_ptr<class Semaphore> render_semaphore;
-  std::shared_ptr<class Semaphore> present_semaphore;
+  std::shared_ptr<class Fence> command_buffer_available_fence;
+  std::shared_ptr<class Semaphore> image_available_semaphore;
+  std::shared_ptr<class Semaphore> render_result_available_semaphore;
   std::shared_ptr<class CommandPool> command_pool;
 };
 

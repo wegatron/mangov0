@@ -36,8 +36,26 @@ void RenderSystem::tick(float delta_time) {
   ui_pass_->draw(cmd_buffer);
   cmd_buffer->end();
   auto cmd_queue = driver->getGraphicsQueue();
-  cmd_queue->submit(cmd_buffer,
-                    driver->getCurrentFrameData().render_fence->getHandle());
+
+  VkPipelineStageFlags wait_stage{
+      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+  VkSubmitInfo submit_info{VK_STRUCTURE_TYPE_SUBMIT_INFO};
+  VkSemaphore render_result_available_semaphore_handle =
+      driver->getCurrentFrameData()
+          .render_result_available_semaphore->getHandle();
+  VkSemaphore image_available_semaphore_handle =
+      driver->getCurrentFrameData().image_available_semaphore->getHandle();
+  VkCommandBuffer cmd_buf_handle = cmd_buffer->getHandle();
+  submit_info.commandBufferCount = 1;
+  submit_info.pCommandBuffers = &cmd_buf_handle;
+  submit_info.waitSemaphoreCount = 1;
+  submit_info.pWaitSemaphores = &image_available_semaphore_handle;
+  submit_info.pWaitDstStageMask = &wait_stage;
+  submit_info.signalSemaphoreCount = 1;
+  submit_info.pSignalSemaphores = &render_result_available_semaphore_handle;
+  cmd_queue->submit({submit_info},
+                    driver->getCurrentFrameData()
+                        .command_buffer_available_fence->getHandle());
   driver->presentFrame();
 }
 
@@ -137,8 +155,9 @@ void RenderSystem::tick(float delta_time) {
 //   auto cmd_buf_handle = cmd_buf_->getHandle();
 //   auto present_semaphore = sync.present_semaphore->getHandle();
 //   auto render_semaphore = sync.render_semaphore->getHandle();
-//   auto render_fence = sync.render_fence->getHandle();
-//   VkPipelineStageFlags wait_stage{
+//   auto command_buffer_available_fence =
+//   sync.command_buffer_available_fence->getHandle(); VkPipelineStageFlags
+//   wait_stage{
 //       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 //   VkSubmitInfo submit_info{VK_STRUCTURE_TYPE_SUBMIT_INFO};
 //   submit_info.commandBufferCount = 1;
@@ -148,6 +167,6 @@ void RenderSystem::tick(float delta_time) {
 //   submit_info.pWaitDstStageMask = &wait_stage;
 //   submit_info.signalSemaphoreCount = 1;
 //   submit_info.pSignalSemaphores = &render_semaphore;
-//   cmd_queue->submit({submit_info}, render_fence);
+//   cmd_queue->submit({submit_info}, command_buffer_available_fence);
 // }
 } // namespace mango

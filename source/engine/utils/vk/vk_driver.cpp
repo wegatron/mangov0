@@ -193,11 +193,11 @@ void VkDriver::createFramesData() {
   auto n = swapchain_->getImageCount();
   frames_data_.resize(n);
   for (auto i = 0; i < n; ++i) {
-    frames_data_[i].render_fence =
+    frames_data_[i].command_buffer_available_fence =
         std::make_shared<Fence>(shared_from_this(), true);
-    frames_data_[i].render_semaphore =
+    frames_data_[i].render_result_available_semaphore =
         std::make_shared<Semaphore>(shared_from_this());
-    frames_data_[i].present_semaphore =
+    frames_data_[i].image_available_semaphore =
         std::make_shared<Semaphore>(shared_from_this());
     frames_data_[i].command_pool = std::make_shared<CommandPool>(
         shared_from_this(), graphics_cmd_queue_->getFamilyIndex(),
@@ -207,11 +207,12 @@ void VkDriver::createFramesData() {
 
 void VkDriver::waitFrame() {
   cur_image_index_ = swapchain_->acquireNextImage(
-      frames_data_[cur_frame_index_].present_semaphore->getHandle(),
-      frames_data_[cur_frame_index_].render_fence->getHandle());
+      frames_data_[cur_frame_index_].image_available_semaphore->getHandle(),
+      VK_NULL_HANDLE);
   frames_data_[cur_frame_index_]
-      .render_fence->wait(); // wait for cmdbuffer is free
-  frames_data_[cur_frame_index_].render_fence->reset(); // reset to unsignaled
+      .command_buffer_available_fence->wait(); // wait for cmdbuffer is free
+  frames_data_[cur_frame_index_]
+      .command_buffer_available_fence->reset(); // reset to unsignaled
   frames_data_[cur_frame_index_].command_pool->reset();
 }
 
@@ -225,7 +226,8 @@ void VkDriver::presentFrame() {
   present_info.pImageIndices = &cur_image_index_;
   present_info.waitSemaphoreCount = 1;
   auto render_semaphore_handle =
-      frames_data_[cur_frame_index_].render_semaphore->getHandle();
+      frames_data_[cur_frame_index_]
+          .render_result_available_semaphore->getHandle();
   present_info.pWaitSemaphores = &render_semaphore_handle;
 
   // Present swapchain image

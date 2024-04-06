@@ -1,12 +1,12 @@
 #pragma once
 #include <cassert>
 #include <engine/functional/global/engine_context.h>
+#include <engine/utils/vk/commands.h>
 #include <engine/utils/vk/descriptor_set_layout.h>
 #include <engine/utils/vk/image_loader.hpp>
 #include <engine/utils/vk/pipeline_layout.h>
 #include <engine/utils/vk/render_pass.h>
 #include <engine/utils/vk/shader_module.h>
-#include <engine/utils/vk/commands.h>
 #include <mutex>
 #include <unordered_map>
 
@@ -126,7 +126,9 @@ public:
       auto driver = g_engine.getDriver();
       auto ccmd_buf = driver->requestCommandBuffer(
           VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+      ccmd_buf->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
       ret = load<T>(path, ccmd_buf);
+      ccmd_buf->end();
       driver->getGraphicsQueue()->submit(ccmd_buf, VK_NULL_HANDLE);
       driver->getGraphicsQueue()->waitIdle();
     } else {
@@ -151,7 +153,9 @@ public:
       auto driver = g_engine.getDriver();
       auto ccmd_buf = driver->requestCommandBuffer(
           VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+      ccmd_buf->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
       auto ret = load<T>(data, size, ccmd_buf);
+      ccmd_buf->end();
       driver->getGraphicsQueue()->submit(ccmd_buf, VK_NULL_HANDLE);
       driver->getGraphicsQueue()->waitIdle();
     } else {
@@ -177,7 +181,9 @@ public:
       auto driver = g_engine.getDriver();
       auto ccmd_buf = driver->requestCommandBuffer(
           VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+      ccmd_buf->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
       ret = load<T>(data, width, height, channel, ccmd_buf);
+      ccmd_buf->end();
       driver->getGraphicsQueue()->submit(ccmd_buf, VK_NULL_HANDLE);
       driver->getGraphicsQueue()->waitIdle();
     } else {
