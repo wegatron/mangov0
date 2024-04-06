@@ -10,13 +10,19 @@ void RenderSystem::init() {
   // init render pass
   ui_pass_ = std::make_unique<UIPass>();
   ui_pass_->init();
+
+  // register event
+  g_engine.getEventSystem()->addListener(
+      EEventType::RenderCreateSwapchainObjects,
+      std::bind(&RenderSystem::onCreateSwapchainObjects, this,
+                std::placeholders::_1));
 }
 
 void RenderSystem::onCreateSwapchainObjects(
     const std::shared_ptr<class Event> &event) {
   const RenderCreateSwapchainObjectsEvent *p_event =
       static_cast<const RenderCreateSwapchainObjectsEvent *>(event.get());
-  ui_pass_->onResize(p_event->width, p_event->height);
+  ui_pass_->onCreateSwapchainObject(p_event->width, p_event->height);
 }
 
 void RenderSystem::tick(float delta_time) {

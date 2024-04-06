@@ -10,6 +10,7 @@
 #include <engine/functional/global/engine_context.h>
 #include <engine/platform/window.h>
 #include <engine/utils/base/error.h>
+#include <engine/utils/event/event_system.h>
 #include <engine/utils/vk/commands.h>
 #include <engine/utils/vk/descriptor_set.h>
 #include <engine/utils/vk/framebuffer.h>
@@ -177,7 +178,9 @@ void VkDriver::createSwapchain() {
         VK_FORMAT_UNDEFINED, width, height, 1u);
   }
 
-  // TODO event for UIPass to create frame buffer
+  // event for render system to update
+  g_engine.getEventSystem()->syncDispatch(
+      std::make_shared<RenderCreateSwapchainObjectsEvent>(width, height));
 }
 
 std::shared_ptr<class CommandBuffer>
@@ -226,7 +229,10 @@ void VkDriver::presentFrame() {
   present_info.pWaitSemaphores = &render_semaphore_handle;
 
   // Present swapchain image
-  graphics_cmd_queue_->present(present_info);
+  VkResult result = graphics_cmd_queue_->present(present_info);
+  if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+    createSwapchain();
+  }
   cur_frame_index_ = (cur_frame_index_ + 1) % swapchain_->getImageCount();
 }
 

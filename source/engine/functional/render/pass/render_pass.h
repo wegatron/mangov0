@@ -13,6 +13,12 @@ public:
 
   virtual void draw(const std::shared_ptr<class CommandBuffer> &cmd_buffer) = 0;
 
-  virtual void onResize(const uint32_t width, const uint32_t height) = 0;
+  /**
+   * @brief update render settings when swapchain object is created/recreated.
+   * @param width
+   * @param height
+   */
+  virtual void onCreateSwapchainObject(const uint32_t width,
+                                       const uint32_t height) = 0;
 };
 } // namespace mango

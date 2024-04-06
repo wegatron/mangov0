@@ -174,7 +174,8 @@ void UIPass::draw(const std::shared_ptr<class CommandBuffer> &cmd_buffer) {
       framebuffers_[cur_img_index]->getRenderTarget()->getImageViews()[0]);
 }
 
-void UIPass::onResize(const uint32_t width, const uint32_t height) {
+void UIPass::onCreateSwapchainObject(const uint32_t width,
+                                     const uint32_t height) {
   const auto &driver = g_engine.getDriver();
   const auto &rts = driver->getRenderTargets();
   framebuffers_.resize(rts.size());
