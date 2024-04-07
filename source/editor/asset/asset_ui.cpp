@@ -186,6 +186,7 @@ void AssetUI::constructFolderFiles() {
   float max_pos_x =
       ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 
+  // 当前滚动位置和可视区域
   float clip_rect_min_y = ImGui::GetCursorScreenPos().y + ImGui::GetScrollY();
   float clip_rect_max_y = clip_rect_min_y + ImGui::GetContentRegionAvail().y;
 
@@ -196,6 +197,7 @@ void AssetUI::constructFolderFiles() {
     bool is_clipping = false;
     HoverState &hover_state = m_selected_file_hover_states[m_selected_files[i]];
     if (hover_state.rect_min.y != 0.0f && hover_state.rect_max.y != 0.0f) {
+      // 已经创建过了, 判断是否在可视区域
       if (hover_state.rect_max.y < clip_rect_min_y ||
           hover_state.rect_min.y > clip_rect_max_y) {
         is_clipping = true;
@@ -207,11 +209,15 @@ void AssetUI::constructFolderFiles() {
     } else {
       ImGui::Dummy(icon_size);
     }
+
+    // 更新hover区域
     hover_state.rect_min = ImGui::GetItemRectMin();
     hover_state.rect_max = ImGui::GetItemRectMax();
 
     float current_pos_x = ImGui::GetItemRectMax().x;
     float next_pos_x = current_pos_x + style.ItemSpacing.x + icon_size.x;
+
+    // 如果大于最大宽度, 换行
     if (i < m_selected_files.size() - 1 && next_pos_x < max_pos_x) {
       ImGui::SameLine();
     }
@@ -248,7 +254,7 @@ void AssetUI::constructAsset(const std::string &filename, const ImVec2 &size) {
 
   // ImGui::BeginGroup();
 
-  //// draw hovered/selected background rect
+  // // draw hovered/selected background rect
   // HoverState &hover_state = m_selected_file_hover_states[filename];
   // bool is_hovered = hover_state.is_hovered;
   // bool is_selected = m_selected_file == filename;
@@ -260,20 +266,20 @@ void AssetUI::constructAsset(const std::string &filename, const ImVec2 &size) {
   //     color = ImVec4(14, 134, 255, 255);
   //   }
 
-  //  ImDrawFlags draw_flags = ImDrawFlags_RoundCornersBottom;
-  //  const float k_margin = 4;
-  //  ImGui::GetWindowDrawList()->AddRectFilled(
-  //      ImVec2(hover_state.rect_min.x - k_margin,
-  //             hover_state.rect_min.y - k_margin),
-  //      ImVec2(hover_state.rect_max.x + k_margin,
-  //             hover_state.rect_max.y + k_margin),
-  //      IM_COL32(color.x, color.y, color.z, color.w), 3.0f, draw_flags);
-  //}
+  //   ImDrawFlags draw_flags = ImDrawFlags_RoundCornersBottom;
+  //   const float k_margin = 4;
+  //   ImGui::GetWindowDrawList()->AddRectFilled(
+  //       ImVec2(hover_state.rect_min.x - k_margin,
+  //              hover_state.rect_min.y - k_margin),
+  //       ImVec2(hover_state.rect_max.x + k_margin,
+  //              hover_state.rect_max.y + k_margin),
+  //       IM_COL32(color.x, color.y, color.z, color.w), 3.0f, draw_flags);
+  // }
 
-  //// draw image
+  // // draw image
   // ImGui::Image(tex_id, size);
 
-  //// draw asset name text
+  // // draw asset name text
   // ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 20.0f);
   // float text_width = ImGui::CalcTextSize(basename.c_str()).x;
 
@@ -290,14 +296,14 @@ void AssetUI::constructAsset(const std::string &filename, const ImVec2 &size) {
   // }
   // ImGui::EndGroup();
 
-  //// update asset hover and selection status
+  // // update asset hover and selection status
   // is_asset_hovered |= hover_state.is_hovered = ImGui::IsItemHovered();
   // if (ImGui::IsItemClicked(ImGuiMouseButton_Left) ||
   //     ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
   //   m_selected_file = filename;
   // }
 
-  //// set drag source
+  // // set drag source
   // if (g_engine.getFileSystem()->isFile(filename)) {
   //   EAssetType asset_type =
   //   g_engine.getAssetManager()->getAssetType(filename); if ((asset_type ==
