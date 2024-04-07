@@ -206,11 +206,11 @@ void VkDriver::createFramesData() {
 }
 
 void VkDriver::waitFrame() {
+  frames_data_[cur_frame_index_]
+      .command_buffer_available_fence->wait(); // wait for cmdbuffer is free
   cur_image_index_ = swapchain_->acquireNextImage(
       frames_data_[cur_frame_index_].image_available_semaphore->getHandle(),
       VK_NULL_HANDLE);
-  frames_data_[cur_frame_index_]
-      .command_buffer_available_fence->wait(); // wait for cmdbuffer is free
   frames_data_[cur_frame_index_]
       .command_buffer_available_fence->reset(); // reset to unsignaled
   frames_data_[cur_frame_index_].command_pool->reset();

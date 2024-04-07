@@ -169,8 +169,9 @@ public:
   std::shared_ptr<T> request(const float *data, const uint32_t width,
                              const uint32_t height, const uint32_t channel,
                              const std::shared_ptr<CommandBuffer> &cmd_buf) {
-    auto hash_code = std::to_string(
-        std::hash<std::string>{}(data, width * height * channel));
+    auto hash_code = std::to_string(std::hash<std::string>{}(
+        std::string(reinterpret_cast<char *>(data),
+                    width * height * channel * sizeof(float))));
     auto &data_resources = state_.data_resources;
     auto itr = data_resources.find(hash_code);
     if (itr != data_resources.end()) {
