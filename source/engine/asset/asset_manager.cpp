@@ -7,6 +7,7 @@ namespace mango {
 void AssetManager::init() {
   asset_type_exts_ = {
       {EAssetType::TEXTURE2D, "tex"},  {EAssetType::TEXTURECUBE, "texc"},
+      {EAssetType::TEXTURE2D, "png"},  {EAssetType::TEXTURE2D, "jpg"},
       {EAssetType::MATERIAL, "mat"},   {EAssetType::SKELETON, "skl"},
       {EAssetType::STATICMESH, "sm"},  {EAssetType::SKELETALMESH, "skm"},
       {EAssetType::ANIMATION, "anim"}, {EAssetType::WORLD, "world"}};

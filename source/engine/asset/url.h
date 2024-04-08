@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cereal/access.hpp>
+#include <cereal/cereal.hpp>
 #include <string>
 
 namespace mango {
@@ -32,7 +33,7 @@ public:
 private:
   friend class cereal::access;
   template <class Archive> void serialize(Archive &ar) {
-    // ar(cereal::make_nvp("url", url_));
+    ar(cereal::make_nvp("url", url_));
   }
 
   void toRelative();

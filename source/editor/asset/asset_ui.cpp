@@ -238,10 +238,10 @@ void AssetUI::constructAsset(const std::string &filename, const ImVec2 &size) {
       if (isImGuiImageLoaded(filename)) {
         tex_id = getImGuiImageFromCache(filename)->tex_id;
       } else {
-        std::shared_ptr<ImageView> tex =
-            asset_manager->loadAsset<Texture2D>(filename);
-        auto imgui_tex = loadImGuiImageFromTexture2D(tex);
-        tex_id = imgui_tex->tex_id;
+        // std::shared_ptr<ImageView> tex =
+        //     asset_manager->loadAsset<Texture2D>(filename);
+        // auto imgui_tex = loadImGuiImageFromTexture2D(tex);
+        // tex_id = imgui_tex->tex_id;
       }
     }
   } else if (g_engine.getFileSystem()->isDir(filename)) {
