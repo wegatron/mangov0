@@ -13,6 +13,7 @@ setup:
     https://github.com/taskflow/taskflow.git
 
 ## TODO List
+- [ ] Asset Manager
 - [x] basic BRDF
 - [ ] area light
     reference: 
