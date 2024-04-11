@@ -23,6 +23,7 @@ public:
   std::string getAbsolute() const;
   std::string getBareName() const;
   std::string getFolder() const;
+  std::string getExtension() const;
 
   bool empty() const;
   void clear();

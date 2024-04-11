@@ -1,6 +1,6 @@
 #include <engine/asset/url.h>
-#include <engine/utils/base/macro.h>
 #include <engine/functional/global/engine_context.h>
+#include <engine/utils/base/macro.h>
 
 namespace mango {
 std::string URL::getAbsolute() const { return TO_ABSOLUTE(url_); }
@@ -11,7 +11,13 @@ std::string URL::getBareName() const {
   return name.substr(underline_pos + 1, name.length() - (underline_pos + 1));
 }
 
-std::string URL::getFolder() const { return g_engine.getFileSystem()->dir(url_); }
+std::string URL::getFolder() const {
+  return g_engine.getFileSystem()->dir(url_);
+}
+
+std::string URL::getExtension() const {
+  return g_engine.getFileSystem()->extension(url_);
+}
 
 bool URL::empty() const { return url_.empty(); }
 
@@ -27,4 +33,4 @@ void URL::toRelative() {
   }
 }
 
-} // namespace Bamboo
+} // namespace mango
