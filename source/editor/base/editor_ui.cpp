@@ -1,8 +1,8 @@
 #include "editor_ui.h"
+#include <engine/asset/texture.h>
 #include <engine/functional/global/engine_context.h>
 #include <engine/platform/glfw_window.h>
 #include <engine/utils/vk/image.h>
-#include <engine/utils/vk/resource_cache.hpp>
 #include <engine/utils/vk/sampler.h>
 #include <imgui/backends/imgui_impl_vulkan.h>
 #include <imgui/imgui_internal.h>
@@ -38,36 +38,17 @@ void EditorUI::updateWindowRegion() {
   }
 }
 
-std::shared_ptr<ImGuiImage>
-EditorUI::loadImGuiImageFromFile(const std::string &filename) {
-  if (imgui_images_.find(filename) != imgui_images_.end()) {
-    return imgui_images_[filename];
-  }
-
-  auto driver = g_engine.getDriver();
-  auto resource_cache = g_engine.getResourceCache();
-  std::shared_ptr<ImGuiImage> image = std::make_shared<ImGuiImage>();
-  image->image_view = resource_cache->request<ImageView>(filename, nullptr);
-  image->sampler = texture_2d_sampler_;
-  image->tex_id = ImGui_ImplVulkan_AddTexture(
-      image->sampler->getHandle(), image->image_view->getHandle(),
+std::shared_ptr<ImGuiImage> EditorUI::loadImGuiImageFromTexture(
+    const std::shared_ptr<AssetTexture> &texture) {
+  std::shared_ptr<ImGuiImage> imgui_image = std::make_shared<ImGuiImage>();
+  imgui_image->image_view = texture->getImageView();
+  imgui_image->sampler = texture_2d_sampler_;
+  imgui_image->tex_id = ImGui_ImplVulkan_AddTexture(
+      texture_2d_sampler_->getHandle(), imgui_image->image_view->getHandle(),
       VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-  imgui_images_[filename] = image;
-  return image;
+  imgui_images_[texture->getURL().str()] = imgui_image;
+  return imgui_image;
 }
-
-// std::shared_ptr<ImGuiImage> EditorUI::loadImGuiImageFromTexture2D(
-//     std::shared_ptr<class Texture2D> &texture) {
-//   std::shared_ptr<ImGuiImage> image = std::make_shared<ImGuiImage>();
-//   image->image_view_sampler = texture->m_image_view_sampler;
-//   image->tex_id = ImGui_ImplVulkan_AddTexture(
-//       m_texture_2d_sampler, image->image_view_sampler.view,
-//       VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-//   image->is_owned = false;
-//   m_imgui_images[texture->getURL()] = image;
-
-//   return image;
-// }
 
 std::shared_ptr<mango::ImGuiImage> EditorUI::loadImGuiImageFromImageViewSampler(
     const std::shared_ptr<ImageView> &image_view,

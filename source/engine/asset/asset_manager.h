@@ -31,7 +31,7 @@ private:
                            int asset_index = 0,
                            const std::string &basename = "");
 
-  std::map<std::string, std::shared_ptr<Asset>> assets_;
+  std::map<URL, std::shared_ptr<Asset>> assets_;
   std::map<EAssetType, std::string> asset_type_exts_;
   std::map<EAssetType, EArchiveType> asset_archive_types_;
   std::map<std::string, EAssetType> ext_asset_types_;

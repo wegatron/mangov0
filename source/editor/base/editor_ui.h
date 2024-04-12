@@ -32,14 +32,16 @@ public:
 
 protected:
   void updateWindowRegion();
+
   std::shared_ptr<ImGuiImage>
-  loadImGuiImageFromFile(const std::string &filename);
-  // std::shared_ptr<ImGuiImage>
-  // loadImGuiImageFromTexture2D(std::shared_ptr<class Texture2D> &texture);
+  loadImGuiImageFromTexture(const std::shared_ptr<class AssetTexture> &texture);
+
   std::shared_ptr<ImGuiImage> loadImGuiImageFromImageViewSampler(
       const std::shared_ptr<ImageView> &image_view,
       const std::shared_ptr<Sampler> &sampler);
+
   std::shared_ptr<ImGuiImage> getImGuiImageFromCache(const std::string &url);
+
   ImFont *defaultFont();
   ImFont *smallFont();
   ImFont *bigIconFont();

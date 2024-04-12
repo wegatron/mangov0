@@ -10,9 +10,9 @@ class CommandBuffer;
 class Image final {
 public:
   Image(const std::shared_ptr<VkDriver> &driver, VkImageCreateFlags flags,
-        VkFormat format, const VkExtent3D &extent,
-        VkSampleCountFlagBits sample_count, VkImageUsageFlags image_usage,
-        VmaMemoryUsage memory_usage);
+        VkFormat format, const VkExtent3D &extent, uint32_t mip_levels,
+        uint32_t array_layers, VkSampleCountFlagBits sample_count,
+        VkImageUsageFlags image_usage, VmaMemoryUsage memory_usage);
 
   Image(const Image &) = delete;
   Image(Image &&) = delete;
@@ -26,7 +26,7 @@ public:
    * update image from cpu to gpu, data should be compatiable with image format,
    * and tightly packed.
    */
-  void updateByStaging(void *data,
+  void updateByStaging(const void *data,
                        const std::shared_ptr<CommandBuffer> &cmd_buf);
 
   std::shared_ptr<VkDriver> getDriver() const { return driver_; }

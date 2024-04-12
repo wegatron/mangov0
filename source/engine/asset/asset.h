@@ -26,11 +26,11 @@ public:
   virtual ~Asset() = default;
   void setURL(const URL &url);
 
-  const URL &getPath() { return url_; }
+  const URL &getURL() { return url_; }
 
   EAssetType getAssetType() { return asset_type_; }
 
-  virtual void inflate() {}
+  virtual void load(const URL &url) = 0;
 
 protected:
   URL url_;

@@ -6,9 +6,9 @@
 namespace mango {
 
 Image::Image(const std::shared_ptr<VkDriver> &driver, VkImageCreateFlags flags,
-             VkFormat format, const VkExtent3D &extent,
-             VkSampleCountFlagBits sample_count, VkImageUsageFlags image_usage,
-             VmaMemoryUsage memory_usage)
+             VkFormat format, const VkExtent3D &extent, uint32_t mip_levels,
+             uint32_t array_layers, VkSampleCountFlagBits sample_count,
+             VkImageUsageFlags image_usage, VmaMemoryUsage memory_usage)
     : driver_(driver), flags_(flags), format_(format), extent_(extent),
       sample_count_(sample_count), image_usage_(image_usage),
       memory_usage_(memory_usage) {
@@ -18,8 +18,8 @@ Image::Image(const std::shared_ptr<VkDriver> &driver, VkImageCreateFlags flags,
   image_info.imageType = VK_IMAGE_TYPE_2D;
   image_info.format = format_;
   image_info.extent = extent_;
-  image_info.mipLevels = 1;
-  image_info.arrayLayers = 1;
+  image_info.mipLevels = mip_levels;
+  image_info.arrayLayers = array_layers;
   image_info.samples = sample_count_;
   image_info.tiling = VK_IMAGE_TILING_OPTIMAL;
   image_info.usage = image_usage_;
@@ -46,7 +46,7 @@ Image::~Image() {
   vmaDestroyImage(driver_->getAllocator(), image_, allocation_);
 }
 
-void Image::updateByStaging(void *data,
+void Image::updateByStaging(const void *data,
                             const std::shared_ptr<CommandBuffer> &cmd_buf) {
   uint32_t pixel_size = 0;
   if (format_ == VK_FORMAT_R8G8B8_SRGB) {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cereal/access.hpp>
-#include <engine/asset/url.h>
+#include <engine/asset/asset.h>
 #include <vector>
 #include <volk.h>
 
@@ -17,10 +17,12 @@ enum class ETextureType {
   UI,
   Data
 };
+enum class EPixelType { RGBA8, RGBA16, RGBA32, RG16, R16, R32 };
 
-class AssetTexture {
+class AssetTexture : public Asset {
 public:
   AssetTexture();
+
   virtual ~AssetTexture();
 
   void setAddressMode(VkSamplerAddressMode address_mode) {
@@ -29,18 +31,37 @@ public:
     address_mode_w_ = address_mode;
   }
 
-  void loadTexture(const URL &url);
+  void load(const URL &url) override;
+
+  void setTextureType(ETextureType texture_type) {
+    texture_type_ = texture_type;
+  }
+
+  /*
+   * @brief prepare texture, upload texture data to GPU with appropriate format
+   */
+  void prepare();
+
+  std::shared_ptr<ImageView> getImageView() { return image_view_; }
 
 protected:
-  uint32_t width_, height_;
-  uint32_t mip_levels_;
-  uint32_t layers_;
-  VkFilter min_filter_, mag_filter_;
-  VkSamplerAddressMode address_mode_u_, address_mode_v_, address_mode_w_;
+  bool isSRGB();
 
-  ETextureCompressionMode compression_mode_;
-  ETextureType texture_type_; //!< will be used for texture compression strategy
-  VkFormat pixel_format_;
+  VkFormat getFormat();
+
+  uint32_t width_{0}, height_{0};
+  uint32_t mip_levels_{0};
+  uint32_t layers_{0};
+  VkFilter min_filter_{VK_FILTER_LINEAR}, mag_filter_{VK_FILTER_LINEAR};
+  VkSamplerAddressMode address_mode_u_{VK_SAMPLER_ADDRESS_MODE_REPEAT},
+      address_mode_v_{VK_SAMPLER_ADDRESS_MODE_REPEAT},
+      address_mode_w_{VK_SAMPLER_ADDRESS_MODE_REPEAT};
+  ETextureCompressionMode compression_mode_{ETextureCompressionMode::None};
+  ETextureType texture_type_{
+      ETextureType::BaseColor}; //!< will be used for texture compression
+                                //!< strategy and for pixel format
+  EPixelType pixel_type_{EPixelType::RGBA8};
+
   std::vector<uint8_t> image_data_;
 
   std::shared_ptr<class ImageView> image_view_;

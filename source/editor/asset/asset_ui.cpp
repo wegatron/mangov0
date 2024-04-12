@@ -1,4 +1,5 @@
 #include "asset_ui.h"
+#include <engine/asset/texture.h>
 #include <engine/utils/base/macro.h>
 #include <engine/utils/base/string_util.h>
 #include <engine/utils/base/timer.h>
@@ -238,10 +239,9 @@ void AssetUI::constructAsset(const std::string &filename, const ImVec2 &size) {
       if (isImGuiImageLoaded(filename)) {
         tex_id = getImGuiImageFromCache(filename)->tex_id;
       } else {
-        // std::shared_ptr<ImageView> tex =
-        //     asset_manager->loadAsset<Texture2D>(filename);
-        // auto imgui_tex = loadImGuiImageFromTexture2D(tex);
-        // tex_id = imgui_tex->tex_id;
+        auto asset_texture = asset_manager->loadAsset<AssetTexture>(filename);
+        auto imgui_image = loadImGuiImageFromTexture(asset_texture);
+        tex_id = imgui_image->tex_id;
       }
     }
   } else if (g_engine.getFileSystem()->isDir(filename)) {

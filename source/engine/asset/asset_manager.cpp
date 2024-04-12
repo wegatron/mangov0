@@ -1,4 +1,5 @@
 #include <engine/asset/asset_manager.h>
+#include <engine/asset/texture.h>
 #include <engine/functional/global/engine_context.h>
 #include <engine/platform/file_system.h>
 
@@ -32,5 +33,30 @@ EAssetType AssetManager::getAssetType(const URL &url) {
     return ext_asset_types_[extension];
   }
   return EAssetType::INVALID;
+}
+
+std::shared_ptr<Asset> AssetManager::deserializeAsset(const URL &url) {
+
+  if (assets_.find(url) != assets_.end()) {
+    return assets_[url];
+  }
+
+  EAssetType asset_type = getAssetType(url);
+  if (asset_type == EAssetType::INVALID) {
+    throw std::runtime_error("unsupported asset type");
+  }
+
+  std::shared_ptr<Asset> asset = nullptr;
+  switch (asset_type) {
+  case EAssetType::TEXTURE2D:
+    asset = std::make_shared<AssetTexture>();
+    break;
+  default:
+    throw std::runtime_error("unsupported asset type");
+  }
+
+  asset->load(url);
+  assets_[url] = asset;
+  return asset;
 }
 } // namespace mango
