@@ -6,7 +6,7 @@
 #include <volk.h>
 
 namespace mango {
-
+class ImageView;
 enum class ETextureCompressionMode { None, ETC1S, ASTC, ZSTD };
 enum class ETextureType {
   BaseColor,
@@ -19,11 +19,10 @@ enum class ETextureType {
 };
 enum class EPixelType { RGBA8, RGBA16, RGBA32, RG16, R16, R32 };
 
-class AssetTexture : public Asset {
+class AssetTexture final : public Asset {
 public:
-  AssetTexture();
-
-  virtual ~AssetTexture();
+  AssetTexture() = default;
+  ~AssetTexture() = default;
 
   void setAddressMode(VkSamplerAddressMode address_mode) {
     address_mode_u_ = address_mode;
@@ -81,7 +80,7 @@ private:
     ar(cereal::make_nvp("address_mode_w", address_mode_w_));
     ar(cereal::make_nvp("compression_mode", compression_mode_));
     ar(cereal::make_nvp("texture_type", texture_type_));
-    ar(cereal::make_nvp("pixel_format", pixel_format_));
+    ar(cereal::make_nvp("pixel_type_", pixel_type_));
     ar(cereal::make_nvp("image_data", image_data_));
   }
 };

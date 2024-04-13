@@ -21,12 +21,14 @@ void AssetTexture::load(const URL &url) {
     if (img_data == nullptr) {
       throw std::runtime_error("failed to load texture");
     }
+    layers_ = mip_levels_ = 1;
     image_data_.resize(width_ * height_ * 4);
     memcpy(image_data_.data(), img_data, image_data_.size());
     stbi_image_free(img_data);
   } else {
     throw std::runtime_error("unsupported texture file format");
   }
+  prepare();
 }
 
 void AssetTexture::prepare() {
@@ -36,6 +38,16 @@ void AssetTexture::prepare() {
                               layers_, pixel_format, nullptr);
   } else {
     // compress image data to GPU
+  }
+}
+
+bool AssetTexture::isSRGB() {
+  switch (texture_type_) {
+  case ETextureType::BaseColor:
+  case ETextureType::Emissive:
+    return true;
+  default:
+    return false;
   }
 }
 

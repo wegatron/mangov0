@@ -239,8 +239,7 @@ void AssetUI::constructAsset(const std::string &filename, const ImVec2 &size) {
       if (isImGuiImageLoaded(filename)) {
         tex_id = getImGuiImageFromCache(filename)->tex_id;
       } else {
-        auto asset_texture = asset_manager->loadAsset<AssetTexture>(filename);
-        auto imgui_image = loadImGuiImageFromTexture(asset_texture);
+        auto imgui_image = loadImGuiImageFromFile(filename);
         tex_id = imgui_image->tex_id;
       }
     }

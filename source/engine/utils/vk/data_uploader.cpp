@@ -7,6 +7,41 @@
 #include <engine/utils/vk/vk_driver.h>
 
 namespace mango {
+
+std::shared_ptr<ImageView>
+uploadImage(const uint8_t *data, const uint32_t width, const uint32_t height,
+            const uint32_t mipmap_level, const uint32_t layers,
+            const VkFormat format,
+            const std::shared_ptr<CommandBuffer> &cmd_buf) {
+  VkExtent3D extent{width, height, 1};
+  auto driver = g_engine.getDriver();
+  std::shared_ptr<CommandBuffer> cur_cmd_buf = cmd_buf;
+  if (cmd_buf == nullptr) {
+    cur_cmd_buf = driver->requestCommandBuffer();
+    cur_cmd_buf->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+  }
+  auto image = std::make_shared<Image>(
+      driver, 0, format, extent, mipmap_level, layers, VK_SAMPLE_COUNT_1_BIT,
+      VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+      VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE);
+  image->updateByStaging(data, cur_cmd_buf);
+  VkImageSubresourceRange range = {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                                   .baseMipLevel = 0,
+                                   .levelCount = mipmap_level,
+                                   .baseArrayLayer = 0,
+                                   .layerCount = layers};
+  image->transitionLayout(cur_cmd_buf->getHandle(), range,
+                          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  auto img_v = std::make_shared<ImageView>(
+      image, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB,
+      VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 1);
+  if (cmd_buf == nullptr) {
+    cur_cmd_buf->end();
+    driver->getGraphicsQueue()->submit(cur_cmd_buf, VK_NULL_HANDLE);
+    driver->getGraphicsQueue()->waitIdle();
+  }
+  return img_v;
+}
 // std::shared_ptr<ImageView>
 // uploadRGBA(const uint8_t *img_data, uint32_t width, uint32_t height,
 //            uint32_t channel, const std::shared_ptr<CommandBuffer> &cmd_buf) {

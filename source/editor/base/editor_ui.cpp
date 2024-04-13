@@ -3,6 +3,7 @@
 #include <engine/functional/global/engine_context.h>
 #include <engine/platform/glfw_window.h>
 #include <engine/utils/vk/image.h>
+#include <engine/utils/vk/resource_cache.hpp>
 #include <engine/utils/vk/sampler.h>
 #include <imgui/backends/imgui_impl_vulkan.h>
 #include <imgui/imgui_internal.h>
@@ -36,6 +37,13 @@ void EditorUI::updateWindowRegion() {
     content_region_.w() = new_height;
     onWindowResize();
   }
+}
+
+std::shared_ptr<ImGuiImage> EditorUI::loadImGuiImageFromFile(const URL &url) {
+  std::shared_ptr<AssetTexture> texture = std::make_shared<AssetTexture>();
+  texture->load(url);
+  texture->prepare();
+  return loadImGuiImageFromTexture(texture);
 }
 
 std::shared_ptr<ImGuiImage> EditorUI::loadImGuiImageFromTexture(

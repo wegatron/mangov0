@@ -60,8 +60,9 @@ public:
 
   CommandQueue *getGraphicsQueue() const { return graphics_cmd_queue_; }
 
-  std::shared_ptr<class CommandBuffer>
-  requestCommandBuffer(VkCommandBufferLevel level);
+  std::shared_ptr<class CommandBuffer> requestCommandBuffer(
+      VkCommandBufferLevel level =
+          VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
   VkResult waitIdle() const { return vkDeviceWaitIdle(device_); }
 

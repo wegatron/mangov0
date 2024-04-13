@@ -3,7 +3,6 @@
 #include <engine/functional/global/engine_context.h>
 #include <engine/utils/vk/commands.h>
 #include <engine/utils/vk/descriptor_set_layout.h>
-#include <engine/utils/vk/image_loader.hpp>
 #include <engine/utils/vk/pipeline_layout.h>
 #include <engine/utils/vk/render_pass.h>
 #include <engine/utils/vk/shader_module.h>
@@ -113,86 +112,86 @@ public:
                  VkSamplerAddressMode address_mode_u,
                  VkSamplerAddressMode address_mode_v);
 
-  template <typename T>
-  std::shared_ptr<T> request(const std::string &path,
-                             const std::shared_ptr<CommandBuffer> &cmd_buf) {
-    auto &data_resources = state_.data_resources;
-    auto itr = data_resources.find(path);
-    if (itr != data_resources.end()) {
-      return std::static_pointer_cast<T>(itr->second.data_ptr);
-    }
-    std::shared_ptr<T> ret;
-    if (cmd_buf == nullptr) {
-      auto driver = g_engine.getDriver();
-      auto ccmd_buf = driver->requestCommandBuffer(
-          VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-      ccmd_buf->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-      ret = load<T>(path, ccmd_buf);
-      ccmd_buf->end();
-      driver->getGraphicsQueue()->submit(ccmd_buf, VK_NULL_HANDLE);
-      driver->getGraphicsQueue()->waitIdle();
-    } else {
-      ret = load<T>(path, cmd_buf);
-    }
-    data_resources.emplace(path, Resource{ret, current_frame_});
-    return ret;
-  }
+  // template <typename T>
+  // std::shared_ptr<T> request(const std::string &path,
+  //                            const std::shared_ptr<CommandBuffer> &cmd_buf) {
+  //   auto &data_resources = state_.data_resources;
+  //   auto itr = data_resources.find(path);
+  //   if (itr != data_resources.end()) {
+  //     return std::static_pointer_cast<T>(itr->second.data_ptr);
+  //   }
+  //   std::shared_ptr<T> ret;
+  //   if (cmd_buf == nullptr) {
+  //     auto driver = g_engine.getDriver();
+  //     auto ccmd_buf = driver->requestCommandBuffer(
+  //         VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+  //     ccmd_buf->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+  //     ret = load<T>(path, ccmd_buf);
+  //     ccmd_buf->end();
+  //     driver->getGraphicsQueue()->submit(ccmd_buf, VK_NULL_HANDLE);
+  //     driver->getGraphicsQueue()->waitIdle();
+  //   } else {
+  //     ret = load<T>(path, cmd_buf);
+  //   }
+  //   data_resources.emplace(path, Resource{ret, current_frame_});
+  //   return ret;
+  // }
 
-  template <typename T>
-  std::shared_ptr<T> request(const uint8_t *data, const size_t size,
-                             const std::shared_ptr<CommandBuffer> &cmd_buf) {
-    auto hash_code =
-        std::to_string(std::hash<std::string>{}(std::string(data, size)));
-    auto &data_resources = state_.data_resources;
-    auto itr = data_resources.find(hash_code);
-    if (itr != data_resources.end()) {
-      return std::static_pointer_cast<T>(itr->second.data_ptr);
-    }
-    std::shared_ptr<T> ret;
-    if (cmd_buf == nullptr) {
-      auto driver = g_engine.getDriver();
-      auto ccmd_buf = driver->requestCommandBuffer(
-          VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-      ccmd_buf->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-      auto ret = load<T>(data, size, ccmd_buf);
-      ccmd_buf->end();
-      driver->getGraphicsQueue()->submit(ccmd_buf, VK_NULL_HANDLE);
-      driver->getGraphicsQueue()->waitIdle();
-    } else {
-      auto ret = load<T>(data, size, cmd_buf);
-    }
-    data_resources.emplace(hash_code, Resource{ret, current_frame_});
-    return ret;
-  }
+  // template <typename T>
+  // std::shared_ptr<T> request(const uint8_t *data, const size_t size,
+  //                            const std::shared_ptr<CommandBuffer> &cmd_buf) {
+  //   auto hash_code =
+  //       std::to_string(std::hash<std::string>{}(std::string(data, size)));
+  //   auto &data_resources = state_.data_resources;
+  //   auto itr = data_resources.find(hash_code);
+  //   if (itr != data_resources.end()) {
+  //     return std::static_pointer_cast<T>(itr->second.data_ptr);
+  //   }
+  //   std::shared_ptr<T> ret;
+  //   if (cmd_buf == nullptr) {
+  //     auto driver = g_engine.getDriver();
+  //     auto ccmd_buf = driver->requestCommandBuffer(
+  //         VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+  //     ccmd_buf->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+  //     auto ret = load<T>(data, size, ccmd_buf);
+  //     ccmd_buf->end();
+  //     driver->getGraphicsQueue()->submit(ccmd_buf, VK_NULL_HANDLE);
+  //     driver->getGraphicsQueue()->waitIdle();
+  //   } else {
+  //     auto ret = load<T>(data, size, cmd_buf);
+  //   }
+  //   data_resources.emplace(hash_code, Resource{ret, current_frame_});
+  //   return ret;
+  // }
 
-  template <typename T>
-  std::shared_ptr<T> request(const float *data, const uint32_t width,
-                             const uint32_t height, const uint32_t channel,
-                             const std::shared_ptr<CommandBuffer> &cmd_buf) {
-    auto hash_code = std::to_string(std::hash<std::string>{}(
-        std::string(reinterpret_cast<char *>(data),
-                    width * height * channel * sizeof(float))));
-    auto &data_resources = state_.data_resources;
-    auto itr = data_resources.find(hash_code);
-    if (itr != data_resources.end()) {
-      return std::static_pointer_cast<T>(itr->second.data_ptr);
-    }
-    std::shared_ptr<T> ret;
-    if (cmd_buf == nullptr) {
-      auto driver = g_engine.getDriver();
-      auto ccmd_buf = driver->requestCommandBuffer(
-          VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-      ccmd_buf->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-      ret = load<T>(data, width, height, channel, ccmd_buf);
-      ccmd_buf->end();
-      driver->getGraphicsQueue()->submit(ccmd_buf, VK_NULL_HANDLE);
-      driver->getGraphicsQueue()->waitIdle();
-    } else {
-      ret = load<T>(data, width, height, channel, cmd_buf);
-    }
-    data_resources.emplace(hash_code, Resource{ret, current_frame_});
-    return ret;
-  }
+  // template <typename T>
+  // std::shared_ptr<T> request(const float *data, const uint32_t width,
+  //                            const uint32_t height, const uint32_t channel,
+  //                            const std::shared_ptr<CommandBuffer> &cmd_buf) {
+  //   auto hash_code = std::to_string(std::hash<std::string>{}(
+  //       std::string(reinterpret_cast<char *>(data),
+  //                   width * height * channel * sizeof(float))));
+  //   auto &data_resources = state_.data_resources;
+  //   auto itr = data_resources.find(hash_code);
+  //   if (itr != data_resources.end()) {
+  //     return std::static_pointer_cast<T>(itr->second.data_ptr);
+  //   }
+  //   std::shared_ptr<T> ret;
+  //   if (cmd_buf == nullptr) {
+  //     auto driver = g_engine.getDriver();
+  //     auto ccmd_buf = driver->requestCommandBuffer(
+  //         VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+  //     ccmd_buf->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+  //     ret = load<T>(data, width, height, channel, ccmd_buf);
+  //     ccmd_buf->end();
+  //     driver->getGraphicsQueue()->submit(ccmd_buf, VK_NULL_HANDLE);
+  //     driver->getGraphicsQueue()->waitIdle();
+  //   } else {
+  //     ret = load<T>(data, width, height, channel, cmd_buf);
+  //   }
+  //   data_resources.emplace(hash_code, Resource{ret, current_frame_});
+  //   return ret;
+  // }
 
   VkPipelineCache getPipelineCache() const {
     return (state_.pipeline_cache == nullptr)

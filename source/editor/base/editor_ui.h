@@ -2,6 +2,7 @@
 
 #include <Eigen/Dense>
 #include <IconsFontAwesome5.h>
+#include <engine/asset/url.h>
 #include <imgui/imgui.h>
 #include <map>
 #include <memory>
@@ -32,6 +33,8 @@ public:
 
 protected:
   void updateWindowRegion();
+
+  std::shared_ptr<ImGuiImage> loadImGuiImageFromFile(const URL &url);
 
   std::shared_ptr<ImGuiImage>
   loadImGuiImageFromTexture(const std::shared_ptr<class AssetTexture> &texture);
