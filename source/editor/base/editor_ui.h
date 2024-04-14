@@ -55,12 +55,13 @@ protected:
 
   std::string title_;
   char title_buf_[128];
-  Eigen::Vector<int32_t, 4> content_region_;
+  Eigen::Vector<int32_t, 4> content_region_; //!< start x, y; width, height
+
+protected:
+  std::shared_ptr<Sampler> texture_2d_sampler_;
 
 private:
   bool isMouseFocused();
-
-  std::shared_ptr<Sampler> texture_2d_sampler_;
   std::map<std::string, std::shared_ptr<ImGuiImage>> imgui_images_;
 };
 } // namespace mango

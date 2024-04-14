@@ -1,18 +1,19 @@
 #pragma once
 
-#include "editor/base/editor_ui.h"
-#include "engine/core/vulkan/vulkan_util.h"
+#include <Eigen/Dense>
+#include <editor/base/editor_ui.h>
 
 namespace mango {
 enum class EOperationMode { Pick, Translate, Rotate, Scale };
 
 enum class ECoordinateMode { Local, World };
 
-class SimulationUI : public EditorUI {
+class SimulationUI final : public EditorUI {
 public:
+  SimulationUI() = default;
+  ~SimulationUI() override;
   virtual void init() override;
   virtual void construct() override;
-  virtual void destroy() override;
   virtual void onWindowResize() override;
 
 private:
@@ -24,26 +25,24 @@ private:
   constructCheckboxPopup(const std::string &popup_name,
                          std::vector<std::pair<std::string, bool>> &values);
   void constructOperationModeButtons();
-  void constructImGuizmo();
+  // void constructImGuizmo();
 
   void onKey(const std::shared_ptr<class Event> &event);
   void onSelectEntity(const std::shared_ptr<class Event> &event);
 
   void updateCamera();
-  void handleDragDropTarget(const glm::vec2 &mouse_pos,
-                            const glm::vec2 &viewport_size);
-  glm::vec3 calcPlacePos(const glm::vec2 &mouse_pos,
-                         const glm::vec2 &viewport_size);
+  // void handleDragDropTarget(const Eigen::Vector2i &mouse_pos,
+  //                           const Eigen::Vector2i &viewport_size);
+  // glm::vec3 calcPlacePos(const glm::vec2 &mouse_pos,
+  //                        const glm::vec2 &viewport_size);
 
-  VkSampler m_color_texture_sampler;
-  VkDescriptorSet m_color_texture_desc_set = VK_NULL_HANDLE;
+  VkDescriptorSet color_texture_desc_set_{VK_NULL_HANDLE};
 
-  ECoordinateMode m_coordinate_mode;
-  EOperationMode m_operation_mode;
-  bool m_mouse_right_button_pressed;
-  std::weak_ptr<class CameraComponent> m_camera_component;
-
-  std::shared_ptr<class Entity> m_created_entity;
-  std::weak_ptr<class Entity> m_selected_entity;
+  ECoordinateMode coordinate_mode_;
+  EOperationMode operation_mode_;
+  bool mouse_right_button_pressed_;
+  // std::weak_ptr<class CameraComponent> camera_component_;
+  // std::shared_ptr<class Entity> created_entity_;
+  // std::weak_ptr<class Entity> selected_entity_;
 };
 } // namespace mango

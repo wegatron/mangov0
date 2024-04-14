@@ -11,15 +11,12 @@ namespace mango {
 class World final {
 public:
   World() = default;
-
   ~World() = default;
 
-  void update(const float seconds);
+  std::string getName() const { return name_; }
 
-  entt::registry &camera_manager() { return camera_manager_; }
-  entt::registry &light_manager() { return light_manager_; }
+  void tick(const float seconds);
 
-  entt::registry &renderableManager() { return renderable_manager_; }
   entt::entity
   createRenderableEntity(const std::string &name,
                          const std::shared_ptr<TransformRelationship> &tr,
@@ -40,6 +37,10 @@ public:
     root_tr_ = root_tr;
   }
 
+  auto getCameras() {
+    return entities_.view<std::string, std::shared_ptr<TransformRelationship>, Camera>();
+  }
+
   // disable copy/move
   World(const World &) = delete;
   World(World &&) = delete;
@@ -47,9 +48,8 @@ public:
   World &operator=(World &&) = delete;
 
 private:
-  entt::registry camera_manager_;
-  entt::registry light_manager_;
-  entt::registry renderable_manager_;
+  std::string name_;
+  entt::registry entities_;
   std::shared_ptr<TransformRelationship>
       root_tr_; // root transform relationship node
 };

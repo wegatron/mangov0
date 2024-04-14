@@ -33,6 +33,9 @@ void RenderSystem::tick(float delta_time) {
   auto cmd_buffer = driver->requestCommandBuffer(
       VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
   cmd_buffer->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+  // render simulation 3d view
+
+  // render ui
   ui_pass_->draw(cmd_buffer);
   cmd_buffer->end();
   auto cmd_queue = driver->getGraphicsQueue();
@@ -57,6 +60,29 @@ void RenderSystem::tick(float delta_time) {
                     driver->getCurrentFrameData()
                         .command_buffer_available_fence->getHandle());
   driver->presentFrame();
+}
+
+void RenderSystem::resize3DView(int width, int height) {
+  // create 3d view's color image view
+  auto driver = g_engine.getDriver();
+  VkExtent3D extent{.width = static_cast<uint32_t>(width),
+                    .height = static_cast<uint32_t>(height),
+                    .depth = 1};
+  auto color_image = std::make_shared<Image>(
+      driver, 0, VK_FORMAT_R8G8B8A8_SRGB, extent, 1, 1, VK_SAMPLE_COUNT_1_BIT,
+      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+  color_image_view_ = std::make_shared<ImageView>(
+      color_image, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB,
+      VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 1);
+
+  auto depth_image = std::make_shared<Image>(
+      driver, 0, VK_FORMAT_D24_UNORM_S8_UINT, extent, 1, 1,
+      VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+      VMA_MEMORY_USAGE_GPU_ONLY);
+
+  depth_image_view_ = std::make_shared<ImageView>(
+      depth_image, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_D24_UNORM_S8_UINT,
+      VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0, 0, 1, 1);
 }
 
 // void Render::render(World *scene, Gui * gui)

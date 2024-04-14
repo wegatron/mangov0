@@ -10,14 +10,14 @@ World::createRenderableEntity(const std::string &name,
                               const std::shared_ptr<TransformRelationship> &tr,
                               const std::shared_ptr<Material> &material,
                               const std::shared_ptr<StaticMesh> &mesh) {
-  entt::entity entity = renderable_manager_.create();
-  renderable_manager_.emplace<std::string>(entity, name); // name
-  renderable_manager_.emplace<std::shared_ptr<TransformRelationship>>(
+  entt::entity entity = entities_.create();
+  entities_.emplace<std::string>(entity, name); // name
+  entities_.emplace<std::shared_ptr<TransformRelationship>>(
       entity, tr); // node transform index
-  renderable_manager_.emplace<std::shared_ptr<Material>>(
-      entity, material); // material index
-  renderable_manager_.emplace<std::shared_ptr<StaticMesh>>(entity,
-                                                           mesh); // mesh index
+  entities_.emplace<std::shared_ptr<Material>>(entity,
+                                               material); // material index
+  entities_.emplace<std::shared_ptr<StaticMesh>>(entity,
+                                                 mesh); // mesh index
   return entity;
 }
 
@@ -25,12 +25,12 @@ entt::entity
 World::createCameraEntity(const std::string &name,
                           const std::shared_ptr<TransformRelationship> &tr,
                           const Camera &camera) {
-  entt::entity entity = camera_manager_.create();
-  camera_manager_.emplace<std::string>(entity, name); // name
-  camera_manager_.emplace<std::shared_ptr<TransformRelationship>>(
+  entt::entity entity = entities_.create();
+  entities_.emplace<std::string>(entity, name); // name
+  entities_.emplace<std::shared_ptr<TransformRelationship>>(
       entity,
-      tr);                                         // node transform index
-  camera_manager_.emplace<Camera>(entity, camera); // camera index
+      tr);                                   // node transform index
+  entities_.emplace<Camera>(entity, camera); // camera index
   return entity;
 }
 
@@ -38,16 +38,16 @@ entt::entity
 World::createLightEntity(const std::string_view &name,
                          const std::shared_ptr<TransformRelationship> &tr,
                          const Light &light) {
-  entt::entity entity = light_manager_.create();
-  light_manager_.emplace<std::string>(entity, name);
-  light_manager_.emplace<std::shared_ptr<TransformRelationship>>(
+  entt::entity entity = entities_.create();
+  entities_.emplace<std::string>(entity, name);
+  entities_.emplace<std::shared_ptr<TransformRelationship>>(
       entity,
       tr); // node transform index
-  light_manager_.emplace<Light>(entity, light);
+  entities_.emplace<Light>(entity, light);
   return entity;
 }
 
-void World::update(const float seconds) {
+void World::tick(const float seconds) {
   auto &scene_aabb = root_tr_->aabb;
   scene_aabb.setEmpty();
   //// update rt

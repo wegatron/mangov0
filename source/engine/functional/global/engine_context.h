@@ -30,6 +30,8 @@ public:
   const auto &getResourceCache() const { return resource_cache_; }
   const auto &getTimerManager() const { return timer_manager_; }
   const auto &getAssetManager() const { return asset_manager_; }
+  const auto &getWorld() const { return world_; }
+  const auto &getRenderSystem() const { return render_system_; }
 
 private:
   std::shared_ptr<class VkConfig> vk_config_;
@@ -42,6 +44,7 @@ private:
   std::shared_ptr<class RenderSystem> render_system_;
   std::shared_ptr<class TimerManager> timer_manager_;
   std::shared_ptr<class AssetManager> asset_manager_;
+  std::shared_ptr<class World> world_;
   std::chrono::steady_clock::time_point last_tick_time_point_;
 };
 

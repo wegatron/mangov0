@@ -4,7 +4,7 @@
 // #include "editor/log/log_ui.h"
 // #include <editor/menu/menu_ui.h>
 // #include "editor/property/property_ui.h"
-// #include "editor/simulation/simulation_ui.h"
+#include <editor/simulation/simulation_ui.h>
 // #include "editor/tool/tool_ui.h"
 // #include "editor/world/world_ui.h"
 #include <engine/functional/global/engine_context.h>
@@ -41,10 +41,10 @@ void Editor::init() {
   // std::shared_ptr<EditorUI> property_ui = std::make_shared<PropertyUI>();
   std::shared_ptr<EditorUI> asset_ui = std::make_shared<AssetUI>();
   // std::shared_ptr<EditorUI> log_ui = std::make_shared<LogUI>();
-  // m_simulation_ui = std::make_shared<SimulationUI>();
+  simulation_ui_ = std::make_shared<SimulationUI>();
   // m_editor_uis = {menu_ui,  tool_ui,         world_ui, property_ui,
   //                 asset_ui, m_simulation_ui, log_ui};
-  editor_uis_ = {asset_ui};
+  editor_uis_ = {asset_ui, simulation_ui_};
   // init all editor uis
   for (auto &editor_ui : editor_uis_) {
     editor_ui->init();

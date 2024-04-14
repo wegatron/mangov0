@@ -14,6 +14,6 @@ private:
   void constructUI();
 
   std::vector<std::shared_ptr<class EditorUI>> editor_uis_;
-  // std::shared_ptr<class EditorUI> simulation_ui_;
+  std::shared_ptr<class EditorUI> simulation_ui_;
 };
 } // namespace mango

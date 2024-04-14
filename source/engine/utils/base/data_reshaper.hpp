@@ -7,12 +7,11 @@ template <typename componentType> componentType getNormalizePixelValue() {
                 "not implement for value type .");
   static_assert(std::is_scalar<componentType>::value,
                 "not implement for value type .");
-  return 1;
+  if (std::is_floating_point<componentType>::value)
+    return 1.0f;
+  else
+    return 255;
 }
-
-template <> float getNormalizePixelValue() { return 1.0f; }
-template <> double getNormalizePixelValue() { return 1.0f; }
-template <> uint8_t getNormalizePixelValue() { return 255; }
 
 // Adds padding to multi-channel interleaved data by inserting dummy values, or
 // discards trailing channels. This is useful for platforms that only accept

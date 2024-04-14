@@ -1,6 +1,7 @@
 #include <engine/asset/asset_manager.h>
 #include <engine/functional/global/engine_context.h>
 #include <engine/functional/render/render_system.h>
+#include <engine/functional/world/world.h>
 #include <engine/platform/file_system.h>
 #include <engine/platform/glfw_window.h>
 #include <engine/utils/base/timer.h>
@@ -46,13 +47,12 @@ bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
   asset_manager_ = std::make_shared<AssetManager>();
   asset_manager_->init();
 
-  // asset manager
-
   // render system
   g_engine.render_system_ = std::make_shared<RenderSystem>();
   g_engine.render_system_->init();
 
   // world manager
+  world_ = std::make_shared<World>();
 
   // animation & physics manager
 
