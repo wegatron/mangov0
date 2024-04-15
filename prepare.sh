@@ -55,6 +55,12 @@ else
     echo "cereal found"
 fi
 
+if [ ! -d "thirdparty/ImGuizmo" ]; then
+    git clone https://github.com/CedricGuillemet/ImGuizmo.git ./thirdparty/ImGuizmo
+else
+    echo "ImGuizmo found"
+fi
+
 if [ ! -d "thirdparty/glfw" ]; then
     git clone https://github.com/glfw/glfw.git thirdparty/glfw
     cmake thirdparty/glfw -DCMAKE_INSTALL_PREFIX="./thirdparty/install" -B thirdparty/glfw/build -DCMAKE_BUILD_TYPE=Debug
