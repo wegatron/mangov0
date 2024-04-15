@@ -77,14 +77,6 @@ NormalVisMaterial::NormalVisMaterial() {
 void NormalVisMaterial::compile() {
   ShaderVariant variant;
 
-  variant.addDefine("GLOBAL_SET_INDEX " + std::to_string(GLOBAL_SET_INDEX));
-  variant.addDefine("MATERIAL_SET_INDEX " + std::to_string(MATERIAL_SET_INDEX));
-  variant.addDefine("PER_OBJECT_SET_INDEX " +
-                    std::to_string(PER_OBJECT_SET_INDEX));
-  variant.addDefine("MAX_LIGHTS_COUNT " + std::to_string(MAX_LIGHTS_COUNT));
-  variant.addDefine("DIRECTIONAL " + std::to_string(static_cast<uint32_t>(
-                                         LightType::DIRECTIONAL)));
-
   material_type_id_ = PBR_MATERIAL;
 
   std::vector<ShaderResource> sr;

@@ -46,6 +46,7 @@ find_package(eventpp REQUIRED)
 find_package(spdlog REQUIRED)
 
 include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/source
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/include
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glm

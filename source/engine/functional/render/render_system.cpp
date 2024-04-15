@@ -1,4 +1,6 @@
 #include <engine/functional/global/engine_context.h>
+#include <engine/functional/render/pass/brdf_pass.h>
+#include <engine/functional/render/pass/directional_light_shadow_pass.h>
 #include <engine/functional/render/pass/ui_pass.h>
 #include <engine/functional/render/render_system.h>
 #include <engine/utils/event/event_system.h>
@@ -34,6 +36,7 @@ void RenderSystem::tick(float delta_time) {
       VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
   cmd_buffer->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
   // render simulation 3d view
+  // shadow pass
 
   // render ui
   ui_pass_->draw(cmd_buffer);
