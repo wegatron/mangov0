@@ -465,98 +465,74 @@
 //   return 0;
 // }
 
-#include <cereal/access.hpp>
-#include <cereal/archives/binary.hpp>
-#include <cereal/archives/json.hpp>
-#include <cereal/cereal.hpp>
-#include <cereal/types/memory.hpp>
-#include <cereal/types/unordered_map.hpp>
-#include <cereal/types/vector.hpp>
-#include <fstream>
-#include <iostream>
-
-class TA {
-public:
-  TA() {}
-
-  void setup() {
-    a_ = 1;
-    b_ = {1, 2, 3};
-    c_ = "hello";
-  }
-
-private:
-  int a_;
-  std::vector<int> b_;
-  std::string c_;
-
-  friend class cereal::access;
-  template <class Archive> void serialize(Archive &ar) {
-    ar(cereal::make_nvp("a", a_));
-    ar(cereal::make_nvp("b", b_));
-    ar(cereal::make_nvp("c", c_));
-  }
-};
-
-int main(int argc, char const *argv[]) {
-  TA ta;
-  ta.setup();
-
-  {
-    std::ofstream ofs("data.json");
-    cereal::JSONOutputArchive oarchive(ofs);
-    oarchive(ta);
-  }
-
-  TA tb;
-  {
-    std::ifstream ifs("data.json");
-    cereal::JSONInputArchive archive(ifs);
-    archive(tb);
-  }
-
-  std::cout << "done" << std::endl;
-
-  return 0;
-}
-
+// #include <cereal/access.hpp>
 // #include <cereal/archives/binary.hpp>
+// #include <cereal/archives/json.hpp>
+// #include <cereal/cereal.hpp>
 // #include <cereal/types/memory.hpp>
 // #include <cereal/types/unordered_map.hpp>
+// #include <cereal/types/vector.hpp>
 // #include <fstream>
+// #include <iostream>
 
-// struct MyRecord {
-//   uint8_t x, y;
-//   float z;
-//   std::string name;
+// class TA {
+// public:
+//   TA() {}
 
+//   void setup() {
+//     a_ = 1;
+//     b_ = {1, 2, 3};
+//     c_ = "hello";
+//   }
+
+// private:
+//   int a_;
+//   std::vector<int> b_;
+//   std::string c_;
+
+//   friend class cereal::access;
 //   template <class Archive> void serialize(Archive &ar) {
-//     ar(cereal::make_nvp("x_", x));
-//     ar(cereal::make_nvp("y", y));
-//     ar(cereal::make_nvp("z", z));
-//     ar(cereal::make_nvp("name", name));
+//     ar(cereal::make_nvp("a", a_));
+//     ar(cereal::make_nvp("b", b_));
+//     ar(cereal::make_nvp("c", c_));
 //   }
 // };
 
-// struct SomeData {
-//   int32_t id;
-//   std::shared_ptr<std::unordered_map<uint32_t, MyRecord>> data;
+// int main(int argc, char const *argv[]) {
+//   TA ta;
+//   ta.setup();
 
-//   template <class Archive> void save(Archive &ar) const { ar(data); }
-
-//   template <class Archive> void load(Archive &ar) {
-//     static int32_t idGen = 0;
-//     id = idGen++;
-//     ar(data);
+//   {
+//     std::ofstream ofs("data.json");
+//     cereal::JSONOutputArchive oarchive(ofs);
+//     oarchive(ta);
 //   }
-// };
 
-// int main() {
-//   std::ofstream os("out.cereal", std::ios::binary);
-//   cereal::BinaryOutputArchive archive(os);
+//   TA tb;
+//   {
+//     std::ifstream ifs("data.json");
+//     cereal::JSONInputArchive archive(ifs);
+//     archive(tb);
+//   }
 
-//   SomeData myData;
-//   archive(myData);
+//   std::cout << "done" << std::endl;
 
 //   return 0;
 // }
+
+#include <Eigen/Dense>
+#include <iostream>
+#include <shaders/include/ubo_structures.h>
+
+int main(int argc, char const *argv[]) {
+  DirectionalLight dl;
+  std::cout << &(dl.direction) << std::endl;
+  std::cout << &(dl.cast_shadow) << std::endl;
+  std::cout << &(dl.color) << std::endl;
+  std::cout << &(dl.padding0) << std::endl;
+  std::cout << &(dl.cascade_view_projs) << std::endl;
+  std::cout << &(dl.cascade_splits) << std::endl;
+
+  std::cout << "-----" << sizeof(dl) << std::endl;
+  return 0;
+}

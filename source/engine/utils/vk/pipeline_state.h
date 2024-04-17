@@ -77,8 +77,8 @@ public:
 
   ~GPipelineState() = default;
 
-  void
-  setShaders(const std::vector<std::shared_ptr<ShaderModule>> &shader_modules);
+  void setShaderModules(
+      const std::vector<std::shared_ptr<ShaderModule>> &shader_modules);
 
   void setVertexInputState(const VertexInputState &state);
 

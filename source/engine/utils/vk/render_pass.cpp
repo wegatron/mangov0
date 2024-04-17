@@ -5,7 +5,6 @@
 #include <engine/utils/vk/render_pass.h>
 #include <engine/utils/vk/vk_driver.h>
 
-
 namespace mango {
 
 size_t LoadStoreInfo::getHash() const {
@@ -19,7 +18,7 @@ size_t Attachment::getHash() const {
   std::hash<int> hasher;
   size_t hash = hasher(static_cast<int>(format));
   hash_combine(hash, hasher(static_cast<int>(samples)));
-  hash_combine(hash, hasher(static_cast<int>(usage)));
+  // hash_combine(hash, hasher(static_cast<int>(usage)));
   hash_combine(hash, hasher(static_cast<int>(initial_layout)));
   return hash;
 }

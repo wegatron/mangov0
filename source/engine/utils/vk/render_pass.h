@@ -20,7 +20,7 @@ struct Attachment {
 
   VkSampleCountFlagBits samples{VK_SAMPLE_COUNT_1_BIT};
 
-  VkImageUsageFlags usage{VK_IMAGE_USAGE_SAMPLED_BIT};
+  // VkImageUsageFlags usage{VK_IMAGE_USAGE_SAMPLED_BIT};
 
   VkImageLayout initial_layout{VK_IMAGE_LAYOUT_UNDEFINED};
 

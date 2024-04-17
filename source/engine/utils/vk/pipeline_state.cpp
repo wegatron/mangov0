@@ -178,7 +178,7 @@ void ColorBlendState::getCreateInfo(
   memcpy(create_info.blendConstants, blend_constants, sizeof(float) * 4);
 }
 
-void GPipelineState::setShaders(
+void GPipelineState::setShaderModules(
     const std::vector<std::shared_ptr<ShaderModule>> &shader_modules) {
   if (shader_modules == shader_modules_)
     return;
