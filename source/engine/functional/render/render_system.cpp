@@ -27,10 +27,16 @@ void RenderSystem::onCreateSwapchainObjects(
   ui_pass_->onCreateSwapchainObject(p_event->width, p_event->height);
 }
 
+void RenderSystem::collectRenderDatas() {
+  // TODO
+}
+
 void RenderSystem::tick(float delta_time) {
   // collect render datas
   auto driver = g_engine.getDriver();
   driver->waitFrame();
+
+  collectRenderDatas();
 
   auto cmd_buffer = driver->requestCommandBuffer(
       VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
@@ -38,8 +44,10 @@ void RenderSystem::tick(float delta_time) {
   // render simulation 3d view
   // shadow pass
 
+  brdf_pass_->render(cmd_buffer, render_data_);
+
   // render ui
-  ui_pass_->draw(cmd_buffer);
+  ui_pass_->render(cmd_buffer, render_data_);
   cmd_buffer->end();
   auto cmd_queue = driver->getGraphicsQueue();
 

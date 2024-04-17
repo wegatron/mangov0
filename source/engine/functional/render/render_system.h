@@ -1,5 +1,7 @@
 #pragma once
 
+#include <engine/functional/render/pass/brdf_pass.h>
+#include <engine/functional/render/pass/render_data.h>
 #include <engine/functional/render/pass/ui_pass.h>
 #include <engine/utils/vk/syncs.h>
 #include <vector>
@@ -31,13 +33,6 @@ public:
    */
   void resize3DView(int width, int height);
 
-  // void beginFrame(const float time_elapse, const uint32_t frame_index,
-  //                 const uint32_t rt_index);
-
-  // void render(World *scene, Gui *gui);
-
-  // void endFrame();
-
 private:
   /**
    * @brief update frame buffer's color attachment after swapchain image
@@ -45,8 +40,12 @@ private:
    */
   void onCreateSwapchainObjects(const std::shared_ptr<class Event> &event);
 
-  std::unique_ptr<UIPass> ui_pass_;
+  void collectRenderDatas();
 
+  std::unique_ptr<UIPass> ui_pass_;
+  std::unique_ptr<BRDFPass> brdf_pass_;
+
+  RenderData render_data_;
   std::shared_ptr<ImageView> color_image_view_;
   std::shared_ptr<ImageView> depth_image_view_;
   // uint32_t cur_frame_index_{0};

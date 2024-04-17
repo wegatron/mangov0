@@ -1,6 +1,7 @@
 #include "brdf_pass.h"
 
 #include <engine/functional/global/engine_context.h>
+#include <engine/utils/vk/commands.h>
 #include <engine/utils/vk/pipeline.h>
 #include <engine/utils/vk/resource_cache.h>
 #include <engine/utils/vk/shader_module.h>
@@ -71,9 +72,22 @@ void BRDFPass::init() {
       {SubpassInfo{}}); // only format is used
   pipeline_ = std::make_shared<GraphicsPipeline>(
       driver, resource_cache, render_pass, std::move(pipeline_state));
-  // using default color blend state: not blend
 
+  // using default color blend state: not blend
   // create descriptor set
-  // create frame buffer
 }
+
+void BRDFPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer,
+                      const std::vector<StaticMesh> &static_meshes) {
+  cmd_buffer->bindPipelineWithDescriptorSets(pipeline_, {}, {}, 0);
+  for (auto &mesh : static_meshes) {
+    cmd_buffer->bindVertexBuffer(mesh.getVertexBuffer());
+    cmd_buffer->bindIndexBuffer(mesh.getIndexBuffer());
+    for (auto sub_mesh : mesh.getSubMeshes()) {
+      cmd_buffer->drawIndexed(sub_mesh->index_count, 1, sub_mesh->index_offset,
+                              0, 0);
+    }
+  }
+}
+
 } // namespace mango

@@ -10,9 +10,8 @@ public:
 
   void init() override;
 
-  void draw(const std::shared_ptr<class CommandBuffer> &cmd_buffer) override;
-
-  void onCreateSwapchainObject(const uint32_t width,
-                               const uint32_t height) override;
+protected:
+  void render(const std::shared_ptr<CommandBuffer> &cmd_buffer,
+              const std::vector<StaticMesh> &static_meshs) override;
 };
 } // namespace mango
