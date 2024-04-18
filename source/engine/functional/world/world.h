@@ -2,10 +2,10 @@
 
 #include <engine/functional/component/basic.h>
 #include <engine/functional/component/camera.h>
-#include <engine/functional/component/light.h>
-#include <engine/functional/component/material.h>
+// #include <engine/functional/component/material.h>
 #include <engine/functional/component/mesh.h>
 #include <entt/entt.hpp>
+#include <shaders/include/shader_structs.h>
 
 namespace mango {
 class World final {
@@ -17,28 +17,34 @@ public:
 
   void tick(const float seconds);
 
-  entt::entity
-  createRenderableEntity(const std::string &name,
-                         const std::shared_ptr<TransformRelationship> &tr,
-                         const std::shared_ptr<Material> &material,
-                         const std::shared_ptr<StaticMesh> &mesh);
+  entt::entity createEntity(const std::string &name) {
+    return entities_.create();
+  }
 
-  entt::entity
-  createCameraEntity(const std::string &name,
-                     const std::shared_ptr<TransformRelationship> &tr,
-                     const Camera &camera);
+  void addComponent(entt::entity entity,
+                    const std::shared_ptr<TransformRelationship> &tr) {
+    entities_.emplace<std::shared_ptr<TransformRelationship>>(entity, tr);
+  }
 
-  entt::entity
-  createLightEntity(const std::string_view &name,
-                    const std::shared_ptr<TransformRelationship> &tr,
-                    const Light &light);
+  void addComponent(entt::entity entity, const Camera &camera) {
+    entities_.emplace<Camera>(entity, camera);
+  }
+
+  void addComponent(entt::entity entity, const PointLight &light) {
+    entities_.emplace<PointLight>(entity, light);
+  }
+
+  void addComponent(entt::entity entity, const DirectionalLight &light) {
+    entities_.emplace<DirectionalLight>(entity, light);
+  }
 
   void setRootTr(const std::shared_ptr<TransformRelationship> &root_tr) {
     root_tr_ = root_tr;
   }
 
   auto getCameras() {
-    return entities_.view<std::string, std::shared_ptr<TransformRelationship>, Camera>();
+    return entities_
+        .view<std::string, std::shared_ptr<TransformRelationship>, Camera>();
   }
 
   // disable copy/move
