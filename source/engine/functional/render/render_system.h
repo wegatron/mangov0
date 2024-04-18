@@ -45,14 +45,6 @@ private:
   std::unique_ptr<UIPass> ui_pass_;
   std::unique_ptr<BRDFPass> brdf_pass_;
 
-  RenderData render_data_;
-  std::shared_ptr<ImageView> color_image_view_;
-  std::shared_ptr<ImageView> depth_image_view_;
-  // uint32_t cur_frame_index_{0};
-  // uint32_t cur_rt_index_{0};
-  // float cur_time_{0.0};
-  // std::shared_ptr<CommandBuffer> cmd_buf_;
-  // RPass rpass_;
-  // std::vector<std::unique_ptr<class FrameBuffer>> frame_buffers_;
+  std::shared_ptr<FrameBuffer> frame_buffer_; //!< 3d view's frame buffer
 };
 } // namespace mango

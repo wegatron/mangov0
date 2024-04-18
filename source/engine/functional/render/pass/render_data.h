@@ -9,7 +9,10 @@ struct StaticMeshRenderData {
   std::shared_ptr<Buffer> vertex_buffer; //!< vertex buffer 3 float position | 3
                                          //!< float normal | 2 float uv
   std::shared_ptr<Buffer> index_buffer;  //!< index buffer uint32_t
+  VkPrimitiveTopology topology;
   TransformPCO transform_pco;
+  std::vector<uint32_t> index_counts;
+  std::vector<uint32_t> first_index;
 };
 
 struct RenderData {

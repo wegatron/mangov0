@@ -44,10 +44,10 @@ void RenderSystem::tick(float delta_time) {
   // render simulation 3d view
   // shadow pass
 
-  brdf_pass_->render(cmd_buffer, render_data_);
+  brdf_pass_->render(cmd_buffer);
 
   // render ui
-  ui_pass_->render(cmd_buffer, render_data_);
+  ui_pass_->render(cmd_buffer);
   cmd_buffer->end();
   auto cmd_queue = driver->getGraphicsQueue();
 
@@ -73,27 +73,22 @@ void RenderSystem::tick(float delta_time) {
   driver->presentFrame();
 }
 
+std::shared_ptr<ImageView> RenderSystem::getColorImageView() const {
+  assert(frame_buffer_ != nullptr &&
+         frame_buffer_->getRenderTarget() != nullptr &&
+         frame_buffer_->getRenderTarget()->getImageViews().size() > 0);
+  return frame_buffer_->getRenderTarget()->getImageViews()[0];
+}
+
 void RenderSystem::resize3DView(int width, int height) {
-  // create 3d view's color image view
+  // recreate render target, frame buffer
   auto driver = g_engine.getDriver();
-  VkExtent3D extent{.width = static_cast<uint32_t>(width),
-                    .height = static_cast<uint32_t>(height),
-                    .depth = 1};
-  auto color_image = std::make_shared<Image>(
-      driver, 0, VK_FORMAT_R8G8B8A8_SRGB, extent, 1, 1, VK_SAMPLE_COUNT_1_BIT,
-      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-  color_image_view_ = std::make_shared<ImageView>(
-      color_image, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB,
-      VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 1);
-
-  auto depth_image = std::make_shared<Image>(
-      driver, 0, VK_FORMAT_D24_UNORM_S8_UINT, extent, 1, 1,
-      VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-      VMA_MEMORY_USAGE_GPU_ONLY);
-
-  depth_image_view_ = std::make_shared<ImageView>(
-      depth_image, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_D24_UNORM_S8_UINT,
-      VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0, 0, 1, 1);
+  auto rt = std::make_shared<RenderTarget>(driver, {VK_FORMAT_R8G8B8_SRGB},
+                                           VK_FORMAT_D24_UNORM_S8_UINT, width,
+                                           height, 1);
+  // recreate frame buffer
+  frame_buffer_ =
+      std::make_shared<FrameBuffer>(driver, brdf_pass_->getRenderPass(), rt);
 }
 
 // void Render::render(World *scene, Gui * gui)

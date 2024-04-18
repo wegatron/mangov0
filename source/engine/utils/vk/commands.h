@@ -138,6 +138,11 @@ public:
   void bindIndexBuffer(const std::shared_ptr<Buffer> &buffer,
                        const VkDeviceSize offset, const VkIndexType index_type);
 
+  void pushConstants(const std::shared_ptr<Pipeline> &pipeline,
+                     const VkShaderStageFlags stage_flags,
+                     const uint32_t offset, const uint32_t size,
+                     const void *data);
+
   void draw(const uint32_t vertex_count, const uint32_t instance_count,
             const uint32_t first_vertex, const uint32_t first_instance);
 

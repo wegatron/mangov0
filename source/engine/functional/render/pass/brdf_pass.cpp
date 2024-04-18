@@ -64,12 +64,12 @@ void BRDFPass::init() {
                         .max_depth_bounds = 1.0f});
   auto driver = g_engine.getDriver();
   auto resource_cache = g_engine.getResourceCache();
-  auto render_pass = resource_cache->requestRenderPass(
+  render_pass_ = resource_cache->requestRenderPass(
       driver,
       {Attachment{.format = VK_FORMAT_R8G8B8_SRGB},
        Attachment{.format = VK_FORMAT_D24_UNORM_S8_UINT}},
       {LoadStoreInfo{}, LoadStoreInfo{}},
-      {SubpassInfo{}}); // only format is used
+      {SubpassInfo{.output_attachments = {0}, .depth_stencil_attachment = 1}});
   pipeline_ = std::make_shared<GraphicsPipeline>(
       driver, resource_cache, render_pass, std::move(pipeline_state));
 
@@ -77,15 +77,28 @@ void BRDFPass::init() {
   // create descriptor set
 }
 
-void BRDFPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer,
-                      const std::vector<StaticMesh> &static_meshes) {
+void BRDFPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+  assert(p_render_data_ != nullptr);
+  cmd_buffer->beginRenderPass(render_pass_, frame_buffer_);
+  cmd_buffer->setViewPort({VkViewport{0, 0, width_, height_}});
+  cmd_buffer->setScissor({VkRect2D{{0, 0}, {width_, height_}}});
+  draw(cmd_buffer, p_render_data_->static_meshes);
+  cmd_buffer->endRenderPass();
+}
+
+void BRDFPass::draw(
+    const std::shared_ptr<CommandBuffer> &cmd_buffer,
+    const std::vector<StaticMeshRenderData> &static_meshe_datas) {
+
   cmd_buffer->bindPipelineWithDescriptorSets(pipeline_, {}, {}, 0);
-  for (auto &mesh : static_meshes) {
-    cmd_buffer->bindVertexBuffer(mesh.getVertexBuffer());
-    cmd_buffer->bindIndexBuffer(mesh.getIndexBuffer());
-    for (auto sub_mesh : mesh.getSubMeshes()) {
-      cmd_buffer->drawIndexed(sub_mesh->index_count, 1, sub_mesh->index_offset,
-                              0, 0);
+  for (auto &data : static_meshe_datas) {
+    cmd_buffer->pushConstants(pipeline, VK_SHADER_STAGE_VERTEX_BIT, 0,
+                              sizeof(TransformPCO), &data.transform_pco);
+    cmd_buffer->bindVertexBuffer(data.vertex_buffer);
+    cmd_buffer->bindIndexBuffer(data.index_buffer);
+    for (auto i = 0; i < data.index_counts.size(); ++i) {
+      cmd_buffer->drawIndexed(data.index_counts[i], 1, data.first_index[i], 0,
+                              0);
     }
   }
 }

@@ -6,6 +6,8 @@
 
 namespace mango {
 class CommandBuffer;
+class GraphicsPipeline;
+class RenderPass;
 class CustomRenderPass {
 public:
   CustomRenderPass() = default;
@@ -17,10 +19,7 @@ public:
    */
   virtual void init() = 0;
 
-  void render(const std::shared_ptr<CommandBuffer> &cmd_buffer,
-              const RenderData &render_data) {
-    render(cmd_buffer, render_data.static_mesh_render_data);
-  }
+  virtual void render(const std::shared_ptr<CommandBuffer> &cmd_buffer) = 0;
 
   /**
    * @brief update render settings when swapchain object is
@@ -35,10 +34,8 @@ public:
   }
 
 protected:
-  virtual void render(const std::shared_ptr<CommandBuffer> &cmd_buffer,
-                      const std::vector<StaticMesh> &static_meshs) = 0;
-
-  std::shared_ptr<class GraphicsPipeline> pipeline_;
+  std::shared_ptr<GraphicsPipeline> pipeline_;
+  std::shared_ptr<RenderPass> render_pass_;
   uint32_t width_{0};
   uint32_t height_{0};
 };

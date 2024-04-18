@@ -137,7 +137,7 @@ void UIPass::createRenderPassAndFramebuffer() {
   }
 }
 
-void UIPass::draw(const std::shared_ptr<class CommandBuffer> &cmd_buffer) {
+void UIPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
   ImGui_ImplVulkan_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();

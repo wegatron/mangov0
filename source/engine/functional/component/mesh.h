@@ -5,6 +5,10 @@
 
 namespace mango {
 
+/**
+ * @brief submesh share one vertex array, with specified index offset.
+ * different submesh may have different material
+ */
 struct SubMesh {
   uint32_t index_offset;
   uint32_t index_count;
@@ -26,10 +30,11 @@ protected:
   std::vector<SubMesh> sub_meshes_; //!< submesh: index offset, index
                                     // count, vertex offset, vertex count
   std::vector<uint32_t> indices_;   //!< indices data on cpu
+  Eigen::AlignedBox3f bounding_box_;
 
+  // gpu data
   std::shared_ptr<Buffer> vertex_buffer_;
   std::shared_ptr<Buffer> index_buffer_;
-  Eigen::AlignedBox3f bounding_box_;
 };
 struct StaticVertex {
   Eigen::Vector3f position;

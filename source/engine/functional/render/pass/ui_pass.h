@@ -17,7 +17,7 @@ public:
    * FrameBuffer, DescriptorSet, buffers/images.
    */
   void init() override;
-  void render(const std::shared_ptr<class CommandBuffer> &cmd_buffer) override;
+  void render(const std::shared_ptr<CommandBuffer> &cmd_buffer) override;
 
   void onCreateSwapchainObject(const uint32_t width,
                                const uint32_t height) override;
