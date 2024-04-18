@@ -21,9 +21,7 @@ public:
 
   void tick(float delta_time);
 
-  std::shared_ptr<ImageView> getColorImageView() const {
-    return color_image_view_;
-  }
+  std::shared_ptr<ImageView> getColorImageView() const;
 
   /**
    * @brief recreate color and depth image view after resize

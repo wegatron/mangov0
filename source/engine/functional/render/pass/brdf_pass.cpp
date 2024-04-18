@@ -3,28 +3,27 @@
 #include <engine/functional/global/engine_context.h>
 #include <engine/utils/vk/commands.h>
 #include <engine/utils/vk/pipeline.h>
-#include <engine/utils/vk/resource_cache.h>
+#include <engine/utils/vk/resource_cache.hpp>
 #include <engine/utils/vk/shader_module.h>
 
 namespace mango {
 void BRDFPass::init() {
   // create pipeline state
   auto pipeline_state = std::make_unique<GPipelineState>();
-  pipeline_state->setVertexInputState(VertexInputState{
-      .vertex_binding_descriptions_ = {VkVertexInputBindingDescription{
-          0, sizeof(float) * 8, // 3 for position, 3 for normal, 2 for uv
-          VK_VERTEX_INPUT_RATE_VERTEX}},
-      .vertex_attribute_descriptions_ =
-          {VkVertexInputAttributeDescription{0, 0, VK_FORMAT_R32G32B32_SFLOAT,
-                                             0}, // position
-           VkVertexInputAttributeDescription{1, 0, VK_FORMAT_R32G32B32_SFLOAT,
-                                             sizeof(float) * 3}, // normal
-           VkVertexInputAttributeDescription{2, 0, VK_FORMAT_R32G32_SFLOAT,
-                                             sizeof(float) * 6}}, // uv
-  });
-
-  pipeline_state->setInputAssemblyState(InputAssemblyState{
-      .topology_ = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+  VertexInputState vertex_input_state{
+      .bindings =
+          {// bindings, 3 float pos + 3 float normal + 2 float uv
+           {0, 8 * sizeof(float), VK_VERTEX_INPUT_RATE_VERTEX}},
+      .attributes = {
+          // attribute
+          {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0}, // 3floats pos
+          {1, 0, VK_FORMAT_R32G32B32_SFLOAT,
+           3 * sizeof(float)}, // 3floats normal
+          {2, 0, VK_FORMAT_R32G32_SFLOAT, 6 * sizeof(float)}}}; // 2 floats uv
+  pipeline_state->setVertexInputState(vertex_input_state);
+  pipeline_state->setInputAssemblyState({
+      .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+      .primitive_restart_enable = VK_FALSE,
   });
   auto vs = std::make_shared<ShaderModule>();
   auto fs = std::make_shared<ShaderModule>();
@@ -38,30 +37,26 @@ void BRDFPass::init() {
   });
 
   pipeline_state->setRasterizationState(
-      RasterizationState{.depth_clamp_enable_ = VK_FALSE,
-                         .rasterizer_discard_enable_ = VK_FALSE,
-                         .polygon_mode_ = VK_POLYGON_MODE_FILL,
-                         .cull_mode = VK_CULL_MODE_BACK_BIT,
-                         .front_face = VK_FRONT_FACE_COUNTER_CLOCKWISE,
-                         .depth_bias_enable = VK_FALSE});
+      {.depth_clamp_enable = false,
+       .rasterizer_discard_enable = false,
+       .polygon_mode = VK_POLYGON_MODE_FILL,
+       //.cull_mode = VK_CULL_MODE_BACK_BIT,
+       .cull_mode = VK_CULL_MODE_NONE,
+       .front_face = VK_FRONT_FACE_COUNTER_CLOCKWISE,
+       .depth_bias_enable = VK_FALSE});
 
   pipeline_state->setMultisampleState(
-      MultisampleState{.rasterization_samples = VK_SAMPLE_COUNT_1_BIT,
-                       .sample_shading_enable = VK_FALSE,
-                       .min_sample_shading = 1.0f,
-                       .sample_mask = 0xFFFFFFFF,
-                       .alpha_to_coverage_enable = VK_FALSE,
-                       .alpha_to_one_enable = VK_FALSE});
-  pipeline_state->setDepthStencilState(
-      DepthStencilState{.depth_test_enable = VK_TRUE,
-                        .depth_write_enable = VK_TRUE,
-                        .depth_compare_op = VK_COMPARE_OP_LESS,
-                        .depth_bounds_test_enable = VK_FALSE,
-                        .stencil_test_enable = VK_FALSE,
-                        .front = VkStencilOpState{},
-                        .back = VkStencilOpState{},
-                        .min_depth_bounds = 0.0f,
-                        .max_depth_bounds = 1.0f});
+      {VK_SAMPLE_COUNT_1_BIT, false, 0.0f, 0xFFFFFFFF, false, false});
+  // default depth stencil state, depth test enable, depth write enable, depth
+
+  pipeline_state->setColorBlendState(
+      {.attachments = {{
+           .blendEnable = VK_FALSE,
+           .colorWriteMask =
+               VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+               VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+       }}});
+  pipeline_state->setSubpassIndex(0);
   auto driver = g_engine.getDriver();
   auto resource_cache = g_engine.getResourceCache();
   render_pass_ = resource_cache->requestRenderPass(
@@ -71,7 +66,7 @@ void BRDFPass::init() {
       {LoadStoreInfo{}, LoadStoreInfo{}},
       {SubpassInfo{.output_attachments = {0}, .depth_stencil_attachment = 1}});
   pipeline_ = std::make_shared<GraphicsPipeline>(
-      driver, resource_cache, render_pass, std::move(pipeline_state));
+      driver, resource_cache, render_pass_, std::move(pipeline_state));
 
   // using default color blend state: not blend
   // create descriptor set
@@ -80,9 +75,10 @@ void BRDFPass::init() {
 void BRDFPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
   assert(p_render_data_ != nullptr);
   cmd_buffer->beginRenderPass(render_pass_, frame_buffer_);
-  cmd_buffer->setViewPort({VkViewport{0, 0, width_, height_}});
+  cmd_buffer->setViewPort({VkViewport{0, 0, static_cast<float>(width_),
+                                      static_cast<float>(height_), 0.f, 1.f}});
   cmd_buffer->setScissor({VkRect2D{{0, 0}, {width_, height_}}});
-  draw(cmd_buffer, p_render_data_->static_meshes);
+  draw(cmd_buffer, p_render_data_->static_mesh_render_data);
   cmd_buffer->endRenderPass();
 }
 
@@ -92,10 +88,10 @@ void BRDFPass::draw(
 
   cmd_buffer->bindPipelineWithDescriptorSets(pipeline_, {}, {}, 0);
   for (auto &data : static_meshe_datas) {
-    cmd_buffer->pushConstants(pipeline, VK_SHADER_STAGE_VERTEX_BIT, 0,
+    cmd_buffer->pushConstants(pipeline_, VK_SHADER_STAGE_VERTEX_BIT, 0,
                               sizeof(TransformPCO), &data.transform_pco);
-    cmd_buffer->bindVertexBuffer(data.vertex_buffer);
-    cmd_buffer->bindIndexBuffer(data.index_buffer);
+    cmd_buffer->bindVertexBuffers({data.vertex_buffer}, {0}, 0);
+    cmd_buffer->bindIndexBuffer(data.index_buffer, 0, VK_INDEX_TYPE_UINT32);
     for (auto i = 0; i < data.index_counts.size(); ++i) {
       cmd_buffer->drawIndexed(data.index_counts[i], 1, data.first_index[i], 0,
                               0);

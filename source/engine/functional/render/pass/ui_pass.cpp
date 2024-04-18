@@ -116,9 +116,8 @@ void UIPass::initImgui() {
 void UIPass::createRenderPassAndFramebuffer() {
   const auto &driver = g_engine.getDriver();
   auto color_format = driver->getSwapchainImageFormat();
-  std::vector<Attachment> attachments{
-      Attachment{color_format, VK_SAMPLE_COUNT_1_BIT,
-                 VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT}};
+  std::vector<Attachment> attachments{Attachment{
+      color_format, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_LAYOUT_UNDEFINED}};
   std::vector<LoadStoreInfo> load_store_infos{
       {VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE}};
   std::vector<SubpassInfo> subpass_infos{{
@@ -133,7 +132,7 @@ void UIPass::createRenderPassAndFramebuffer() {
   framebuffers_.resize(rts.size());
   for (auto i = 0; i < rts.size(); ++i) {
     framebuffers_[i] =
-        std::make_unique<FrameBuffer>(driver, render_pass_, rts[i]);
+        std::make_shared<FrameBuffer>(driver, render_pass_, rts[i]);
   }
 }
 

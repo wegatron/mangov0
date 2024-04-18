@@ -33,6 +33,8 @@ public:
     height_ = height;
   }
 
+  auto getRenderPass() const { return render_pass_; }
+
 protected:
   std::shared_ptr<GraphicsPipeline> pipeline_;
   std::shared_ptr<RenderPass> render_pass_;

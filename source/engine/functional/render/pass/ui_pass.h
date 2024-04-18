@@ -27,6 +27,6 @@ private:
   void createRenderPassAndFramebuffer();
 
   std::shared_ptr<class RenderPass> render_pass_;
-  std::vector<std::unique_ptr<FrameBuffer>> framebuffers_;
+  std::vector<std::shared_ptr<FrameBuffer>> framebuffers_;
 };
 } // namespace mango

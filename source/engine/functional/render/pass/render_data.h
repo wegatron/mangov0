@@ -1,7 +1,7 @@
 #pragma once
 
 #include <engine/utils/vk/buffer.h>
-#include <shaders/include/ubo_structures.h>
+#include <shaders/include/shader_structs.h>
 
 namespace mango {
 
@@ -16,7 +16,7 @@ struct StaticMeshRenderData {
 };
 
 struct RenderData {
-  StaticMeshRenderData static_mesh_render_data;
+  std::vector<StaticMeshRenderData> static_mesh_render_data;
 };
 
 } // namespace mango

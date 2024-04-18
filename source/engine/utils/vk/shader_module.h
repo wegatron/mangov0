@@ -104,6 +104,7 @@ private:
 
 class ShaderModule final {
 public:
+  ShaderModule() = default;
   ShaderModule(const ShaderVariant &variant) : variant_(variant) {}
 
   /**

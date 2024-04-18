@@ -198,7 +198,7 @@ void CommandBuffer::end() {
 
 void CommandBuffer::beginRenderPass(
     const std::shared_ptr<RenderPass> &render_pass,
-    const std::unique_ptr<FrameBuffer> &frame_buffer) {
+    const std::shared_ptr<FrameBuffer> &frame_buffer) {
   VkClearValue clear_values[2]; // 与render pass load store clear attachment对应
   clear_values[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
   clear_values[1].depthStencil = {1.0f, 0};
@@ -250,7 +250,7 @@ void CommandBuffer::bindPipelineWithDescriptorSets(
                           dynamic_offsets.size(), dynamic_offsets.begin());
 }
 
-void CommandBuffer::bindVertexBuffer(
+void CommandBuffer::bindVertexBuffers(
     const std::initializer_list<std::shared_ptr<Buffer>> &buffers,
     const std::initializer_list<VkDeviceSize> &offsets,
     const uint32_t first_binding) {

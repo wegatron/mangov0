@@ -115,7 +115,7 @@ public:
   void end();
 
   void beginRenderPass(const std::shared_ptr<RenderPass> &render_pass,
-                       const std::unique_ptr<FrameBuffer> &frame_buffer);
+                       const std::shared_ptr<FrameBuffer> &frame_buffer);
 
   void endRenderPass();
 
@@ -130,10 +130,10 @@ public:
       const std::initializer_list<uint32_t> &dynamic_offsets,
       const uint32_t first_set);
 
-  void
-  bindVertexBuffer(const std::initializer_list<std::shared_ptr<Buffer>> &buffer,
-                   const std::initializer_list<VkDeviceSize> &offsets,
-                   const uint32_t first_binding);
+  void bindVertexBuffers(
+      const std::initializer_list<std::shared_ptr<Buffer>> &buffer,
+      const std::initializer_list<VkDeviceSize> &offsets,
+      const uint32_t first_binding);
 
   void bindIndexBuffer(const std::shared_ptr<Buffer> &buffer,
                        const VkDeviceSize offset, const VkIndexType index_type);

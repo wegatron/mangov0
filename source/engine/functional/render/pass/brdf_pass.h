@@ -1,7 +1,7 @@
 #pragma once
 
+#include <engine/functional/render/pass/render_data.h>
 #include <engine/functional/render/pass/render_pass.h>
-
 namespace mango {
 class RenderData;
 class FrameBuffer;
@@ -24,7 +24,7 @@ public:
 
 protected:
   void draw(const std::shared_ptr<CommandBuffer> &cmd_buffer,
-            const std::vector<StaticMesh> &static_meshs);
+            const std::vector<StaticMeshRenderData> &static_meshs);
   const RenderData *p_render_data_{nullptr};
   std::shared_ptr<FrameBuffer> frame_buffer_;
 };

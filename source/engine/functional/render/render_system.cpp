@@ -1,6 +1,5 @@
 #include <engine/functional/global/engine_context.h>
 #include <engine/functional/render/pass/brdf_pass.h>
-#include <engine/functional/render/pass/directional_light_shadow_pass.h>
 #include <engine/functional/render/pass/ui_pass.h>
 #include <engine/functional/render/render_system.h>
 #include <engine/utils/event/event_system.h>
@@ -83,9 +82,9 @@ std::shared_ptr<ImageView> RenderSystem::getColorImageView() const {
 void RenderSystem::resize3DView(int width, int height) {
   // recreate render target, frame buffer
   auto driver = g_engine.getDriver();
-  auto rt = std::make_shared<RenderTarget>(driver, {VK_FORMAT_R8G8B8_SRGB},
-                                           VK_FORMAT_D24_UNORM_S8_UINT, width,
-                                           height, 1);
+  auto rt = std::make_shared<RenderTarget>(
+      driver, std::initializer_list<VkFormat>{VK_FORMAT_R8G8B8_SRGB},
+      VK_FORMAT_D24_UNORM_S8_UINT, width, height, 1);
   // recreate frame buffer
   frame_buffer_ =
       std::make_shared<FrameBuffer>(driver, brdf_pass_->getRenderPass(), rt);
