@@ -1,9 +1,10 @@
 #pragma once
 
-#include <engine/functional/component/basic.h>
-#include <engine/functional/component/camera.h>
+#include <engine/functional/component/component_camera.h>
+#include <engine/functional/component/component_transform.h>
 // #include <engine/functional/component/material.h>
-#include <engine/functional/component/mesh.h>
+#include <engine/asset/url.h>
+#include <engine/functional/component/component_mesh.h>
 #include <entt/entt.hpp>
 #include <shaders/include/shader_structs.h>
 
@@ -17,17 +18,26 @@ public:
 
   void tick(const float seconds);
 
+  /**
+   * @brief 加载场景, 挂载到root_rt上.
+   * @param url 场景文件路径, 可以是mango自己的格式, 也可以是其他格式,
+   * 由assimp导入
+   */
+  void importScene(const URL &url);
+
   entt::entity createEntity(const std::string &name) {
     return entities_.create();
   }
+
+  void removeEntity(entt::entity entity) { entities_.destroy(entity); }
 
   void addComponent(entt::entity entity,
                     const std::shared_ptr<TransformRelationship> &tr) {
     entities_.emplace<std::shared_ptr<TransformRelationship>>(entity, tr);
   }
 
-  void addComponent(entt::entity entity, const Camera &camera) {
-    entities_.emplace<Camera>(entity, camera);
+  void addComponent(entt::entity entity, const CameraComponent &camera) {
+    entities_.emplace<CameraComponent>(entity, camera);
   }
 
   void addComponent(entt::entity entity, const PointLight &light) {
@@ -43,8 +53,8 @@ public:
   }
 
   auto getCameras() {
-    return entities_
-        .view<std::string, std::shared_ptr<TransformRelationship>, Camera>();
+    return entities_.view<std::string, std::shared_ptr<TransformRelationship>,
+                          CameraComponent>();
   }
 
   // disable copy/move

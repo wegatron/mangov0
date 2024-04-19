@@ -7,7 +7,7 @@
 #include <engine/utils/vk/shader_module.h>
 
 namespace mango {
-void BRDFPass::init() {
+void MainPass::init() {
   // create pipeline state
   auto pipeline_state = std::make_unique<GPipelineState>();
   VertexInputState vertex_input_state{
@@ -72,7 +72,7 @@ void BRDFPass::init() {
   // create descriptor set
 }
 
-void BRDFPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+void MainPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
   assert(p_render_data_ != nullptr);
   cmd_buffer->beginRenderPass(render_pass_, frame_buffer_);
   cmd_buffer->setViewPort({VkViewport{0, 0, static_cast<float>(width_),
@@ -82,7 +82,7 @@ void BRDFPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
   cmd_buffer->endRenderPass();
 }
 
-void BRDFPass::draw(
+void MainPass::draw(
     const std::shared_ptr<CommandBuffer> &cmd_buffer,
     const std::vector<StaticMeshRenderData> &static_meshe_datas) {
 

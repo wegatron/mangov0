@@ -26,9 +26,9 @@ void RenderSystem::onCreateSwapchainObjects(
   ui_pass_->onCreateSwapchainObject(p_event->width, p_event->height);
 }
 
-void RenderSystem::collectRenderDatas() {
-  // TODO
-}
+// void RenderSystem::collectRenderDatas() {
+//   // TODO
+// }
 
 void RenderSystem::tick(float delta_time) {
   // collect render datas
@@ -99,10 +99,10 @@ void RenderSystem::resize3DView(int width, int height) {
 //   auto &camera_manager = scene->camera_manager();
 //   auto view_camera =
 //   camera_manager.view<std::shared_ptr<TransformRelationship>,
-//                                          Camera>();
+//                                          CameraComponent>();
 //   const auto &cam_tr =
 //   camera_manager.get<std::shared_ptr<TransformRelationship>>(*view_camera.begin());
-//   auto &cam = camera_manager.get<Camera>(*view_camera.begin());
+//   auto &cam = camera_manager.get<CameraComponent>(*view_camera.begin());
 //   auto &global_param_set = getDefaultAppContext().global_param_set;
 //   global_param_set->setCameraParam(cam.getCameraPos(), cam.ev100(),
 //   cam.getViewMatrix() /* cam_tr->gtransform */, cam.getProjMatrix());

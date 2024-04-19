@@ -331,4 +331,13 @@ void CommandBuffer::imageMemoryBarrier(
                        image_memory_barrier.dst_stage_mask, 0, 0, nullptr, 0,
                        nullptr, 1, &barrier);
 }
+
+void CommandBuffer::pushConstants(const std::shared_ptr<Pipeline> &pipeline,
+                                  const VkShaderStageFlags stage_flags,
+                                  const uint32_t offset, const uint32_t size,
+                                  const void *data) {
+  vkCmdPushConstants(command_buffer_,
+                     pipeline->getPipelineLayout()->getHandle(), stage_flags,
+                     offset, size, data);
+}
 } // namespace mango

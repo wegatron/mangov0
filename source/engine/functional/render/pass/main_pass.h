@@ -5,10 +5,10 @@
 namespace mango {
 class RenderData;
 class FrameBuffer;
-class BRDFPass final : public CustomRenderPass {
+class MainPass final : public CustomRenderPass {
 public:
-  BRDFPass() = default;
-  ~BRDFPass() override = default;
+  MainPass() = default;
+  ~MainPass() override = default;
 
   void init() override;
 

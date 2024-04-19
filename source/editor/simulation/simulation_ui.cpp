@@ -1,5 +1,5 @@
 #include "simulation_ui.h"
-#include <engine/functional/component/camera.h>
+#include <engine/functional/component/component_camera.h>
 #include <engine/functional/global/engine_context.h>
 #include <engine/functional/world/world.h>
 #include <engine/utils/event/event_system.h>
@@ -359,13 +359,13 @@ void SimulationUI::constructOperationModeButtons() {
 
 void SimulationUI::updateCamera() {
   auto cameras = g_engine.getWorld()->getCameras();
-  Camera *editor_camera = nullptr;
+  CameraComponent *editor_camera = nullptr;
   // std::shared_ptr<TransformRelationship> tr = nullptr;
   for (auto entity : cameras) {
     auto name = cameras.get<std::string>(entity);
     if (name != "editor##camera")
       continue;
-    editor_camera = &(cameras.get<Camera>(entity));
+    editor_camera = &(cameras.get<CameraComponent>(entity));
     // tr = cameras.get<std::shared_ptr<TransformRelationship>>();
   }
 

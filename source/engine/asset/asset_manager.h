@@ -7,6 +7,11 @@
 
 namespace mango {
 enum class EArchiveType { JSON, BINARY };
+
+/**
+ * @brief AssetManager 只负责 保存和加载(序列化/反序列化)mango自己的资源,
+ * 以及图片, 对于场景资源文件, 由world调用assimp_importer来导入
+ */
 class AssetManager final {
 public:
   void init();

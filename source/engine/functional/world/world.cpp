@@ -24,13 +24,13 @@ World::createRenderableEntity(const std::string &name,
 entt::entity
 World::createCameraEntity(const std::string &name,
                           const std::shared_ptr<TransformRelationship> &tr,
-                          const Camera &camera) {
+                          const CameraComponent &camera) {
   entt::entity entity = entities_.create();
   entities_.emplace<std::string>(entity, name); // name
   entities_.emplace<std::shared_ptr<TransformRelationship>>(
       entity,
-      tr);                                   // node transform index
-  entities_.emplace<Camera>(entity, camera); // camera index
+      tr);                                            // node transform index
+  entities_.emplace<CameraComponent>(entity, camera); // camera index
   return entity;
 }
 
@@ -77,5 +77,7 @@ void World::tick(const float seconds) {
     }
   }
 }
+
+void World::importScene(const URL &url) {}
 
 } // namespace mango

@@ -1,4 +1,4 @@
-#include "mesh.h"
+#include "asset_mesh.h"
 
 namespace mango {
 void StaticMesh::calcBoundingBox() {

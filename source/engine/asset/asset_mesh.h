@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Eigen/Geometry>
+#include <engine/asset/asset.h>
 #include <engine/utils/vk/buffer.h>
 
 namespace mango {
@@ -42,12 +43,14 @@ struct StaticVertex {
   Eigen::Vector2f uv;
 };
 
-class StaticMesh : public Mesh {
+class StaticMesh : public Mesh, public Asset {
 public:
-  StaticMesh() = default;
+  StaticMesh() { asset_type_ = EAssetType::STATICMESH; };
   ~StaticMesh() = default;
 
   void calcBoundingBox() override;
+
+  void load(const URL &url) override; //!< deserialize from file
 
 private:
   std::vector<StaticVertex> vertices_;

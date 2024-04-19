@@ -1,5 +1,5 @@
 #include <engine/asset/asset_manager.h>
-#include <engine/asset/texture.h>
+#include <engine/asset/asset_texture.h>
 #include <engine/functional/global/engine_context.h>
 #include <engine/platform/file_system.h>
 

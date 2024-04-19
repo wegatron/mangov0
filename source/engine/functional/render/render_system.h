@@ -1,6 +1,6 @@
 #pragma once
 
-#include <engine/functional/render/pass/brdf_pass.h>
+#include <engine/functional/render/pass/main_pass.h>
 #include <engine/functional/render/pass/render_data.h>
 #include <engine/functional/render/pass/ui_pass.h>
 #include <engine/utils/vk/syncs.h>
@@ -41,7 +41,7 @@ private:
   void collectRenderDatas();
 
   std::unique_ptr<UIPass> ui_pass_;
-  std::unique_ptr<BRDFPass> brdf_pass_;
+  std::unique_ptr<MainPass> brdf_pass_;
 
   std::shared_ptr<FrameBuffer> frame_buffer_; //!< 3d view's frame buffer
 };

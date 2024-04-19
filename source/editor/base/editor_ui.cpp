@@ -1,5 +1,5 @@
 #include "editor_ui.h"
-#include <engine/asset/texture.h>
+#include <engine/asset/asset_texture.h>
 #include <engine/functional/global/engine_context.h>
 #include <engine/platform/glfw_window.h>
 #include <engine/utils/vk/image.h>

@@ -8,9 +8,9 @@ file(GLOB_RECURSE platform_srcs CONFIGURE_DEPENDS platform/*.cpp)
 file(GLOB_RECURSE resource CONFIGURE_DEPENDS resource/stb_image.cpp)
 file(GLOB_RECURSE asset CONFIGURE_DEPENDS asset/*.h asset/*.hpp asset/*.cpp)
 
-file(GLOB_RECURSE global_headers CONFIGURE_DEPENDS functional/global/*.h functional/global/*.hpp)
-file(GLOB_RECURSE global_srcs CONFIGURE_DEPENDS functional/global/*.cpp)
+file(GLOB_RECURSE global CONFIGURE_DEPENDS functional/global/*.h functional/global/*.hpp functional/global/*.cpp)
 file(GLOB_RECURSE render CONFIGURE_DEPENDS functional/render/*.h functional/render/*.hpp functional/render/*.cpp)
+file(GLOB_RECURSE component CONFIGURE_DEPENDS functional/component/*.h functional/component/*.hpp functional/component/*.cpp)
 
 set(IMGUI_HEADERS
     ${CMAKE_SOURCE_DIR}/thirdparty/imgui/imconfig.h

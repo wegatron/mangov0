@@ -55,7 +55,7 @@ void AssimpLoader::loadScene(const std::string &path, World &scene,
       processMeshs(a_scene, cmd_buf);
   std::vector<std::shared_ptr<Material>> materials =
       processMaterials(a_scene, dir, cmd_buf);
-  std::vector<Camera> cameras = processCameras(a_scene);
+  std::vector<CameraComponent> cameras = processCameras(a_scene);
   auto lights = processLight(a_scene);
 
   // process root node's mesh
@@ -102,7 +102,7 @@ void AssimpLoader::loadScene(const std::string &path, World &scene,
   }
 
   if (cameras.empty()) {
-    Camera default_camera;
+    CameraComponent default_camera;
     default_camera.setName(camera_node_name);
     scene.update(0);
     const auto &scene_aabb = root_tr->aabb;
@@ -207,8 +207,9 @@ AssimpLoader::processMeshs(const aiScene *a_scene,
   return ret_meshes;
 }
 
-std::vector<Camera> AssimpLoader::processCameras(const aiScene *a_scene) {
-  std::vector<Camera> ret_cameras(a_scene->mNumCameras);
+std::vector<CameraComponent>
+AssimpLoader::processCameras(const aiScene *a_scene) {
+  std::vector<CameraComponent> ret_cameras(a_scene->mNumCameras);
   for (auto i = 0; i < a_scene->mNumCameras; ++i) {
     auto a_camera = a_scene->mCameras[i];
     auto &cur_camera = ret_cameras[i];
