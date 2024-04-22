@@ -1,51 +1,53 @@
+#include <engine/asset/assimp_importer.h>
 #include <engine/functional/world/world.h>
+#include <engine/utils/base/macro.h>
 #include <queue>
 
 // entt reference: https://skypjack.github.io/entt/md_docs_md_entity.html
 // https://github.com/skypjack/entt/wiki/Crash-Course:-core-functionalities#introduction
 namespace mango {
 
-entt::entity
-World::createRenderableEntity(const std::string &name,
-                              const std::shared_ptr<TransformRelationship> &tr,
-                              const std::shared_ptr<Material> &material,
-                              const std::shared_ptr<StaticMesh> &mesh) {
-  entt::entity entity = entities_.create();
-  entities_.emplace<std::string>(entity, name); // name
-  entities_.emplace<std::shared_ptr<TransformRelationship>>(
-      entity, tr); // node transform index
-  entities_.emplace<std::shared_ptr<Material>>(entity,
-                                               material); // material index
-  entities_.emplace<std::shared_ptr<StaticMesh>>(entity,
-                                                 mesh); // mesh index
-  return entity;
-}
+// entt::entity
+// World::createRenderableEntity(const std::string &name,
+//                               const std::shared_ptr<TransformRelationship>
+//                               &tr, const std::shared_ptr<Material> &material,
+//                               const std::shared_ptr<StaticMesh> &mesh) {
+//   entt::entity entity = entities_.create();
+//   entities_.emplace<std::string>(entity, name); // name
+//   entities_.emplace<std::shared_ptr<TransformRelationship>>(
+//       entity, tr); // node transform index
+//   entities_.emplace<std::shared_ptr<Material>>(entity,
+//                                                material); // material index
+//   entities_.emplace<std::shared_ptr<StaticMesh>>(entity,
+//                                                  mesh); // mesh index
+//   return entity;
+// }
 
-entt::entity
-World::createCameraEntity(const std::string &name,
-                          const std::shared_ptr<TransformRelationship> &tr,
-                          const CameraComponent &camera) {
-  entt::entity entity = entities_.create();
-  entities_.emplace<std::string>(entity, name); // name
-  entities_.emplace<std::shared_ptr<TransformRelationship>>(
-      entity,
-      tr);                                            // node transform index
-  entities_.emplace<CameraComponent>(entity, camera); // camera index
-  return entity;
-}
+// entt::entity
+// World::createCameraEntity(const std::string &name,
+//                           const std::shared_ptr<TransformRelationship> &tr,
+//                           const CameraComponent &camera) {
+//   entt::entity entity = entities_.create();
+//   entities_.emplace<std::string>(entity, name); // name
+//   entities_.emplace<std::shared_ptr<TransformRelationship>>(
+//       entity,
+//       tr);                                            // node transform index
+//   entities_.emplace<CameraComponent>(entity, camera); // camera index
+//   return entity;
+// }
 
-entt::entity
-World::createLightEntity(const std::string_view &name,
-                         const std::shared_ptr<TransformRelationship> &tr,
-                         const Light &light) {
-  entt::entity entity = entities_.create();
-  entities_.emplace<std::string>(entity, name);
-  entities_.emplace<std::shared_ptr<TransformRelationship>>(
-      entity,
-      tr); // node transform index
-  entities_.emplace<Light>(entity, light);
-  return entity;
-}
+// entt::entity
+// World::createLightEntity(const std::string_view &name,
+//                          const std::shared_ptr<TransformRelationship> &tr,
+//                          const Light &light) {
+//   entt::entity entity = entities_.create();
+//   entities_.emplace<std::string>(entity, name);
+//   entities_.emplace<std::shared_ptr<TransformRelationship>>(
+//       entity,
+//       tr); // node transform index
+//   entities_.emplace<Light>(entity, light);
+//   return entity;
+// }
 
 void World::tick(const float seconds) {
   auto &scene_aabb = root_tr_->aabb;
@@ -78,6 +80,11 @@ void World::tick(const float seconds) {
   }
 }
 
-void World::importScene(const URL &url) {}
+void World::importScene(const URL &url) {
+  bool suc = AssimpImporter::import(url.getAbsolute(), this);
+  if (!suc) {
+    LOGE("import scene failed: {}", url.getAbsolute());
+  }
+}
 
 } // namespace mango

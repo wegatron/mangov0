@@ -17,7 +17,7 @@ class CameraComponent;
 class AssimpImporter final {
 public:
   AssimpImporter() = default;
-  bool import(const URL &url, World *world);
+  static bool import(const URL &url, World *world);
 
 private:
   std::shared_ptr<TransformRelationship>
