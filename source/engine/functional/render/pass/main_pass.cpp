@@ -1,4 +1,4 @@
-#include "brdf_pass.h"
+#include "main_pass.h"
 
 #include <engine/functional/global/engine_context.h>
 #include <engine/utils/vk/commands.h>

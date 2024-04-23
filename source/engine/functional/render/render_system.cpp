@@ -1,5 +1,5 @@
 #include <engine/functional/global/engine_context.h>
-#include <engine/functional/render/pass/brdf_pass.h>
+#include <engine/functional/render/pass/main_pass.h>
 #include <engine/functional/render/pass/ui_pass.h>
 #include <engine/functional/render/render_system.h>
 #include <engine/utils/event/event_system.h>
@@ -43,7 +43,7 @@ void RenderSystem::tick(float delta_time) {
   // render simulation 3d view
   // shadow pass
 
-  brdf_pass_->render(cmd_buffer);
+  main_pass_->render(cmd_buffer);
 
   // render ui
   ui_pass_->render(cmd_buffer);
@@ -87,7 +87,7 @@ void RenderSystem::resize3DView(int width, int height) {
       VK_FORMAT_D24_UNORM_S8_UINT, width, height, 1);
   // recreate frame buffer
   frame_buffer_ =
-      std::make_shared<FrameBuffer>(driver, brdf_pass_->getRenderPass(), rt);
+      std::make_shared<FrameBuffer>(driver, main_pass_->getRenderPass(), rt);
 }
 
 // void Render::render(World *scene, Gui * gui)

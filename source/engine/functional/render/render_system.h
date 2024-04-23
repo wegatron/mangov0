@@ -41,7 +41,7 @@ private:
   void collectRenderDatas();
 
   std::unique_ptr<UIPass> ui_pass_;
-  std::unique_ptr<MainPass> brdf_pass_;
+  std::unique_ptr<MainPass> main_pass_;
 
   std::shared_ptr<FrameBuffer> frame_buffer_; //!< 3d view's frame buffer
 };

@@ -522,17 +522,29 @@
 
 #include <Eigen/Dense>
 #include <iostream>
-#include <shaders/include/ubo_structures.h>
+// #include <shaders/include/ubo_structures.h>
+
+struct StaticVertex {
+  Eigen::Vector3f position;
+  Eigen::Vector3f normal;
+  Eigen::Vector2f uv;
+};
 
 int main(int argc, char const *argv[]) {
-  DirectionalLight dl;
-  std::cout << &(dl.direction) << std::endl;
-  std::cout << &(dl.cast_shadow) << std::endl;
-  std::cout << &(dl.color) << std::endl;
-  std::cout << &(dl.padding0) << std::endl;
-  std::cout << &(dl.cascade_view_projs) << std::endl;
-  std::cout << &(dl.cascade_splits) << std::endl;
+  // DirectionalLight dl;
+  // std::cout << &(dl.direction) << std::endl;
+  // std::cout << &(dl.cast_shadow) << std::endl;
+  // std::cout << &(dl.color) << std::endl;
+  // std::cout << &(dl.padding0) << std::endl;
+  // std::cout << &(dl.cascade_view_projs) << std::endl;
+  // std::cout << &(dl.cascade_splits) << std::endl;
 
-  std::cout << "-----" << sizeof(dl) << std::endl;
+  // std::cout << "-----" << sizeof(dl) << std::endl;
+
+  StaticVertex sv;
+  std::cout << &(sv.position) << std::endl;
+  std::cout << &(sv.normal) << std::endl;
+  std::cout << &(sv.uv) << std::endl;
+  std::cout << "-----" << sizeof(sv) << std::endl;
   return 0;
 }
