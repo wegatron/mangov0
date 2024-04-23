@@ -1,6 +1,6 @@
 #include <engine/utils/base/error.h>
 #include <engine/utils/vk/pipeline.h>
-#include <engine/utils/vk/resource_cache.hpp>
+#include <engine/utils/vk/resource_cache.h>
 
 namespace mango {
 GraphicsPipeline::GraphicsPipeline(

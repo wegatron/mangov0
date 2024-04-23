@@ -3,7 +3,7 @@
 #include <engine/utils/vk/buffer.h>
 #include <engine/utils/vk/image.h>
 #include <engine/utils/vk/pipeline.h>
-#include <engine/utils/vk/resource_cache.hpp>
+#include <engine/utils/vk/resource_cache.h>
 #include <engine/utils/vk/sampler.h>
 
 namespace mango {

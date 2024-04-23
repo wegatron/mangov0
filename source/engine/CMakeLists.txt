@@ -1,10 +1,7 @@
 
-file(GLOB_RECURSE utils_headers CONFIGURE_DEPENDS utils/*.h utils/*.hpp)
-file(GLOB_RECURSE utils_srcs CONFIGURE_DEPENDS utils/*.cpp)
+file(GLOB_RECURSE utils CONFIGURE_DEPENDS utils/*.h utils/*.hpp utils/*.cpp)
 
-file(GLOB_RECURSE platform_headers CONFIGURE_DEPENDS platform/*.h platform/*.hpp)
-file(GLOB_RECURSE platform_srcs CONFIGURE_DEPENDS platform/*.cpp)
-#file(GLOB_RECURSE resource CONFIGURE_DEPENDS resource/*.h resource/*.hpp resource/*.cpp)
+file(GLOB_RECURSE platform CONFIGURE_DEPENDS platform/*.h platform/*.hpp platform/*.cpp)
 file(GLOB_RECURSE resource CONFIGURE_DEPENDS resource/stb_image.cpp)
 file(GLOB_RECURSE asset CONFIGURE_DEPENDS asset/*.h asset/*.hpp asset/*.cpp)
 
@@ -33,25 +30,31 @@ set(IMGUI_SRC
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES 
-${utils_headers} ${utils_srcs}
-${platform_headers} ${platform_srcs}
-${global_headers} ${global_srcs}
-${asset} ${render}
+${utils}
+${platform}
+${global}
+${asset}
+${render}
 ${resource}
 )
 
 add_library(engine STATIC
-    ${utils_headers} ${utils_srcs}
-    ${platform_headers} ${platform_srcs}
-    ${global_headers} ${global_srcs}
-    ${render} ${asset}
-    ${resource}
-    ${IMGUI_HEADERS} ${IMGUI_SRC}
+${utils}
+${platform}
+${global}
+${asset}
+${render}
+${resource}
+${IMGUI_SRC}
 )
-target_link_libraries(engine PUBLIC
-volk
+
+target_include_directories(engine PRIVATE
+    $<TARGET_PROPERTY:volk,INTERFACE_INCLUDE_DIRECTORIES>
+)
+
+# linked static libraries should not be linked again in outer target, to avoid duplicate linking
+target_link_libraries(engine PRIVATE
 ${GLFW_LIBRARY}
-${THREAD}
 glslang::glslang
 glslang::glslang-default-resource-limits
 glslang::SPIRV

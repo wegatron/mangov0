@@ -26,7 +26,7 @@ PipelineLayout::PipelineLayout(
   }
 
   // resources for each set
-  uint32_t max_set_index = 0;
+  int32_t max_set_index = -1;
   for (auto itr = resources_.begin(); itr != resources_.end(); ++itr) {
     auto &resource = itr->second;
     if (resource.type == ShaderResourceType::Input ||
@@ -36,13 +36,26 @@ PipelineLayout::PipelineLayout(
       continue;
     auto &set_resources = set_resources_[resource.set];
     set_resources.emplace_back(resource);
-    max_set_index = std::max(max_set_index, resource.set);
+    max_set_index = std::max(max_set_index, static_cast<int32_t>(resource.set));
+  }
+
+  // push constant resources
+  std::vector<VkPushConstantRange> push_const_ranges;
+  for (const auto &shader_module : shader_modules) {
+    for (const auto &resource : shader_module->getResources()) {
+      if (resource.type == ShaderResourceType::PushConstant) {
+        push_const_ranges.emplace_back(VkPushConstantRange{
+            .stageFlags = resource.stages,
+            .offset = resource.offset,
+            .size = resource.size,
+        });
+      }
+    }
   }
 
   // create descriptor set layouts
   std::vector<VkDescriptorSetLayout> descriptor_set_layout_handles(
       max_set_index + 1);
-  descriptor_set_layouts_.resize(max_set_index + 1);
   for (auto itr = set_resources_.begin(); itr != set_resources_.end(); ++itr) {
     auto set_index = itr->first;
     auto &set_resources = itr->second;
@@ -57,8 +70,8 @@ PipelineLayout::PipelineLayout(
 
   create_info.setLayoutCount = descriptor_set_layout_handles.size();
   create_info.pSetLayouts = descriptor_set_layout_handles.data();
-  create_info.pushConstantRangeCount = 0;
-  create_info.pPushConstantRanges = nullptr;
+  create_info.pushConstantRangeCount = push_const_ranges.size();
+  create_info.pPushConstantRanges = push_const_ranges.data();
 
   // Create the Vulkan pipeline layout handle
   auto result = vkCreatePipelineLayout(driver_->getDevice(), &create_info,

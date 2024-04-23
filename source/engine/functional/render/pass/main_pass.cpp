@@ -3,7 +3,7 @@
 #include <engine/functional/global/engine_context.h>
 #include <engine/utils/vk/commands.h>
 #include <engine/utils/vk/pipeline.h>
-#include <engine/utils/vk/resource_cache.hpp>
+#include <engine/utils/vk/resource_cache.h>
 #include <engine/utils/vk/shader_module.h>
 
 namespace mango {
@@ -61,7 +61,7 @@ void MainPass::init() {
   auto resource_cache = g_engine.getResourceCache();
   render_pass_ = resource_cache->requestRenderPass(
       driver,
-      {Attachment{.format = VK_FORMAT_R8G8B8_SRGB},
+      {Attachment{.format = VK_FORMAT_R8G8B8A8_SRGB},
        Attachment{.format = VK_FORMAT_D24_UNORM_S8_UINT}},
       {LoadStoreInfo{}, LoadStoreInfo{}},
       {SubpassInfo{.output_attachments = {0}, .depth_stencil_attachment = 1}});
@@ -73,12 +73,13 @@ void MainPass::init() {
 }
 
 void MainPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
-  assert(p_render_data_ != nullptr);
+  // assert(p_render_data_ != nullptr);
   cmd_buffer->beginRenderPass(render_pass_, frame_buffer_);
   cmd_buffer->setViewPort({VkViewport{0, 0, static_cast<float>(width_),
                                       static_cast<float>(height_), 0.f, 1.f}});
   cmd_buffer->setScissor({VkRect2D{{0, 0}, {width_, height_}}});
-  draw(cmd_buffer, p_render_data_->static_mesh_render_data);
+  if (p_render_data_ != nullptr)
+    draw(cmd_buffer, p_render_data_->static_mesh_render_data);
   cmd_buffer->endRenderPass();
 }
 

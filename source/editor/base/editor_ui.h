@@ -55,7 +55,8 @@ protected:
 
   std::string title_;
   char title_buf_[128];
-  Eigen::Vector<int32_t, 4> content_region_; //!< start x, y; width, height
+  Eigen::Vector<int32_t, 4> content_region_{0, 0, 0,
+                                            0}; //!< start x, y; width, height
 
 protected:
   std::shared_ptr<Sampler> texture_2d_sampler_;

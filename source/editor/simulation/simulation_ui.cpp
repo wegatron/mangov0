@@ -34,6 +34,7 @@
 namespace mango {
 
 void SimulationUI::init() {
+  EditorUI::init();
   title_ = "Simulation";
   coordinate_mode_ = ECoordinateMode::Local;
   operation_mode_ = EOperationMode::Translate;
@@ -370,8 +371,9 @@ void SimulationUI::updateCamera() {
   }
 
   // set camera component
-  assert(editor_camera != nullptr);
-  editor_camera->setAspect(content_region_.z() / content_region_.w());
+  // assert(editor_camera != nullptr);
+  if (editor_camera != nullptr)
+    editor_camera->setAspect(content_region_.z() / content_region_.w());
 
   // if (g_engine.isSimulating()) {
   //   m_mouse_right_button_pressed =

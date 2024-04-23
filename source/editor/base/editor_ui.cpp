@@ -3,7 +3,7 @@
 #include <engine/functional/global/engine_context.h>
 #include <engine/platform/glfw_window.h>
 #include <engine/utils/vk/image.h>
-#include <engine/utils/vk/resource_cache.hpp>
+#include <engine/utils/vk/resource_cache.h>
 #include <engine/utils/vk/sampler.h>
 #include <imgui/backends/imgui_impl_vulkan.h>
 #include <imgui/imgui_internal.h>

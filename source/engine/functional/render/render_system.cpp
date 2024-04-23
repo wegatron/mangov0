@@ -12,6 +12,9 @@ void RenderSystem::init() {
   ui_pass_ = std::make_unique<UIPass>();
   ui_pass_->init();
 
+  main_pass_ = std::make_unique<MainPass>();
+  main_pass_->init();
+
   // register event
   g_engine.getEventSystem()->addListener(
       EEventType::RenderCreateSwapchainObjects,
@@ -26,9 +29,9 @@ void RenderSystem::onCreateSwapchainObjects(
   ui_pass_->onCreateSwapchainObject(p_event->width, p_event->height);
 }
 
-// void RenderSystem::collectRenderDatas() {
-//   // TODO
-// }
+void RenderSystem::collectRenderDatas() {
+  // TODO
+}
 
 void RenderSystem::tick(float delta_time) {
   // collect render datas
@@ -36,13 +39,14 @@ void RenderSystem::tick(float delta_time) {
   driver->waitFrame();
 
   collectRenderDatas();
+  ui_pass_->prepare(); // update ui region for rendering
 
   auto cmd_buffer = driver->requestCommandBuffer(
       VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
   cmd_buffer->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
   // render simulation 3d view
   // shadow pass
-
   main_pass_->render(cmd_buffer);
 
   // render ui
@@ -83,11 +87,12 @@ void RenderSystem::resize3DView(int width, int height) {
   // recreate render target, frame buffer
   auto driver = g_engine.getDriver();
   auto rt = std::make_shared<RenderTarget>(
-      driver, std::initializer_list<VkFormat>{VK_FORMAT_R8G8B8_SRGB},
+      driver, std::initializer_list<VkFormat>{VK_FORMAT_R8G8B8A8_SRGB},
       VK_FORMAT_D24_UNORM_S8_UINT, width, height, 1);
   // recreate frame buffer
   frame_buffer_ =
       std::make_shared<FrameBuffer>(driver, main_pass_->getRenderPass(), rt);
+  main_pass_->setFrameBuffer(frame_buffer_);
 }
 
 // void Render::render(World *scene, Gui * gui)

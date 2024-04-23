@@ -1,8 +1,14 @@
 #include <engine/utils/base/hash_combine.h>
-#include <engine/utils/vk/resource_cache.hpp>
+#include <engine/utils/vk/resource_cache.h>
 #include <engine/utils/vk/sampler.h>
 
 namespace mango {
+
+void ResourceCache::init(const std::shared_ptr<VkDriver> &driver) {
+  state_.pipeline_cache =
+      std::make_unique<VkPipelineCacheWraper>(driver->getDevice());
+}
+
 std::shared_ptr<ShaderModule>
 ResourceCache::requestShaderModule(VkShaderStageFlagBits stage,
                                    const std::string &glsl_source,

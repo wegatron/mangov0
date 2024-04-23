@@ -71,10 +71,6 @@ elseif()
 endif()
 add_subdirectory(thirdparty/volk)
 
-if (NOT WIN32)
-set(THREAD "-lpthread")
-endif()
-
 # include(macros.cmake)
 
 # set(GLSL_C)

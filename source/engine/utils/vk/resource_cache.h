@@ -78,6 +78,8 @@ public:
   ResourceCache(ResourceCache &&) = delete;
   ResourceCache &operator=(ResourceCache &&) = delete;
 
+  void init(const std::shared_ptr<VkDriver> &driver);
+
   std::shared_ptr<ShaderModule>
   requestShaderModule(VkShaderStageFlagBits stage,
                       const std::string &glsl_source,
@@ -199,10 +201,10 @@ public:
                : state_.pipeline_cache->getHandle();
   }
 
-  void
-  setPipelineCache(std::unique_ptr<VkPipelineCacheWraper> &&pipeline_cache) {
-    state_.pipeline_cache = std::move(pipeline_cache);
-  }
+  // void
+  // setPipelineCache(std::unique_ptr<VkPipelineCacheWraper> &&pipeline_cache) {
+  //   state_.pipeline_cache = std::move(pipeline_cache);
+  // }
 
   void clear();
 

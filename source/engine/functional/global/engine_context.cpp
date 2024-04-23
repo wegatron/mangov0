@@ -7,7 +7,7 @@
 #include <engine/utils/base/timer.h>
 #include <engine/utils/event/event_system.h>
 #include <engine/utils/log/log_system.h>
-#include <engine/utils/vk/resource_cache.hpp>
+#include <engine/utils/vk/resource_cache.h>
 #include <engine/utils/vk/stage_pool.h>
 #include <engine/utils/vk/vk_driver.h>
 
@@ -43,7 +43,7 @@ bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
 
   // resource cache
   resource_cache_ = std::make_shared<ResourceCache>();
-  stage_pool_ = std::make_shared<StagePool>(driver_);
+  resource_cache_->init(driver_);
 
   // asset manager
   asset_manager_ = std::make_shared<AssetManager>();

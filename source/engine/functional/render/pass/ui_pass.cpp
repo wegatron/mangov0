@@ -10,7 +10,7 @@
 #include <engine/utils/vk/descriptor_set.h>
 #include <engine/utils/vk/pipeline.h>
 #include <engine/utils/vk/render_pass.h>
-#include <engine/utils/vk/resource_cache.hpp>
+#include <engine/utils/vk/resource_cache.h>
 #include <engine/utils/vk/vk_driver.h>
 #include <imgui/backends/imgui_impl_glfw.h>
 #include <imgui/backends/imgui_impl_vulkan.h>
@@ -136,7 +136,7 @@ void UIPass::createRenderPassAndFramebuffer() {
   }
 }
 
-void UIPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+void UIPass::prepare() {
   ImGui_ImplVulkan_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
@@ -150,7 +150,9 @@ void UIPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
       std::make_shared<RenderConstructUIEvent>());
 
   ImGui::Render(); // prepare render data and command
+}
 
+void UIPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
   auto cur_img_index = g_engine.getDriver()->getCurImageIndex();
   cmd_buffer->beginRenderPass(render_pass_, framebuffers_[cur_img_index]);
 

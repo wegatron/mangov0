@@ -5,7 +5,6 @@ add_executable(zsw_test main.cpp)
 # vk_engine
 # volk
 # ${GLFW_LIBRARY}
-# ${THREAD} 
 # glslang::glslang    
 # glslang::glslang-default-resource-limits
 # glslang::SPIRV

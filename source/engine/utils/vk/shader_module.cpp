@@ -1,4 +1,5 @@
 #include "shader_module.h"
+#include "DirStackFileIncluder.h"
 #include <cassert>
 #include <fstream>
 #include <functional>
@@ -12,7 +13,6 @@
 #include <engine/utils/base/hash_combine.h>
 #include <engine/utils/base/macro.h>
 #include <engine/utils/vk/spirv_reflection.h>
-
 
 namespace mango {
 
@@ -109,6 +109,9 @@ void ShaderModule::compile2spirv(const std::string &glsl_code,
   // Initialize glslang library.
   glslang::InitializeProcess();
 
+  DirStackFileIncluder includer;
+  includer.pushExternalLocalDirectory("shaders/include");
+
   EShLanguage lang = findShaderLanguage(stage);
   glslang::TShader shader(lang);
   const char *file_name_list[1] = {""};
@@ -126,8 +129,8 @@ void ShaderModule::compile2spirv(const std::string &glsl_code,
   // EShMsgDebugInfo for debug in renderdoc
   EShMessages messages = static_cast<EShMessages>(
       EShMsgVulkanRules | EShMsgSpvRules | EShMsgDebugInfo);
-  if (!shader.parse(GetDefaultResources(), 100, false,
-                    messages)) // 110 for desktop, 100 for es
+  if (!shader.parse(GetDefaultResources(), 100, false, messages,
+                    includer)) // 110 for desktop, 100 for es
   {
     auto error_msg = std::string(shader.getInfoLog()) + "\n" +
                      std::string(shader.getInfoDebugLog());
