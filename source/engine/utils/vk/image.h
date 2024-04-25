@@ -12,7 +12,8 @@ public:
   Image(const std::shared_ptr<VkDriver> &driver, VkImageCreateFlags flags,
         VkFormat format, const VkExtent3D &extent, uint32_t mip_levels,
         uint32_t array_layers, VkSampleCountFlagBits sample_count,
-        VkImageUsageFlags image_usage, VmaMemoryUsage memory_usage);
+        VkImageUsageFlags image_usage, VmaMemoryUsage memory_usage,
+        VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED);
 
   Image(const Image &) = delete;
   Image(Image &&) = delete;

@@ -89,10 +89,11 @@ void RenderSystem::resize3DView(int width, int height) {
   auto rt = std::make_shared<RenderTarget>(
       driver, std::initializer_list<VkFormat>{VK_FORMAT_R8G8B8A8_SRGB},
       VK_FORMAT_D24_UNORM_S8_UINT, width, height, 1);
-  // recreate frame buffer
+  //  recreate frame buffer
   frame_buffer_ =
       std::make_shared<FrameBuffer>(driver, main_pass_->getRenderPass(), rt);
-  main_pass_->setFrameBuffer(frame_buffer_);
+  driver->getGraphicsQueue()->waitIdle();
+  main_pass_->setFrameBuffer(frame_buffer_, width, height);
 }
 
 // void Render::render(World *scene, Gui * gui)

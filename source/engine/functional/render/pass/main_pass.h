@@ -18,8 +18,11 @@ public:
     p_render_data_ = p_render_data;
   }
 
-  void setFrameBuffer(const std::shared_ptr<FrameBuffer> &frame_buffer) {
+  void setFrameBuffer(const std::shared_ptr<FrameBuffer> &frame_buffer,
+                      const int width, const int height) {
     frame_buffer_ = frame_buffer;
+    width_ = width;
+    height_ = height;
   }
 
 protected:

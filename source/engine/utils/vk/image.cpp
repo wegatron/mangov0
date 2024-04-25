@@ -8,7 +8,8 @@ namespace mango {
 Image::Image(const std::shared_ptr<VkDriver> &driver, VkImageCreateFlags flags,
              VkFormat format, const VkExtent3D &extent, uint32_t mip_levels,
              uint32_t array_layers, VkSampleCountFlagBits sample_count,
-             VkImageUsageFlags image_usage, VmaMemoryUsage memory_usage)
+             VkImageUsageFlags image_usage, VmaMemoryUsage memory_usage,
+             VkImageLayout layout)
     : driver_(driver), flags_(flags), format_(format), extent_(extent),
       sample_count_(sample_count), image_usage_(image_usage),
       memory_usage_(memory_usage) {
@@ -24,7 +25,7 @@ Image::Image(const std::shared_ptr<VkDriver> &driver, VkImageCreateFlags flags,
   image_info.tiling = VK_IMAGE_TILING_OPTIMAL;
   image_info.usage = image_usage_;
   image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  image_info.initialLayout = layout;
 
   VmaAllocationCreateInfo alloc_create_info = {};
   alloc_create_info.usage = memory_usage;

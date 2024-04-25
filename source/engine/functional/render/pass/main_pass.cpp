@@ -81,6 +81,9 @@ void MainPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
   if (p_render_data_ != nullptr)
     draw(cmd_buffer, p_render_data_->static_mesh_render_data);
   cmd_buffer->endRenderPass();
+  // add image barrier
+  // ImageMemoryBarrier
+  // cmd_buffer->imageMemoryBarrier()
 }
 
 void MainPass::draw(
