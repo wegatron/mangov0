@@ -74,12 +74,20 @@ void Swapchain::initImages() {
   images_.resize(image_count);
   vkGetSwapchainImagesKHR(driver->getDevice(), swapchain_, &image_count,
                           images_.data());
+  std::vector<std::shared_ptr<Image>> wraped_images(image_count);
 
+  for (auto i = 0; i < image_count; ++i) {
+    wraped_images[i] = std::make_shared<Image>(
+        driver, images_[i], false, image_format_,
+        VkExtent3D{extent_.width, extent_.height, 1}, 1, 1,
+        VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+  }
   // image views
   image_views_.resize(images_.size());
   for (auto i = 0; i < images_.size(); ++i) {
     image_views_[i] = std::make_shared<ImageView>(
-        driver, images_[i], VK_IMAGE_VIEW_TYPE_2D, image_format_,
+        wraped_images[i], VK_IMAGE_VIEW_TYPE_2D, image_format_,
         VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 1);
   }
 }

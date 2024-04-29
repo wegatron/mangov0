@@ -3,6 +3,7 @@
 #include <engine/utils/vk/commands.h>
 #include <engine/utils/vk/descriptor_set.h>
 #include <engine/utils/vk/framebuffer.h>
+#include <engine/utils/vk/image.h>
 #include <engine/utils/vk/pipeline.h>
 
 namespace mango {
@@ -300,12 +301,13 @@ void CommandBuffer::imageMemoryBarrier(
       .newLayout = image_memory_barrier.new_layout,
       .srcQueueFamilyIndex = image_memory_barrier.src_queue_family_index,
       .dstQueueFamilyIndex = image_memory_barrier.dst_queue_family_index,
-      .image = image_view->getVkImage(),
+      .image = image_view->getImage()->getHandle(),
       .subresourceRange = image_view->getSubresourceRange()};
 
   vkCmdPipelineBarrier(command_buffer_, image_memory_barrier.src_stage_mask,
                        image_memory_barrier.dst_stage_mask, 0, 0, nullptr, 0,
                        nullptr, 1, &barrier);
+  image_view->updateLayout(image_memory_barrier.new_layout);
 }
 
 void CommandBuffer::imageMemoryBarrier(
@@ -330,6 +332,7 @@ void CommandBuffer::imageMemoryBarrier(
   vkCmdPipelineBarrier(command_buffer_, image_memory_barrier.src_stage_mask,
                        image_memory_barrier.dst_stage_mask, 0, 0, nullptr, 0,
                        nullptr, 1, &barrier);
+  image->updateLayout(image_memory_barrier.new_layout);
 }
 
 void CommandBuffer::pushConstants(const std::shared_ptr<Pipeline> &pipeline,

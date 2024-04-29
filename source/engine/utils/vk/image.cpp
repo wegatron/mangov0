@@ -43,8 +43,24 @@ Image::Image(const std::shared_ptr<VkDriver> &driver, VkImageCreateFlags flags,
   }
 }
 
+Image::Image(const std::shared_ptr<VkDriver> &driver, VkImage vk_image,
+             bool own_image, VkFormat format, const VkExtent3D &extent,
+             uint32_t mip_levels, uint32_t array_layers,
+             VkSampleCountFlagBits sample_count, VkImageUsageFlags image_usage,
+             VkImageLayout layout) {
+  driver_ = driver;
+  image_ = vk_image;
+  own_image_ = own_image;
+  format_ = format;
+  extent_ = extent;
+  sample_count_ = sample_count;
+  image_usage_ = image_usage;
+  layout_ = layout;
+}
+
 Image::~Image() {
-  vmaDestroyImage(driver_->getAllocator(), image_, allocation_);
+  if (own_image_)
+    vmaDestroyImage(driver_->getAllocator(), image_, allocation_);
 }
 
 void Image::updateByStaging(const void *data,
@@ -109,38 +125,61 @@ void setTransSrcDst(const VkImageLayout old_layout,
                     VkAccessFlags &dst_access_mask,
                     VkPipelineStageFlags &src_stage,
                     VkPipelineStageFlags &dst_stage) {
-  switch (new_layout) {
-  case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+  switch (old_layout) {
+  case VK_IMAGE_LAYOUT_UNDEFINED:
     src_access_mask = 0;
-    dst_access_mask = VK_ACCESS_TRANSFER_WRITE_BIT;
     src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    break;
+  case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+    src_access_mask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    break;
+  case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+    src_access_mask = VK_ACCESS_TRANSFER_READ_BIT;
+    src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    break;
+  case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+  case VK_IMAGE_LAYOUT_GENERAL:
+    src_access_mask = VK_ACCESS_SHADER_READ_BIT;
+    src_stage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    break;
+  case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+    src_access_mask = VK_ACCESS_SHADER_READ_BIT;
+    src_stage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    break;
+  case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+    src_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    src_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    break;
+  default:
+    throw std::runtime_error("Unsupported layout transition.");
+  }
+  switch (new_layout) {
+  case VK_IMAGE_LAYOUT_UNDEFINED:
+    dst_access_mask = 0;
+    dst_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    break;
+  case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+    dst_access_mask = VK_ACCESS_TRANSFER_WRITE_BIT;
     dst_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
     break;
   case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-    src_access_mask = 0;
     dst_access_mask = VK_ACCESS_TRANSFER_READ_BIT;
-    src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
     dst_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
     break;
   case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
   case VK_IMAGE_LAYOUT_GENERAL:
-  case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
-    src_access_mask = VK_ACCESS_TRANSFER_WRITE_BIT;
     dst_access_mask = VK_ACCESS_SHADER_READ_BIT;
-    src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    break;
-
-    // We support PRESENT as a target layout to allow blitting from the swap
-    // chain. See also SwapChain::makePresentable().
-  case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-  case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
-    src_access_mask = VK_ACCESS_TRANSFER_READ_BIT;
-    dst_access_mask = 0;
-    src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
     dst_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
     break;
-
+  case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+    dst_access_mask = 0;
+    dst_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    break;
+  case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+    dst_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dst_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    break;
   default:
     throw std::runtime_error("Unsupported layout transition.");
   }
@@ -198,8 +237,7 @@ ImageView::ImageView(const std::shared_ptr<Image> &image,
                      VkImageAspectFlags aspect_flags, uint32_t base_mip_level,
                      uint32_t base_array_layer, uint32_t n_mip_levels,
                      uint32_t n_array_layers)
-    : driver_(image->getDriver()), vk_image_(image->getHandle()),
-      image_ptr_(image) {
+    : driver_(image->getDriver()), image_ptr_(image) {
   VkImageViewCreateInfo view_info = {};
   view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
   view_info.image = image->getHandle();
@@ -224,41 +262,6 @@ ImageView::ImageView(const std::shared_ptr<Image> &image,
 
   auto result = vkCreateImageView(image->getDriver()->getDevice(), &view_info,
                                   nullptr, &image_view_);
-  if (result != VK_SUCCESS) {
-    throw VulkanException(result, "failed to create image view!");
-  }
-}
-
-ImageView::ImageView(const std::shared_ptr<VkDriver> &driver, VkImage image,
-                     VkImageViewType view_type, VkFormat format,
-                     VkImageAspectFlags aspect_flags, uint32_t base_mip_level,
-                     uint32_t base_array_layer, uint32_t n_mip_levels,
-                     uint32_t n_array_layers)
-    : driver_(driver), vk_image_(image) {
-  VkImageViewCreateInfo view_info = {};
-  view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-  view_info.image = image;
-  view_info.viewType = view_type;
-  view_info.format = format;
-  view_info.subresourceRange.aspectMask = aspect_flags;
-  view_info.subresourceRange.baseMipLevel = base_mip_level;
-  view_info.subresourceRange.levelCount = n_mip_levels;
-  view_info.subresourceRange.baseArrayLayer = base_array_layer;
-  view_info.subresourceRange.layerCount = n_array_layers;
-
-  view_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-  view_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-  view_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-  view_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-
-#ifndef NDEBUG
-  view_type_ = view_type;
-  format_ = format;
-  subresource_range_ = view_info.subresourceRange;
-#endif
-
-  auto result =
-      vkCreateImageView(driver->getDevice(), &view_info, nullptr, &image_view_);
   if (result != VK_SUCCESS) {
     throw VulkanException(result, "failed to create image view!");
   }
