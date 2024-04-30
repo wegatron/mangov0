@@ -335,6 +335,32 @@ void CommandBuffer::imageMemoryBarrier(
   image->updateLayout(image_memory_barrier.new_layout);
 }
 
+void CommandBuffer::imageMemoryBarriers(
+    const std::vector<ImageMemoryBarrier> &image_memory_barriers,
+    const std::vector<std::shared_ptr<ImageView>> &image_views) {
+  assert(image_memory_barriers.size() == image_views.size());
+  std::vector<VkImageMemoryBarrier> barriers(image_memory_barriers.size());
+  for (auto i = 0; i < image_memory_barriers.size(); ++i) {
+    auto &image_memory_barrier = image_memory_barriers[i];
+    auto image = image_views[i]->getImage();
+    auto range = image_views[i]->getSubresourceRange();
+    barriers[i] = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        .pNext = nullptr,
+        .srcAccessMask = image_memory_barrier.src_access_mask,
+        .dstAccessMask = image_memory_barrier.dst_access_mask,
+        .oldLayout = image_memory_barrier.old_layout,
+        .newLayout = image_memory_barrier.new_layout,
+        .srcQueueFamilyIndex = image_memory_barrier.src_queue_family_index,
+        .dstQueueFamilyIndex = image_memory_barrier.dst_queue_family_index,
+        .image = image->getHandle(),
+        .subresourceRange = range};
+  }
+  vkCmdPipelineBarrier(command_buffer_, image_memory_barriers[0].src_stage_mask,
+                       image_memory_barriers[0].dst_stage_mask, 0, 0, nullptr,
+                       0, nullptr, barriers.size(), barriers.data());
+}
+
 void CommandBuffer::pushConstants(const std::shared_ptr<Pipeline> &pipeline,
                                   const VkShaderStageFlags stage_flags,
                                   const uint32_t offset, const uint32_t size,

@@ -76,8 +76,9 @@ void MainPass::init() {
 
 void MainPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
   // assert(p_render_data_ != nullptr);
-  frame_buffer_->getRenderTarget()->getImageViews()[0]->transitionLayout(
-      cmd_buffer->getHandle(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+  auto color_img_view = frame_buffer_->getRenderTarget()->getImageViews()[0];
+  color_img_view->transitionLayout(cmd_buffer->getHandle(),
+                                   VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
   cmd_buffer->beginRenderPass(render_pass_, frame_buffer_);
   cmd_buffer->setViewPort({VkViewport{0, 0, static_cast<float>(width_),
                                       static_cast<float>(height_), 0.f, 1.f}});
@@ -86,18 +87,20 @@ void MainPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
     draw(cmd_buffer, p_render_data_->static_mesh_render_data);
   cmd_buffer->endRenderPass();
   // add image barrier
-  ImageMemoryBarrier image_memory_barrier{
-      .old_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-      .new_layout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL,
-      .src_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-      .dst_access_mask = VK_ACCESS_SHADER_READ_BIT,
-      .src_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-      .dst_stage_mask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-      .src_queue_family_index = VK_QUEUE_FAMILY_IGNORED,
-      .dst_queue_family_index = VK_QUEUE_FAMILY_IGNORED};
-  cmd_buffer->imageMemoryBarrier(
-      image_memory_barrier,
-      frame_buffer_->getRenderTarget()->getImageViews()[0]);
+  color_img_view->transitionLayout(cmd_buffer->getHandle(),
+                                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  //   ImageMemoryBarrier image_memory_barrier{
+  //       .old_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+  //       .new_layout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL,
+  //       .src_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+  //       .dst_access_mask = VK_ACCESS_SHADER_READ_BIT,
+  //       .src_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+  //       .dst_stage_mask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+  //       .src_queue_family_index = VK_QUEUE_FAMILY_IGNORED,
+  //       .dst_queue_family_index = VK_QUEUE_FAMILY_IGNORED};
+  //   cmd_buffer->imageMemoryBarrier(
+  //       image_memory_barrier,
+  //       frame_buffer_->getRenderTarget()->getImageViews()[0]);
 }
 
 void MainPass::draw(

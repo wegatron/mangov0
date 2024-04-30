@@ -156,6 +156,10 @@ public:
   void imageMemoryBarrier(const ImageMemoryBarrier &image_memory_barrier,
                           const std::shared_ptr<Image> &image);
 
+  void imageMemoryBarriers(
+      const std::vector<ImageMemoryBarrier> &image_memory_barriers,
+      const std::vector<std::shared_ptr<ImageView>> &image_views);
+
 private:
   CommandBuffer(const std::shared_ptr<VkDriver> &driver,
                 CommandPool &command_pool, VkCommandBufferLevel level);

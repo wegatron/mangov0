@@ -115,70 +115,38 @@ void Image::updateByStaging(const void *data,
 
   vkCmdCopyBufferToImage(cmd_buf_handle, stage->buffer, image_,
                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
-
-  // transitionLayout(cmd_buf_handle, transitionRange, getDefaultLayout());
 }
 
-void setTransSrcDst(const VkImageLayout old_layout,
-                    const VkImageLayout new_layout,
-                    VkAccessFlags &src_access_mask,
-                    VkAccessFlags &dst_access_mask,
-                    VkPipelineStageFlags &src_stage,
-                    VkPipelineStageFlags &dst_stage) {
-  switch (old_layout) {
+void getAccessMaskAndStageFlags(const VkImageLayout layout,
+                                VkAccessFlags &access_mask,
+                                VkPipelineStageFlags &stage) {
+  switch (layout) {
   case VK_IMAGE_LAYOUT_UNDEFINED:
-    src_access_mask = 0;
-    src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    access_mask = 0;
+    stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
     break;
   case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-    src_access_mask = VK_ACCESS_TRANSFER_WRITE_BIT;
-    src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    access_mask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
     break;
   case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-    src_access_mask = VK_ACCESS_TRANSFER_READ_BIT;
-    src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    access_mask = VK_ACCESS_TRANSFER_READ_BIT;
+    stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
     break;
   case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
   case VK_IMAGE_LAYOUT_GENERAL:
-    src_access_mask = VK_ACCESS_SHADER_READ_BIT;
-    src_stage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    access_mask = VK_ACCESS_SHADER_READ_BIT;
+    stage = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
+            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
     break;
   case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
-    src_access_mask = VK_ACCESS_SHADER_READ_BIT;
-    src_stage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    access_mask = VK_ACCESS_SHADER_READ_BIT;
+    stage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
     break;
   case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-    src_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    src_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    break;
-  default:
-    throw std::runtime_error("Unsupported layout transition.");
-  }
-  switch (new_layout) {
-  case VK_IMAGE_LAYOUT_UNDEFINED:
-    dst_access_mask = 0;
-    dst_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-    break;
-  case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-    dst_access_mask = VK_ACCESS_TRANSFER_WRITE_BIT;
-    dst_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    break;
-  case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-    dst_access_mask = VK_ACCESS_TRANSFER_READ_BIT;
-    dst_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    break;
-  case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-  case VK_IMAGE_LAYOUT_GENERAL:
-    dst_access_mask = VK_ACCESS_SHADER_READ_BIT;
-    dst_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-    break;
-  case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
-    dst_access_mask = 0;
-    dst_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-    break;
-  case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-    dst_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    dst_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     break;
   default:
     throw std::runtime_error("Unsupported layout transition.");
@@ -187,18 +155,17 @@ void setTransSrcDst(const VkImageLayout old_layout,
 
 void Image::transitionLayout(const VkCommandBuffer cmd_buf,
                              const VkImageSubresourceRange &range,
-                             const VkImageLayout layout) {
-  if (layout_ == layout)
+                             const VkImageLayout dst_layout) {
+  if (layout_ == dst_layout)
     return;
-  // src dst
   VkAccessFlags src_access_mask, dst_access_mask;
   VkPipelineStageFlags src_stage, dst_stage;
-  setTransSrcDst(layout_, layout, src_access_mask, dst_access_mask, src_stage,
-                 dst_stage);
+  getAccessMaskAndStageFlags(layout_, src_access_mask, src_stage);
+  getAccessMaskAndStageFlags(dst_layout, dst_access_mask, dst_stage);
   VkImageMemoryBarrier barrier = {};
   barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
   barrier.oldLayout = layout_;
-  barrier.newLayout = layout;
+  barrier.newLayout = dst_layout;
   barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
   barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
   barrier.image = image_;
@@ -207,7 +174,7 @@ void Image::transitionLayout(const VkCommandBuffer cmd_buf,
   barrier.dstAccessMask = dst_access_mask;
   vkCmdPipelineBarrier(cmd_buf, src_stage, dst_stage, 0, 0, nullptr, 0, nullptr,
                        1, &barrier);
-  layout_ = layout;
+  layout_ = dst_layout;
 }
 
 // VkImageLayout Image::getDefaultLayout() const

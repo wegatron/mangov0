@@ -1,4 +1,5 @@
 #include <engine/utils/base/error.h>
+#include <engine/utils/vk/commands.h>
 #include <engine/utils/vk/framebuffer.h>
 namespace mango {
 
@@ -83,30 +84,59 @@ RenderTarget::RenderTarget(const std::shared_ptr<VkDriver> &driver,
                             VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT |
                             VK_IMAGE_USAGE_SAMPLED_BIT;
   VkExtent3D extent = {width_, height_, 1};
+  auto cmd_buffer =
+      driver->requestCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+  cmd_buffer->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+  std::vector<ImageMemoryBarrier> barriers;
+  barriers.reserve(color_formats_.size());
   for (auto format : color_formats_) {
     auto image = std::make_shared<Image>(
         driver_, 0, format, extent, 1, 1, VK_SAMPLE_COUNT_1_BIT, usage,
-        VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE,
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, VK_IMAGE_LAYOUT_UNDEFINED);
     images_.push_back(image);
     auto image_view =
         std::make_shared<ImageView>(image, VK_IMAGE_VIEW_TYPE_2D, format,
                                     VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 1);
     images_views_.push_back(image_view);
+    barriers.emplace_back(ImageMemoryBarrier{
+        .old_layout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .new_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        .src_access_mask = 0,
+        .dst_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+                           VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
+        .src_stage_mask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        .dst_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .src_queue_family_index = VK_QUEUE_FAMILY_IGNORED,
+        .dst_queue_family_index = VK_QUEUE_FAMILY_IGNORED});
   }
-
+  cmd_buffer->imageMemoryBarriers(barriers, images_views_);
   if (ds_format_ != VK_FORMAT_UNDEFINED) {
     auto image = std::make_shared<Image>(
         driver_, 0, ds_format_, extent, 1, 1, VK_SAMPLE_COUNT_1_BIT,
         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-        VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE,
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+        VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, VK_IMAGE_LAYOUT_UNDEFINED);
     images_.push_back(image);
     auto image_view = std::make_shared<ImageView>(
         image, VK_IMAGE_VIEW_TYPE_2D, ds_format_,
         VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0, 0, 1, 1);
     images_views_.push_back(image_view);
+
+    ImageMemoryBarrier barrier{
+        .old_layout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .new_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+        .src_access_mask = 0,
+        .dst_access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+                           VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+        .src_stage_mask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        .dst_stage_mask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+                          VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+        .src_queue_family_index = VK_QUEUE_FAMILY_IGNORED,
+        .dst_queue_family_index = VK_QUEUE_FAMILY_IGNORED};
+    cmd_buffer->imageMemoryBarrier(barrier, image_view);
   }
+
+  cmd_buffer->end();
+  driver->getGraphicsQueue()->submit(cmd_buffer, VK_NULL_HANDLE);
 }
 
 RenderTarget::RenderTarget(
