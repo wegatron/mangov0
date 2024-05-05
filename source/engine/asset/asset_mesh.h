@@ -34,8 +34,8 @@ public:
 
   const Eigen::AlignedBox3f &getBoundingBox() const { return bounding_box_; }
 
-  virtual void inflate(
-      const std::shared_ptr<CommandBuffer> &cmd_buffer); //!< upload data to gpu
+  virtual void inflate(const std::shared_ptr<CommandBuffer>
+                           &cmd_buffer) = 0; //!< upload data to gpu
 
 protected:
   std::vector<SubMesh> sub_meshes_; //!< submesh: index offset, index

@@ -5,9 +5,7 @@ file(GLOB_RECURSE platform CONFIGURE_DEPENDS platform/*.h platform/*.hpp platfor
 file(GLOB_RECURSE resource CONFIGURE_DEPENDS resource/stb_image.cpp)
 file(GLOB_RECURSE asset CONFIGURE_DEPENDS asset/*.h asset/*.hpp asset/*.cpp)
 
-file(GLOB_RECURSE global CONFIGURE_DEPENDS functional/global/*.h functional/global/*.hpp functional/global/*.cpp)
-file(GLOB_RECURSE render CONFIGURE_DEPENDS functional/render/*.h functional/render/*.hpp functional/render/*.cpp)
-file(GLOB_RECURSE component CONFIGURE_DEPENDS functional/component/*.h functional/component/*.hpp functional/component/*.cpp)
+file(GLOB_RECURSE functional CONFIGURE_DEPENDS functional/*)
 
 set(IMGUI_HEADERS
     ${CMAKE_SOURCE_DIR}/thirdparty/imgui/imconfig.h
@@ -19,6 +17,7 @@ set(IMGUI_HEADERS
     ${CMAKE_SOURCE_DIR}/thirdparty/imgui/backends/imgui_impl_glfw.h
     ${CMAKE_SOURCE_DIR}/thirdparty/imgui/backends/imgui_impl_vulkan.h
 )
+
 set(IMGUI_SRC
     ${CMAKE_SOURCE_DIR}/thirdparty/imgui/imgui.cpp
     ${CMAKE_SOURCE_DIR}/thirdparty/imgui/imgui_draw.cpp
@@ -27,30 +26,32 @@ set(IMGUI_SRC
     ${CMAKE_SOURCE_DIR}/thirdparty/imgui/imgui_demo.cpp
     ${CMAKE_SOURCE_DIR}/thirdparty/imgui/backends/imgui_impl_glfw.cpp
     ${CMAKE_SOURCE_DIR}/thirdparty/imgui/backends/imgui_impl_vulkan.cpp
+    ${CMAKE_SOURCE_DIR}/thirdparty/ImGuiFileDialog/ImGuiFileDialog.cpp
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES 
-${utils}
-${platform}
-${global}
 ${asset}
-${render}
+${functional}
+${platform}
+${utils}
 ${resource}
 )
 
 add_library(engine STATIC
-${utils}
-${platform}
-${global}
 ${asset}
-${render}
+${functional}
+${platform}
+${utils}
 ${resource}
 ${IMGUI_SRC}
 )
 
 target_include_directories(engine PRIVATE
     $<TARGET_PROPERTY:volk,INTERFACE_INCLUDE_DIRECTORIES>
+    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/ImGuiFileDialog    
 )
+
+#target_include_directories(engine )
 
 # linked static libraries should not be linked again in outer target, to avoid duplicate linking
 target_link_libraries(engine PRIVATE
@@ -62,5 +63,6 @@ GPUOpen::VulkanMemoryAllocator
 spirv-cross-reflect
 spirv-cross-core
 spirv-cross-glsl
-spdlog::spdlog
+assimp::assimp
+#spdlog::spdlog
 )

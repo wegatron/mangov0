@@ -172,8 +172,8 @@ void ShaderModule::compile2spirv(const std::string &glsl_code,
   // options.optimizeSize = false;
   options.disassemble = true;
   options.validate = true;
-  options.emitNonSemanticShaderDebugInfo = true;
-  options.emitNonSemanticShaderDebugSource = true;
+  // options.emitNonSemanticShaderDebugInfo = true;
+  // options.emitNonSemanticShaderDebugSource = true;
   glslang::GlslangToSpv(*intermediate, spirv_code, &logger, &options);
 #else
   glslang::GlslangToSpv(*intermediate, spirv_code, &logger);

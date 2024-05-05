@@ -25,6 +25,10 @@ public:
    */
   void importScene(const URL &url);
 
+  void saveAsWorld(const URL &url);
+
+  void saveWorld();
+
   entt::entity createEntity(const std::string &name) {
     return entities_.create();
   }

@@ -206,6 +206,12 @@ if [ ! -f "thirdparty/IconsFontAwesome5.h" ]; then
     wget https://raw.githubusercontent.com/juliettef/IconFontCppHeaders/main/IconsFontAwesome5.h -O thirdparty/IconsFontAwesome5.h
 fi
 
+if [ ! -f "thirdparty/ImGuiFileDialog"]; then
+    git clone https://github.com/aiekick/ImGuiFileDialog.git
+    # cmake thirdparty/ImGuiFileDialog -DCMAKE_INSTALL_PREFIX="./thirdparty/install" -B thirdparty/ImGuiFileDialog/build -DCMAKE_BUILD_TYPE=Debug
+    # cmake --build thirdparty/ImGuiFileDialog/build
+    # cmake --install thirdparty/ImGuiFileDialog/build --config Debug
+fi
 
 #-----------------------------------------------------------------------------------------------------------------------
 

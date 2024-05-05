@@ -11,7 +11,10 @@ void AssetManager::init() {
       {EAssetType::TEXTURE2D, "png"},  {EAssetType::TEXTURE2D, "jpg"},
       {EAssetType::MATERIAL, "mat"},   {EAssetType::SKELETON, "skl"},
       {EAssetType::STATICMESH, "sm"},  {EAssetType::SKELETALMESH, "skm"},
-      {EAssetType::ANIMATION, "anim"}, {EAssetType::WORLD, "world"}};
+      {EAssetType::ANIMATION, "anim"}, {EAssetType::WORLD, "world"},
+      {EAssetType::SCENE, "gltf"},     {EAssetType::SCENE, "glb"},
+      {EAssetType::SCENE, "fbx"},      {EAssetType::SCENE, "obj"},
+  };
 
   asset_archive_types_ = {{EAssetType::TEXTURE2D, EArchiveType::BINARY},
                           {EAssetType::TEXTURECUBE, EArchiveType::BINARY},

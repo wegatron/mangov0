@@ -33,4 +33,10 @@ void StaticMesh::inflate(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
   ib->updateByStaging(indices_.data(), indices_.size() * sizeof(uint32_t), 0,
                       cmd_buffer);
 }
+
+void StaticMesh::load(const URL &url) {
+  // deserialize from file
+  // ...
+  assert(false);
+}
 } // namespace mango

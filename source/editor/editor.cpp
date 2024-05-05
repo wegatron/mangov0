@@ -2,7 +2,7 @@
 #include <editor/editor.h>
 // #include "editor/global/editor_context.h"
 // #include "editor/log/log_ui.h"
-// #include <editor/menu/menu_ui.h>
+#include <editor/menu/menu_ui.h>
 // #include "editor/property/property_ui.h"
 #include <editor/simulation/simulation_ui.h>
 // #include "editor/tool/tool_ui.h"
@@ -35,7 +35,7 @@ void Editor::init() {
   g_engine.init(vk_config, "editor");
 
   // create editor ui
-  // std::shared_ptr<EditorUI> menu_ui = std::make_shared<MenuUI>();
+  std::shared_ptr<EditorUI> menu_ui = std::make_shared<MenuUI>();
   // std::shared_ptr<EditorUI> tool_ui = std::make_shared<ToolUI>();
   // std::shared_ptr<EditorUI> world_ui = std::make_shared<WorldUI>();
   // std::shared_ptr<EditorUI> property_ui = std::make_shared<PropertyUI>();
@@ -44,7 +44,7 @@ void Editor::init() {
   simulation_ui_ = std::make_shared<SimulationUI>();
   // m_editor_uis = {menu_ui,  tool_ui,         world_ui, property_ui,
   //                 asset_ui, m_simulation_ui, log_ui};
-  editor_uis_ = {asset_ui, simulation_ui_};
+  editor_uis_ = {menu_ui, asset_ui, simulation_ui_};
   // init all editor uis
   for (auto &editor_ui : editor_uis_) {
     editor_ui->init();
@@ -61,6 +61,7 @@ void Editor::destroy() {
   auto driver = g_engine.getDriver();
   driver->getGraphicsQueue()->waitIdle();
   editor_uis_.clear();
+  simulation_ui_.reset();
 
   // destroy engine
   g_engine.destroy();

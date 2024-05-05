@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstring>
 #include <sstream>
+#include <iostream>
 #include <stdexcept>
 #include <vector>
 #include <volk.h>
@@ -174,8 +175,9 @@ void VkDriver::createSwapchain() {
     render_targets_[i] = std::make_shared<RenderTarget>(
         std::initializer_list<std::shared_ptr<ImageView>>{
             swapchain_->getImageView(i)},
-        std::initializer_list<VkFormat>{swapchain_->getImageFormat()},
-        VK_FORMAT_UNDEFINED, width, height, 1u);
+        std::initializer_list<VkFormat>{swapchain_->getImageFormat()}, // color format
+        VK_FORMAT_UNDEFINED, // depth stencil format, undefined means no depth stencil attachment
+        width, height, 1u);
   }
 
   // event for render system to update
@@ -231,10 +233,14 @@ void VkDriver::presentFrame() {
   present_info.pWaitSemaphores = &render_semaphore_handle;
 
   // Present swapchain image
+  std::cout << "before present" << std::endl;
   VkResult result = graphics_cmd_queue_->present(present_info);
   if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+    graphics_cmd_queue_->waitIdle();
     createSwapchain();
+    std::cout << "Swapchain recreated!" << std::endl;
   }
+  std::cout << "present frame: " <<  cur_frame_index_ << std::endl;
   cur_frame_index_ = (cur_frame_index_ + 1) % swapchain_->getImageCount();
 }
 

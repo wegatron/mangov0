@@ -15,6 +15,7 @@
 #include <imgui/backends/imgui_impl_glfw.h>
 #include <imgui/backends/imgui_impl_vulkan.h>
 #include <imgui/imgui.h>
+#include <iostream>
 
 namespace mango {
 
@@ -183,7 +184,8 @@ void UIPass::onCreateSwapchainObject(const uint32_t width,
   framebuffers_.resize(rts.size());
   for (auto i = 0; i < rts.size(); ++i) {
     framebuffers_[i] =
-        std::move(std::make_unique<FrameBuffer>(driver, render_pass_, rts[i]));
+        std::make_shared<FrameBuffer>(driver, render_pass_, rts[i]);
   }
+  std::cout << "frame buffer updated\n" << std::endl;
 }
 } // namespace mango

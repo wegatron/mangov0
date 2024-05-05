@@ -17,7 +17,8 @@ enum class EAssetType {
   STATICMESH,
   SKELETALMESH,
   ANIMATION,
-  WORLD
+  WORLD,
+  SCENE,
 };
 
 class Asset {

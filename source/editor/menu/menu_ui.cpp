@@ -1,30 +1,32 @@
+#include <ImGuiFileDialog.h>
 #include "menu_ui.h"
-#include "engine/core/config/config_manager.h"
-#include "engine/function/engine/world/world_manager.h"
-#include "engine/resource/asset/asset_manager.h"
-#include "engine/utils/base/macro.h"
-#include "engine/utils/event/event_system.h"
+// #include <engine/core/config/config_manager.h>
+
+#include <engine/asset/asset_manager.h>
+#include <engine/functional/world/world.h>
+#include <engine/utils/base/macro.h>
+#include <engine/utils/event/event_system.h>
 
 #include <imgui/imgui_internal.h>
 
 namespace mango {
 
 void MenuUI::init() {
-  m_title = "Menu";
+  EditorUI::init();
+  title_ = "Menu";
 
   // load editor layout
-  std::string layout_name = g_engine.configManager()->getEditorLayout();
-  m_layout_path =
-      g_engine.fileSystem()->absolute("asset/engine/layout/" + layout_name);
-  ImGui::LoadIniSettingsFromDisk(m_layout_path.c_str());
+  // std::string layout_name = g_engine.configManager()->getEditorLayout();
+  // m_layout_path =
+  //     g_engine.fileSystem()->absolute("asset/engine/layout/" + layout_name);
+  // ImGui::LoadIniSettingsFromDisk(m_layout_path.c_str());
 
-  m_template_worlds = {
-      {"empty", "asset/engine/world/empty.world",
-       loadImGuiImageFromFile("asset/engine/world/empty.png")},
-      {"basic", "asset/engine/world/basic.world",
-       loadImGuiImageFromFile("asset/engine/world/basic.png")}};
-  for (const auto &template_world : m_template_worlds) {
-    m_template_world_hover_states[template_world.name] = {false};
+  template_worlds_ = {{"empty", "asset/engine/world/empty.world",
+                       loadImGuiImageFromFile("asset/engine/world/empty.png")},
+                      {"basic", "asset/engine/world/basic.world",
+                       loadImGuiImageFromFile("asset/engine/world/basic.png")}};
+  for (const auto &template_world : template_worlds_) {
+    template_world_hover_states_[template_world.name] = {false};
   }
 }
 
@@ -121,18 +123,18 @@ void MenuUI::construct() {
       ImGui::SetCursorPosX(ImGui::GetCursorPosX() + button_offset_x);
       ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
       if (ImGui::Button("create", ImVec2(button_width, 0))) {
-        std::string world_name_str = world_name;
-        if (!m_selected_folder.empty() && !world_name_str.empty()) {
-          const std::string &template_url =
-              m_template_worlds[m_selected_template_world_index].url;
-          std::string save_as_url =
-              m_selected_folder + "/" + world_name_str + ".world";
+        // std::string world_name_str = world_name;
+        // if (!m_selected_folder.empty() && !world_name_str.empty()) {
+        //   const std::string &template_url =
+        //       m_template_worlds[m_selected_template_world_index].url;
+        //   std::string save_as_url =
+        //       m_selected_folder + "/" + world_name_str + ".world";
 
-          clearEntitySelection();
-          g_engine.worldManager()->createWorld(template_url, save_as_url);
+        //   clearEntitySelection();
+        //   g_engine.worldManager()->createWorld(template_url, save_as_url);
 
-          showing_new_world_popup = false;
-        }
+        //   showing_new_world_popup = false;
+        // }
       }
       ImGui::SameLine();
       if (ImGui::Button("cancel", ImVec2(button_width, 0))) {
@@ -153,42 +155,43 @@ void MenuUI::construct() {
     if (ImGui::BeginPopupModal("Open World", nullptr,
                                ImGuiWindowFlags_NoResize |
                                    ImGuiWindowFlags_NoMove)) {
-      for (const std::string &current_world_url : m_current_world_urls) {
-        ImGuiTreeNodeFlags tree_node_flags = 0;
-        tree_node_flags |= ImGuiTreeNodeFlags_Bullet | ImGuiTreeNodeFlags_Leaf |
-                           ImGuiTreeNodeFlags_OpenOnDoubleClick;
-        if (current_world_url == m_selected_world_url) {
-          tree_node_flags |= ImGuiTreeNodeFlags_Selected;
-        }
+      // for (const std::string &current_world_url : m_current_world_urls) {
+      //   ImGuiTreeNodeFlags tree_node_flags = 0;
+      //   tree_node_flags |= ImGuiTreeNodeFlags_Bullet |
+      //   ImGuiTreeNodeFlags_Leaf |
+      //                      ImGuiTreeNodeFlags_OpenOnDoubleClick;
+      //   if (current_world_url == m_selected_world_url) {
+      //     tree_node_flags |= ImGuiTreeNodeFlags_Selected;
+      //   }
 
-        if (ImGui::TreeNodeEx(current_world_url.c_str(), tree_node_flags)) {
-          ImGui::TreePop();
-        }
+      //   if (ImGui::TreeNodeEx(current_world_url.c_str(), tree_node_flags)) {
+      //     ImGui::TreePop();
+      //   }
 
-        if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-          m_selected_world_url = current_world_url;
-        }
-      }
+      //   if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
+      //     m_selected_world_url = current_world_url;
+      //   }
+      // }
 
-      float button_width = 60.0f;
-      float button_offset_x =
-          (ImGui::GetContentRegionAvail().x - button_width * 2 - k_spacing) /
-          2.0f;
-      ImGui::SetCursorPosX(ImGui::GetCursorPosX() + button_offset_x);
-      ImGui::SetCursorPosY(ImGui::GetCursorPosY() +
-                           ImGui::GetContentRegionAvail().y - 30);
-      if (ImGui::Button("open", ImVec2(button_width, 0))) {
-        clearEntitySelection();
-        g_engine.worldManager()->openWorld(m_selected_world_url);
-        showing_open_world_popup = false;
-      }
+      // float button_width = 60.0f;
+      // float button_offset_x =
+      //     (ImGui::GetContentRegionAvail().x - button_width * 2 - k_spacing) /
+      //     2.0f;
+      // ImGui::SetCursorPosX(ImGui::GetCursorPosX() + button_offset_x);
+      // ImGui::SetCursorPosY(ImGui::GetCursorPosY() +
+      //                      ImGui::GetContentRegionAvail().y - 30);
+      // if (ImGui::Button("open", ImVec2(button_width, 0))) {
+      //   clearEntitySelection();
+      //   g_engine.worldManager()->openWorld(m_selected_world_url);
+      //   showing_open_world_popup = false;
+      // }
 
-      ImGui::SameLine();
-      if (ImGui::Button("cancel", ImVec2(button_width, 0))) {
-        showing_open_world_popup = false;
-      }
+      // ImGui::SameLine();
+      // if (ImGui::Button("cancel", ImVec2(button_width, 0))) {
+      //   showing_open_world_popup = false;
+      // }
 
-      ImGui::EndPopup();
+      // ImGui::EndPopup();
     }
   }
 
@@ -224,40 +227,59 @@ void MenuUI::construct() {
       ImGui::InputText("##world_name", world_name, IM_ARRAYSIZE(world_name));
       ImGui::EndChild();
 
-      ImGui::BeginChild("new_world_bottom",
-                        ImVec2(content_size.x, k_bottom_height), false);
-      float button_width = 60.0f;
-      float button_offset_x =
-          (ImGui::GetContentRegionAvail().x - button_width * 2 - k_spacing) /
-          2.0f;
-      ImGui::SetCursorPosX(ImGui::GetCursorPosX() + button_offset_x);
-      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
-      if (ImGui::Button("save", ImVec2(button_width, 0))) {
-        std::string world_name_str = world_name;
-        if (!m_selected_folder.empty() && !world_name_str.empty()) {
-          std::string url = m_selected_folder + "/" + world_name_str + ".world";
-          g_engine.worldManager()->saveAsWorld(url);
+      // ImGui::BeginChild("new_world_bottom",
+      //                   ImVec2(content_size.x, k_bottom_height), false);
+      // float button_width = 60.0f;
+      // float button_offset_x =
+      //     (ImGui::GetContentRegionAvail().x - button_width * 2 - k_spacing) /
+      //     2.0f;
+      // ImGui::SetCursorPosX(ImGui::GetCursorPosX() + button_offset_x);
+      // ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
+      // if (ImGui::Button("save", ImVec2(button_width, 0))) {
+      //   std::string world_name_str = world_name;
+      //   if (!m_selected_folder.empty() && !world_name_str.empty()) {
+      //     std::string url = m_selected_folder + "/" + world_name_str +
+      //     ".world"; g_engine.getWorld()->saveAsWorld(url);
 
-          showing_save_as_world_popup = false;
-        }
-      }
+      //     showing_save_as_world_popup = false;
+      //   }
+      // }
 
-      ImGui::SameLine();
-      if (ImGui::Button("cancel", ImVec2(button_width, 0))) {
-        showing_save_as_world_popup = false;
-      }
-      ImGui::EndChild();
+      // ImGui::SameLine();
+      // if (ImGui::Button("cancel", ImVec2(button_width, 0))) {
+      //   showing_save_as_world_popup = false;
+      // }
+      // ImGui::EndChild();
 
       ImGui::EndPopup();
     }
   }
-}
 
-void MenuUI::destroy() {
-  EditorUI::destroy();
+  if (showing_import_scene_popup) {
+    ImGui::SetNextWindowSize(ImVec2(300, 500));
+    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(),
+                            ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-  if (g_engine.configManager()->getSaveLayout()) {
-    ImGui::SaveIniSettingsToDisk(m_layout_path.c_str());
+    ImGui::OpenPopup("Import Scene");
+    if (ImGui::BeginPopupModal("Import Scene", nullptr,
+                               ImGuiWindowFlags_NoResize |
+                                   ImGuiWindowFlags_NoMove)) {
+      //  browse files in current folder      
+      IGFD::FileDialogConfig config;
+	    config.path = g_engine.getFileSystem()->relative("");
+      ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp", config);      
+      // display
+      if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) {
+        if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
+          std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+          std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+          // action
+        }
+        
+        // close
+        ImGuiFileDialog::Instance()->Close();
+      }
+    }
   }
 }
 
@@ -392,6 +414,15 @@ void MenuUI::pollShortcuts() {
   }
 }
 
+void MenuUI::importScene() {
+  if (isPoppingUp()) {
+    return;
+  }
+
+  showing_import_scene_popup = true;
+  pollFolders();
+}
+
 void MenuUI::newWorld() {
   if (isPoppingUp()) {
     return;
@@ -402,28 +433,28 @@ void MenuUI::newWorld() {
 }
 
 void MenuUI::openWorld() {
-  if (isPoppingUp()) {
-    return;
-  }
+  // if (isPoppingUp()) {
+  //   return;
+  // }
 
-  showing_open_world_popup = true;
-  pollFolders();
+  // showing_open_world_popup = true;
+  // pollFolders();
 
-  m_current_world_urls.clear();
-  for (const auto &folder_node : m_folder_nodes) {
-    for (const auto &child_file : folder_node.child_files) {
-      if (g_engine.assetManager()->getAssetType(child_file) ==
-          EAssetType::World) {
-        std::string world_name = g_engine.fileSystem()->basename(child_file);
-        std::string current_world_name =
-            g_engine.worldManager()->getCurrentWorldName();
-        if (world_name != current_world_name) {
-          m_current_world_urls.push_back(
-              g_engine.fileSystem()->relative(child_file));
-        }
-      }
-    }
-  }
+  // m_current_world_urls.clear();
+  // for (const auto &folder_node : m_folder_nodes) {
+  //   for (const auto &child_file : folder_node.child_files) {
+  //     if (g_engine.assetManager()->getAssetType(child_file) ==
+  //         EAssetType::World) {
+  //       std::string world_name = g_engine.fileSystem()->basename(child_file);
+  //       std::string current_world_name =
+  //           g_engine.worldManager()->getCurrentWorldName();
+  //       if (world_name != current_world_name) {
+  //         m_current_world_urls.push_back(
+  //             g_engine.fileSystem()->relative(child_file));
+  //       }
+  //     }
+  //   }
+  // }
 }
 
 void MenuUI::saveWorld() {
@@ -431,7 +462,7 @@ void MenuUI::saveWorld() {
     return;
   }
 
-  g_engine.worldManager()->saveWorld();
+  g_engine.getWorld()->saveWorld();
 }
 
 void MenuUI::saveAsWorld() {
@@ -469,16 +500,15 @@ void MenuUI::constructTemplateWorldPanel() {
   float clip_rect_max_y = clip_rect_min_y + ImGui::GetContentRegionAvail().y;
 
   ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(15.0f, 24.0f));
-  for (size_t i = 0; i < m_template_worlds.size(); ++i) {
-    const std::string &template_world_name = m_template_worlds[i].name;
-    HoverState &hover_state =
-        m_template_world_hover_states[template_world_name];
+  for (size_t i = 0; i < template_worlds_.size(); ++i) {
+    const std::string &template_world_name = template_worlds_[i].name;
+    HoverState &hover_state = template_world_hover_states_[template_world_name];
 
     ImGui::BeginGroup();
 
     // draw hovered/selected background rect
     bool is_hovered = hover_state.is_hovered;
-    bool is_selected = m_selected_template_world_index == i;
+    bool is_selected = selected_template_world_index_ == i;
     if (is_hovered || is_selected) {
       ImVec4 color = ImVec4(50, 50, 50, 255);
       if (!is_hovered && is_selected) {
@@ -498,7 +528,7 @@ void MenuUI::constructTemplateWorldPanel() {
     }
 
     // draw image
-    ImGui::Image(m_template_worlds[i].icon->tex_id, icon_size);
+    ImGui::Image(template_worlds_[i].icon->tex_id, icon_size);
 
     // draw asset name text
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 20.0f);
@@ -518,14 +548,14 @@ void MenuUI::constructTemplateWorldPanel() {
     // update asset hover and selection status
     hover_state.is_hovered = ImGui::IsItemHovered();
     if (ImGui::IsItemClicked()) {
-      m_selected_template_world_index = i;
+      selected_template_world_index_ = i;
     }
     hover_state.rect_min = ImGui::GetItemRectMin();
     hover_state.rect_max = ImGui::GetItemRectMax();
 
     float current_pos_x = ImGui::GetItemRectMax().x;
     float next_pos_x = current_pos_x + style.ItemSpacing.x + icon_size.x;
-    if (i < m_template_worlds.size() - 1 && next_pos_x < max_pos_x) {
+    if (i < template_worlds_.size() - 1 && next_pos_x < max_pos_x) {
       ImGui::SameLine();
     }
   }

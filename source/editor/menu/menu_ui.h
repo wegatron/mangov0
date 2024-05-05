@@ -1,14 +1,13 @@
 #pragma once
 
-#include "editor/base/editor_ui.h"
-#include "editor/base/folder_tree_ui.h"
+#include <editor/base/editor_ui.h>
+#include <editor/base/folder_tree_ui.h>
 
 namespace mango {
 class MenuUI : public EditorUI, public IFolderTreeUI {
 public:
   virtual void init() override;
   virtual void construct() override;
-  virtual void destroy() override;
 
 private:
   void constructFileMenu();
@@ -18,6 +17,7 @@ private:
 
   void pollShortcuts();
 
+  void importScene();
   void newWorld();
   void openWorld();
   void saveWorld();
@@ -43,6 +43,7 @@ private:
   bool showing_new_world_popup = false;
   bool showing_open_world_popup = false;
   bool showing_save_as_world_popup = false;
+  bool showing_import_scene_popup = false;
 
   // new world
   struct TemplateWorld {
@@ -50,12 +51,12 @@ private:
     std::string url;
     std::shared_ptr<ImGuiImage> icon;
   };
-  std::vector<TemplateWorld> m_template_worlds;
-  std::map<std::string, HoverState> m_template_world_hover_states;
-  uint32_t m_selected_template_world_index;
+  std::vector<TemplateWorld> template_worlds_;
+  std::map<std::string, HoverState> template_world_hover_states_;
+  uint32_t selected_template_world_index_;
 
   // open world
-  std::vector<std::string> m_current_world_urls;
-  std::string m_selected_world_url;
+  std::vector<std::string> current_world_urls_;
+  std::string selected_world_url_;
 };
 } // namespace mango

@@ -87,4 +87,8 @@ void World::importScene(const URL &url) {
   }
 }
 
+void World::saveAsWorld(const URL &url) {}
+
+void World::saveWorld() {}
+
 } // namespace mango
