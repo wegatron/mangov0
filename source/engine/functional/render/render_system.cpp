@@ -36,7 +36,8 @@ void RenderSystem::collectRenderDatas() {
 void RenderSystem::tick(float delta_time) {
   // collect render datas
   auto driver = g_engine.getDriver();
-  driver->waitFrame();
+  if(!driver->waitFrame())
+    return;
 
   collectRenderDatas();
   ui_pass_->prepare(); // update ui region for rendering

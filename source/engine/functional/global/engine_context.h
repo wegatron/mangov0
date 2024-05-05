@@ -5,6 +5,7 @@
 #include <engine/utils/vk/vk_config.h>
 #include <memory>
 #include <vector>
+#include <thread>
 
 namespace mango {
 class EngineContext {
@@ -46,6 +47,8 @@ private:
   std::shared_ptr<class AssetManager> asset_manager_;
   std::shared_ptr<class World> world_;
   std::chrono::steady_clock::time_point last_tick_time_point_;
+  std::thread *event_process_thread_ {nullptr};
+  bool is_exit_{false};
 };
 
 extern EngineContext g_engine;

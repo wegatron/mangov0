@@ -103,12 +103,11 @@ Swapchain::~Swapchain() {
   vkDestroySwapchainKHR(driver->getDevice(), swapchain_, nullptr);
 }
 
-uint32_t Swapchain::acquireNextImage(VkSemaphore semaphore, VkFence fence) {
-  uint32_t image_index;
+VkResult Swapchain::acquireNextImage(VkSemaphore semaphore, VkFence fence, uint32_t &image_index) {
   auto driver = g_engine.getDriver();
-  vkAcquireNextImageKHR(driver->getDevice(), swapchain_, UINT64_MAX, semaphore,
+  auto result = vkAcquireNextImageKHR(driver->getDevice(), swapchain_, UINT64_MAX, semaphore,
                         fence, &image_index);
-  return image_index;
+  return result;
 }
 
 } // namespace mango

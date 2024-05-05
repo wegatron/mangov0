@@ -11,7 +11,9 @@
 namespace mango {
 class World final {
 public:
-  World() = default;
+  
+  World();
+
   ~World() = default;
 
   std::string getName() const { return name_; }
@@ -23,7 +25,7 @@ public:
    * @param url 场景文件路径, 可以是mango自己的格式, 也可以是其他格式,
    * 由assimp导入
    */
-  void importScene(const URL &url);
+  void importScene(const std::string &url);
 
   void saveAsWorld(const URL &url);
 

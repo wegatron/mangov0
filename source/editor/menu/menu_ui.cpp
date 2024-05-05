@@ -256,29 +256,24 @@ void MenuUI::construct() {
   }
 
   if (showing_import_scene_popup) {
-    ImGui::SetNextWindowSize(ImVec2(300, 500));
-    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(),
-                            ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-
-    ImGui::OpenPopup("Import Scene");
-    if (ImGui::BeginPopupModal("Import Scene", nullptr,
-                               ImGuiWindowFlags_NoResize |
-                                   ImGuiWindowFlags_NoMove)) {
-      //  browse files in current folder      
-      IGFD::FileDialogConfig config;
-	    config.path = g_engine.getFileSystem()->relative("");
-      ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp", config);      
-      // display
-      if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) {
-        if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
-          std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-          std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
-          // action
-        }
-        
-        // close
-        ImGuiFileDialog::Instance()->Close();
+    
+    // browse files in current folder
+    IGFD::FileDialogConfig config;
+    config.path = g_engine.getFileSystem()->relative("");
+    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "choose scene file",
+                                            "scene files (*.glb *.gltf *.obj){.glb, .gltf, .obj}", config);
+    // display
+    if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) {
+      if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
+        std::string file_path =
+            ImGuiFileDialog::Instance()->GetFilePathName();
+        // import scene
+        g_engine.getEventSystem()->asyncDispatch(std::make_shared<ImportSceneEvent>(file_path));
       }
+
+      // close
+      ImGuiFileDialog::Instance()->Close();
+      showing_import_scene_popup = false;
     }
   }
 }
@@ -290,6 +285,10 @@ void MenuUI::constructFileMenu() {
 
   if (ImGui::MenuItem("Open", "Ctrl+O")) {
     openWorld();
+  }
+
+  if (ImGui::MenuItem("Import Scene")) {
+    importScene();
   }
 
   if (ImGui::BeginMenu("Open Recent")) {

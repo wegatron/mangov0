@@ -31,8 +31,8 @@ bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
   event_system_->init();
 
   // timer manager
-  g_engine.timer_manager_ = std::make_shared<TimerManager>();
-  g_engine.timer_manager_->init();
+  timer_manager_ = std::make_shared<TimerManager>();
+  timer_manager_->init();
 
   // window
   window_ = std::make_shared<GlfwWindow>(window_title, 800, 600);
@@ -50,18 +50,28 @@ bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
   asset_manager_->init();
 
   // render system
-  g_engine.render_system_ = std::make_shared<RenderSystem>();
-  g_engine.render_system_->init();
+  render_system_ = std::make_shared<RenderSystem>();
+  render_system_->init();
 
   // world manager
   world_ = std::make_shared<World>();
 
   // animation & physics manager
-
+  event_process_thread_ = new std::thread([this]() {
+    while(!is_exit_)
+    {
+      event_system_->tick();
+    }
+  });
   return true;
 }
 
 void EngineContext::destroy() {
+  is_exit_ = true;
+  if(event_process_thread_ != nullptr)
+  {
+    event_process_thread_->join();
+  }
   resource_cache_.reset();
   render_system_.reset();
   driver_->destroy();

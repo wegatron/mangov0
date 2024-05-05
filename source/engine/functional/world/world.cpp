@@ -1,7 +1,10 @@
 #include <engine/asset/assimp_importer.h>
 #include <engine/functional/world/world.h>
+#include <engine/functional/global/engine_context.h>
+#include <engine/utils/event/event_system.h>
 #include <engine/utils/base/macro.h>
 #include <queue>
+
 
 // entt reference: https://skypjack.github.io/entt/md_docs_md_entity.html
 // https://github.com/skypjack/entt/wiki/Crash-Course:-core-functionalities#introduction
@@ -49,6 +52,16 @@ namespace mango {
 //   return entity;
 // }
 
+World::World()
+{
+  g_engine.getEventSystem()->addListener(
+      EEventType::ImportScene,
+      [this](const EventPointer& event){
+        auto e = std::static_pointer_cast<ImportSceneEvent>(event);
+        importScene(e->file_path);
+      });
+}
+
 void World::tick(const float seconds) {
   auto &scene_aabb = root_tr_->aabb;
   scene_aabb.setEmpty();
@@ -80,10 +93,10 @@ void World::tick(const float seconds) {
   }
 }
 
-void World::importScene(const URL &url) {
-  bool suc = AssimpImporter::import(url.getAbsolute(), this);
+void World::importScene(const std::string &url) {
+  bool suc = AssimpImporter::import(url, this);
   if (!suc) {
-    LOGE("import scene failed: {}", url.getAbsolute());
+    LOGE("import scene failed: {}", url.c_str());
   }
 }
 

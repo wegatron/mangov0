@@ -83,7 +83,7 @@ public:
    * update frame_index which will be used in acquire command buffer
    * update image_index/frame buffer index which will be used in ui pass
    */
-  void waitFrame();
+  bool waitFrame();
 
   /**
    * @brief do present to swapchain

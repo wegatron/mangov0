@@ -21,6 +21,7 @@
 #include <engine/utils/vk/syncs.h>
 #include <engine/utils/vk/vk_constants.h>
 #include <engine/utils/vk/vk_driver.h>
+#include <engine/platform/window.h>
 
 namespace mango {
 void VkDriver::initInstance() {
@@ -207,15 +208,26 @@ void VkDriver::createFramesData() {
   }
 }
 
-void VkDriver::waitFrame() {
+bool VkDriver::waitFrame() {
   frames_data_[cur_frame_index_]
-      .command_buffer_available_fence->wait(); // wait for cmdbuffer is free
-  cur_image_index_ = swapchain_->acquireNextImage(
+      .command_buffer_available_fence->wait(); // wait for cmdbuffer is free  
+  auto result = swapchain_->acquireNextImage(
       frames_data_[cur_frame_index_].image_available_semaphore->getHandle(),
-      VK_NULL_HANDLE);
+      VK_NULL_HANDLE, cur_image_index_);
+  if (result == VK_ERROR_OUT_OF_DATE_KHR)
+  {
+    // recreate swapchain
+    createSwapchain();
+    return false;
+  }
+  else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+  {
+    throw VulkanException(result, "failed to acquire next image");
+  }
   frames_data_[cur_frame_index_]
       .command_buffer_available_fence->reset(); // reset to unsignaled
   frames_data_[cur_frame_index_].command_pool->reset();
+  return true;
 }
 
 void VkDriver::presentFrame() {
@@ -233,14 +245,16 @@ void VkDriver::presentFrame() {
   present_info.pWaitSemaphores = &render_semaphore_handle;
 
   // Present swapchain image
-  std::cout << "before present" << std::endl;
-  VkResult result = graphics_cmd_queue_->present(present_info);
-  if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
-    graphics_cmd_queue_->waitIdle();
+  auto result = graphics_cmd_queue_->present(present_info);
+  if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+  {
+    // recreate swapchain
     createSwapchain();
-    std::cout << "Swapchain recreated!" << std::endl;
   }
-  std::cout << "present frame: " <<  cur_frame_index_ << std::endl;
+  else if (result != VK_SUCCESS)
+  {
+    throw VulkanException(result, "failed to present image");
+  }
   cur_frame_index_ = (cur_frame_index_ + 1) % swapchain_->getImageCount();
 }
 

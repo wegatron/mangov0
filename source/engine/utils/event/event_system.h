@@ -10,7 +10,7 @@ namespace mango
 		WindowReset, WindowKey, WindowChar, WindowCharMods, WindowMouseButton,
 		WindowCursorPos, WindowCursorEnter, WindowScroll, WindowDrop, WindowSize, WindowClose,
 		RenderCreateSwapchainObjects, RenderDestroySwapchainObjects, RenderRecordFrame, RenderConstructUI,
-		SelectEntity, PickEntity
+		SelectEntity, PickEntity, ImportScene, ExitEvent
 	};
 
 	class Event
@@ -224,7 +224,14 @@ namespace mango
 		uint32_t mouse_y;
 	};
 
-	class EventSystem
+    class ImportSceneEvent : public Event {
+	public:
+		ImportSceneEvent(const std::string &in_file_path) : Event(EEventType::ImportScene), file_path(in_file_path) {}
+
+		std::string file_path;
+    };
+
+    class EventSystem
 	{
 	public:
 		void init() {}

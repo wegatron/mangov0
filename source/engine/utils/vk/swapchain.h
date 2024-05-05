@@ -43,7 +43,7 @@ public:
     return image_views_[index];
   }
 
-  uint32_t acquireNextImage(VkSemaphore semaphore, VkFence fence);
+  VkResult acquireNextImage(VkSemaphore semaphore, VkFence fence, uint32_t &image_index);
 
   void initSwapchain(VkSurfaceKHR surface,
                      const SwapchainProperties &properties);
