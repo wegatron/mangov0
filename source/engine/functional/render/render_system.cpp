@@ -42,7 +42,7 @@ void RenderSystem::tick(float delta_time) {
   collectRenderDatas();
   ui_pass_->prepare(); // update ui region for rendering
 
-  auto cmd_buffer = driver->requestCommandBuffer(
+  auto cmd_buffer = driver->requestSyncCommandBuffer(
       VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
   cmd_buffer->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 

@@ -2,8 +2,8 @@
 #include <algorithm>
 #include <cassert>
 #include <cstring>
-#include <sstream>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include <vector>
 #include <volk.h>
@@ -21,7 +21,6 @@
 #include <engine/utils/vk/syncs.h>
 #include <engine/utils/vk/vk_constants.h>
 #include <engine/utils/vk/vk_driver.h>
-#include <engine/platform/window.h>
 
 namespace mango {
 void VkDriver::initInstance() {
@@ -121,6 +120,9 @@ void VkDriver::initDevice() {
       device_, graphics_queue_family_index,
       VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT | VK_QUEUE_COMPUTE_BIT,
       VK_TRUE, 0);
+  async_command_pool_ = std::make_unique<CommandPool>(
+      shared_from_this(), graphics_queue_family_index,
+      CommandPool::CmbResetMode::ResetIndividually);
 }
 
 void VkDriver::init() {
@@ -176,8 +178,10 @@ void VkDriver::createSwapchain() {
     render_targets_[i] = std::make_shared<RenderTarget>(
         std::initializer_list<std::shared_ptr<ImageView>>{
             swapchain_->getImageView(i)},
-        std::initializer_list<VkFormat>{swapchain_->getImageFormat()}, // color format
-        VK_FORMAT_UNDEFINED, // depth stencil format, undefined means no depth stencil attachment
+        std::initializer_list<VkFormat>{
+            swapchain_->getImageFormat()}, // color format
+        VK_FORMAT_UNDEFINED, // depth stencil format, undefined means no depth
+                             // stencil attachment
         width, height, 1u);
   }
 
@@ -187,9 +191,15 @@ void VkDriver::createSwapchain() {
 }
 
 std::shared_ptr<class CommandBuffer>
-VkDriver::requestCommandBuffer(VkCommandBufferLevel level) {
+VkDriver::requestSyncCommandBuffer(VkCommandBufferLevel level) {
   auto cmd_pool = frames_data_[cur_frame_index_].command_pool;
   return cmd_pool->requestCommandBuffer(level);
+}
+
+std::shared_ptr<class CommandBuffer> VkDriver::requestAsyncCommandBuffer(
+    VkCommandBufferLevel level =
+        VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY) {
+  async_command_pool_->requestCommandBuffer(level);
 }
 
 void VkDriver::createFramesData() {
@@ -210,18 +220,15 @@ void VkDriver::createFramesData() {
 
 bool VkDriver::waitFrame() {
   frames_data_[cur_frame_index_]
-      .command_buffer_available_fence->wait(); // wait for cmdbuffer is free  
+      .command_buffer_available_fence->wait(); // wait for cmdbuffer is free
   auto result = swapchain_->acquireNextImage(
       frames_data_[cur_frame_index_].image_available_semaphore->getHandle(),
       VK_NULL_HANDLE, cur_image_index_);
-  if (result == VK_ERROR_OUT_OF_DATE_KHR)
-  {
+  if (result == VK_ERROR_OUT_OF_DATE_KHR) {
     // recreate swapchain
     createSwapchain();
     return false;
-  }
-  else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-  {
+  } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
     throw VulkanException(result, "failed to acquire next image");
   }
   frames_data_[cur_frame_index_]
@@ -246,13 +253,10 @@ void VkDriver::presentFrame() {
 
   // Present swapchain image
   auto result = graphics_cmd_queue_->present(present_info);
-  if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
-  {
+  if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
     // recreate swapchain
     createSwapchain();
-  }
-  else if (result != VK_SUCCESS)
-  {
+  } else if (result != VK_SUCCESS) {
     throw VulkanException(result, "failed to present image");
   }
   cur_frame_index_ = (cur_frame_index_ + 1) % swapchain_->getImageCount();
@@ -437,6 +441,7 @@ void VkDriver::initAllocator() {
 }
 
 void VkDriver::destroy() {
+  async_command_pool_.reset();
   frames_data_.clear();
   render_targets_.clear();
   delete swapchain_;

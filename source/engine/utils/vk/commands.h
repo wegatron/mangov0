@@ -63,6 +63,12 @@ class CommandPool final {
 public:
   // refer to:
   // https://arm-software.github.io/vulkan_best_practice_for_mobile_developers/samples/performance/command_buffer_usage/command_buffer_usage_tutorial.html#allocate-and-free
+  /**
+   * \brief Command buffer reset mode
+   * AlwaysAllocate: allocate new command buffer every time, reset will clear all command buffer
+   * ResetIndividually: reset command buffer individually, save command buffer's ptr in pool, when call reset, reset all command buffers which ref count is 1
+   * ResetPool: reset all command buffers in pool
+   */
   enum class CmbResetMode {
     AlwaysAllocate = 0,
     ResetIndividually = 1, // reset command buffers individually

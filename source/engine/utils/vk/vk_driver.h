@@ -15,6 +15,8 @@ class Swapchain;
 class RenderTarget;
 class DescriptorPool;
 class StagePool;
+class CommandPool;
+
 struct RequestedDeviceExtension {
   const char *name;
   bool required;
@@ -24,7 +26,7 @@ struct FrameData {
   std::shared_ptr<class Fence> command_buffer_available_fence;
   std::shared_ptr<class Semaphore> image_available_semaphore;
   std::shared_ptr<class Semaphore> render_result_available_semaphore;
-  std::shared_ptr<class CommandPool> command_pool;
+  std::shared_ptr<CommandPool> command_pool;
 };
 
 class VkDriver final : public std::enable_shared_from_this<VkDriver> {
@@ -60,7 +62,18 @@ public:
 
   CommandQueue *getGraphicsQueue() const { return graphics_cmd_queue_; }
 
-  std::shared_ptr<class CommandBuffer> requestCommandBuffer(
+  /**
+   * @brief request command buffer from main render thread
+   * command buffer is allocated from command pool of current frame, when new frame is started pool will be reset
+   *    
+   * @param level command buffer level
+   * @return std::shared_ptr<class CommandBuffer> 
+   */
+  std::shared_ptr<class CommandBuffer> requestSyncCommandBuffer(
+      VkCommandBufferLevel level =
+          VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+
+  std::shared_ptr<class CommandBuffer> requestAsyncCommandBuffer(
       VkCommandBufferLevel level =
           VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
@@ -148,5 +161,6 @@ private:
 
   DescriptorPool *descriptor_pool_{nullptr};
   StagePool *stage_pool_{nullptr};
+  std::unique_ptr<CommandPool> async_command_pool_;
 };
 } // namespace mango

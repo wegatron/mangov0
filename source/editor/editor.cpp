@@ -72,6 +72,7 @@ void Editor::run() {
   while (!window->shouldClose()) {
     window->processEvents();
     float delta_time = g_engine.calcDeltaTime();
+    g_engine.gcTick(delta_time);
     g_engine.logicTick(delta_time);
     g_engine.renderTick(delta_time);
   }

@@ -9,6 +9,12 @@
 #include <shaders/include/shader_structs.h>
 
 namespace mango {
+
+struct MeshEntityData {
+  std::string name;
+  std::shared_ptr<StaticMesh> mesh;
+  std::shared_ptr<TransformRelationship> tr;
+};  
 class World final {
 public:
   
@@ -67,6 +73,13 @@ public:
                           CameraComponent>();
   }
 
+  void enqueue(const std::shared_ptr<TransformRelationship> &tr,
+               std::vector<MeshEntityData> &&mesh_entity_datas)
+  {
+    std::lock_guard<std::mutex> lock(mtx_);
+    mesh_entity_datas_list_.emplace_back(std::move(mesh_entity_datas));
+  }
+
   // disable copy/move
   World(const World &) = delete;
   World(World &&) = delete;
@@ -79,6 +92,7 @@ private:
   std::shared_ptr<TransformRelationship>
       root_tr_; // root transform relationship node
   std::mutex mtx_; // for update or read in different thread
+  std::vector<std::vector<MeshEntityData>> mesh_entity_datas_list_;
 };
 
 } // namespace mango

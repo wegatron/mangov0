@@ -9,6 +9,7 @@
 #include <engine/utils/vk/commands.h>
 #include <queue>
 #include <stbi/stb_image.h>
+#include <engine/functional/world/world.h>
 
 namespace mango {
 
@@ -91,21 +92,15 @@ processMeshs(const aiScene *a_scene,
 //   return lights;
 // }
 
-struct MeshEntityData {
-  std::string name;
-  std::shared_ptr<StaticMesh> mesh;
-  std::shared_ptr<TransformRelationship> tr;
-};
-
 void processNode(const std::shared_ptr<TransformRelationship> &root_tr,
                  const aiScene *a_scene,
                  const std::vector<std::shared_ptr<StaticMesh>> &meshes,
                  std::vector<MeshEntityData> &mesh_entity_datas) {
-  std::queue<const std::shared_ptr<TransformRelationship>, aiNode *> q;
+  std::queue<std::pair<aiNode *, std::shared_ptr<TransformRelationship>>> q;
   q.emplace(std::make_pair(a_scene->mRootNode, root_tr));
   while(!q.empty())
   {
-    auto [tr, node] = q.front();
+    auto [node, tr] = q.front();
     q.pop();
     memcpy(tr->ltransform.data(), &node->mTransformation,
          sizeof(Eigen::Matrix4f));
@@ -115,7 +110,7 @@ void processNode(const std::shared_ptr<TransformRelationship> &root_tr,
       // TODO assign material
       mesh_entity_datas.emplace_back(a_mesh->mName.C_Str(),
                                      meshes[node->mMeshes[i]], tr);
-      tr->aabb.extend(meshes[node->mMeshes[i]]->aabb);
+      tr->aabb.extend(meshes[node->mMeshes[i]]->getBoundingBox());
     }
     auto prev_tr = tr;
     for (auto i = 0; i < node->mNumChildren; ++i)
@@ -152,8 +147,9 @@ bool AssimpImporter::import(const URL &url, World *world) {
   //  add materials and meshes to scene
   auto driver = g_engine.getDriver();
   auto cmd_buffer =
-      driver->requestCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+      driver->requestAsyncCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY); // async will cause command buffer invalid
   cmd_buffer->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+  //std::cout << "importing cmd buffer: " << cmd_buffer->getHandle() << std::endl;
   std::vector<std::shared_ptr<StaticMesh>> meshes =
       processMeshs(a_scene, cmd_buffer);
   
@@ -167,10 +163,13 @@ bool AssimpImporter::import(const URL &url, World *world) {
   cmd_queue->submit(cmd_buffer, VK_NULL_HANDLE);
 
   auto scene_tr = std::make_shared<TransformRelationship>();
-  std::vector<MeshEntityData> mesh_entity_datas;
-  processNode(scene_tr, a_scene, meshes, mesh_entity_datas); // TODO add lights process
+  std::vector<MeshEntityData> mesh_entity_datas;  
+  processNode(scene_tr, a_scene, meshes,
+              mesh_entity_datas); // TODO add lights process
   cmd_queue->waitIdle();
-
+  
+  world->enqueue(scene_tr, std::move(mesh_entity_datas));
+  
   // lock world do update
   
   // // process root node's mesh

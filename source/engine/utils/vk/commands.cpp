@@ -5,6 +5,7 @@
 #include <engine/utils/vk/framebuffer.h>
 #include <engine/utils/vk/image.h>
 #include <engine/utils/vk/pipeline.h>
+#include <iostream>
 
 namespace mango {
 
@@ -83,7 +84,6 @@ CommandPool::~CommandPool() {
 }
 
 void CommandPool::reset() {
-
   switch (reset_mode_) {
   case CmbResetMode::ResetPool: {
     vkResetCommandPool(driver_->getDevice(), command_pool_, 0);
@@ -91,11 +91,13 @@ void CommandPool::reset() {
   }
   case CmbResetMode::ResetIndividually: {
     for (auto cmb : primary_command_buffers_) {
-      cmb->reset();
+      if (cmb.use_count() == 1)
+        cmb->reset();
     }
 
     for (auto cmb : secondary_command_buffers_) {
-      cmb->reset();
+      if (cmb.use_count() == 1)
+        cmb->reset();
     }
     break;
   }
@@ -120,11 +122,9 @@ CommandPool::requestCommandBuffer(VkCommandBufferLevel level) {
       return primary_command_buffers_.at(
           active_primary_command_buffer_count_++);
     }
-
     primary_command_buffers_.emplace_back(
         new CommandBuffer(driver_, *this, level));
     active_primary_command_buffer_count_++;
-
     return primary_command_buffers_.back();
   }
 
@@ -189,11 +189,13 @@ void CommandBuffer::begin(VkCommandBufferUsageFlags flags) {
   begin_info.pInheritanceInfo = nullptr;
 
   auto result = vkBeginCommandBuffer(command_buffer_, &begin_info);
+  std::cout << "begin command buffer: " << command_buffer_ << std::endl;
   VK_THROW_IF_ERROR(result, "failed to begin recording command buffer!");
 }
 
 void CommandBuffer::end() {
   auto result = vkEndCommandBuffer(command_buffer_);
+  std::cout << "end command buffer: " << command_buffer_ << std::endl;
   VK_THROW_IF_ERROR(result, "failed to record command buffer!");
 }
 

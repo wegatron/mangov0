@@ -19,6 +19,7 @@ public:
   void destroy();
 
   float calcDeltaTime();
+  void gcTick(float delta_time);
   void logicTick(float delta_time);
   void renderTick(float delta_time);
 

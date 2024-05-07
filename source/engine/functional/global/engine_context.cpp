@@ -95,6 +95,11 @@ float EngineContext::calcDeltaTime() {
 
   return delta_time;
 }
+void EngineContext::gcTick(float delta_time) { 
+  driver_->getStagePool()->gc();
+  resource_cache_->gc();
+}
+
 void EngineContext::logicTick(float delta_time) {}
 void EngineContext::renderTick(float delta_time) {
   render_system_->tick(delta_time);

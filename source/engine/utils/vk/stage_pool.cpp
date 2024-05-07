@@ -33,7 +33,10 @@ VulkanStage const *StagePool::acquireStage(uint32_t numBytes) {
       .size = numBytes,
       .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
   };
-  VmaAllocationCreateInfo allocInfo{.usage = VMA_MEMORY_USAGE_CPU_ONLY};
+  VmaAllocationCreateInfo allocInfo{
+    .flags = VMA_ALLOCATION_CREATE_MAPPED_BIT | VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT,
+    .usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+  };
   UTILS_UNUSED_IN_RELEASE VkResult result =
       vmaCreateBuffer(driver_->getAllocator(), &bufferInfo, &allocInfo,
                       &stage->buffer, &stage->memory, nullptr);
