@@ -3,6 +3,7 @@
 #include <Eigen/Dense>
 #include <engine/asset/asset_mesh.h>
 #include <engine/functional/component/component_camera.h>
+#include <engine/functional/component/component_transform.h>
 #include <engine/functional/global/engine_context.h>
 #include <engine/utils/base/macro.h>
 #include <engine/utils/vk/commands.h>
@@ -54,6 +55,84 @@ processMeshs(const aiScene *a_scene,
   return ret_meshes;
 }
 
+// Lights processLights(const aiScene *a_scene) {
+//   // There is bugs in assimp load light from gltf
+//   // Lights lights{a_scene->mNumLights};
+//   // for (auto i=0; i<a_scene->mNumLights; ++i)
+//   // {
+//   //   auto a_light = a_scene->mLights[i];
+//   //   auto &l = lights.l[i];
+//   //   l.light_type = static_cast<LightType>(a_light->mType);
+//   //   l.inner_angle = a_light->mAngleInnerCone;
+//   //   l.outer_angle = a_light->mAngleOuterCone;
+//   //   l.intensity = a_light->mAttenuationConstant;
+//   //   l.position = Eigen::Vector3f(a_light->mPosition[0],
+//   //   a_light->mPosition[1], a_light->mPosition[2]); l.direction =
+//   //   Eigen::Vector3f(
+//   //       a_light->mDirection[0], a_light->mDirection[1],
+//   //       a_light->mDirection[2]);
+//   //   l.color = Eigen::Vector3f(a_light->mColorDiffuse[0],
+//   //   a_light->mColorDiffuse[1], a_light->mColorDiffuse[2]);
+//   // }
+//   Lights lights;
+
+//   lights.lights_count = 1;
+//   auto &l = lights.l[0];
+//   // l.light_type = LightType::DIRECTIONAL;
+//   // l.direction = Eigen::Vector3f(0.0f, -1.0f, 1.0f).normalized();
+//   // l.intensity = Eigen::Vector3f(0.8f, 0.8f, 0.8f);
+
+//   l.light_type = LightType::AREA;
+//   l.intensity = Eigen::Vector3f(0.8f, 0.8f, 0.2f);
+//   l.position[0] = Eigen::Vector4f(-8.0f, 2.4f, -1.0f, 1.0f);
+//   l.position[1] = Eigen::Vector4f(-8.0f, 2.4f, 1.0f, 1.0f);
+//   l.position[2] = Eigen::Vector4f(-8.0f, 0.4f, 1.0f, 1.0f);
+//   l.position[3] = Eigen::Vector4f(-8.0f, 0.4f, -1.0f, 1.0f);
+//   return lights;
+// }
+
+struct MeshEntityData {
+  std::string name;
+  std::shared_ptr<StaticMesh> mesh;
+  std::shared_ptr<TransformRelationship> tr;
+};
+
+void processNode(const std::shared_ptr<TransformRelationship> &root_tr,
+                 const aiScene *a_scene,
+                 const std::vector<std::shared_ptr<StaticMesh>> &meshes,
+                 std::vector<MeshEntityData> &mesh_entity_datas) {
+  std::queue<const std::shared_ptr<TransformRelationship>, aiNode *> q;
+  q.emplace(std::make_pair(a_scene->mRootNode, root_tr));
+  while(!q.empty())
+  {
+    auto [tr, node] = q.front();
+    q.pop();
+    memcpy(tr->ltransform.data(), &node->mTransformation,
+         sizeof(Eigen::Matrix4f));
+    for (auto i = 0; i < node->mNumMeshes; ++i)
+    {
+      aiMesh *a_mesh = a_scene->mMeshes[node->mMeshes[i]];
+      // TODO assign material
+      mesh_entity_datas.emplace_back(a_mesh->mName.C_Str(),
+                                     meshes[node->mMeshes[i]], tr);
+      tr->aabb.extend(meshes[node->mMeshes[i]]->aabb);
+    }
+    auto prev_tr = tr;
+    for (auto i = 0; i < node->mNumChildren; ++i)
+    {
+      auto child_tr = std::make_shared<TransformRelationship>();
+      child_tr->parent = tr;
+      if(i == 0) {        
+        prev_tr->child = child_tr;
+      } else {
+        prev_tr->sibling = child_tr;
+      }
+      prev_tr = child_tr;
+      q.emplace(std::make_pair(node->mChildren[i], child_tr));
+    }
+  }
+}
+
 bool AssimpImporter::import(const URL &url, World *world) {
   Assimp::Importer importer;
   auto path = url.getAbsolute();
@@ -77,12 +156,23 @@ bool AssimpImporter::import(const URL &url, World *world) {
   cmd_buffer->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
   std::vector<std::shared_ptr<StaticMesh>> meshes =
       processMeshs(a_scene, cmd_buffer);
-
+  
   // std::vector<std::shared_ptr<Material>> materials =
   //     processMaterials(a_scene, dir, cmd_buf);
   // std::vector<CameraComponent> cameras = processCameras(a_scene);
-  // auto lights = processLight(a_scene);
+  //auto lights = processLight(a_scene);  
+  
+  cmd_buffer->end();
+  auto cmd_queue = driver->getGraphicsQueue();  
+  cmd_queue->submit(cmd_buffer, VK_NULL_HANDLE);
 
+  auto scene_tr = std::make_shared<TransformRelationship>();
+  std::vector<MeshEntityData> mesh_entity_datas;
+  processNode(scene_tr, a_scene, meshes, mesh_entity_datas); // TODO add lights process
+  cmd_queue->waitIdle();
+
+  // lock world do update
+  
   // // process root node's mesh
   // auto root_tr = std::make_shared<TransformRelationship>();
   // scene.setRootTr(root_tr);
@@ -143,9 +233,8 @@ bool AssimpImporter::import(const URL &url, World *world) {
 
   // scene.createLightEntity("default_light", root_tr, lights.l[0]);
 
-  auto cmd_queue = driver->getGraphicsQueue();
-  cmd_queue->submit(cmd_buffer, VK_NULL_HANDLE);
-  cmd_queue->waitIdle();
+
+  
   // load the default camera if have
   LOGI("load scene: {}", path.c_str());
   return true;
@@ -341,41 +430,5 @@ bool AssimpImporter::import(const URL &url, World *world) {
 //     cur_mat->compile();
 //   }
 //   return ret_mats;
-// }
-
-// Lights AssimpLoader::processLight(const aiScene *a_scene) {
-//   // There is bugs in assimp load light from gltf
-//   // Lights lights{a_scene->mNumLights};
-//   // for (auto i=0; i<a_scene->mNumLights; ++i)
-//   // {
-//   //   auto a_light = a_scene->mLights[i];
-//   //   auto &l = lights.l[i];
-//   //   l.light_type = static_cast<LightType>(a_light->mType);
-//   //   l.inner_angle = a_light->mAngleInnerCone;
-//   //   l.outer_angle = a_light->mAngleOuterCone;
-//   //   l.intensity = a_light->mAttenuationConstant;
-//   //   l.position = Eigen::Vector3f(a_light->mPosition[0],
-//   //   a_light->mPosition[1], a_light->mPosition[2]); l.direction =
-//   //   Eigen::Vector3f(
-//   //       a_light->mDirection[0], a_light->mDirection[1],
-//   //       a_light->mDirection[2]);
-//   //   l.color = Eigen::Vector3f(a_light->mColorDiffuse[0],
-//   //   a_light->mColorDiffuse[1], a_light->mColorDiffuse[2]);
-//   // }
-//   Lights lights;
-
-//   lights.lights_count = 1;
-//   auto &l = lights.l[0];
-//   // l.light_type = LightType::DIRECTIONAL;
-//   // l.direction = Eigen::Vector3f(0.0f, -1.0f, 1.0f).normalized();
-//   // l.intensity = Eigen::Vector3f(0.8f, 0.8f, 0.8f);
-
-//   l.light_type = LightType::AREA;
-//   l.intensity = Eigen::Vector3f(0.8f, 0.8f, 0.2f);
-//   l.position[0] = Eigen::Vector4f(-8.0f, 2.4f, -1.0f, 1.0f);
-//   l.position[1] = Eigen::Vector4f(-8.0f, 2.4f, 1.0f, 1.0f);
-//   l.position[2] = Eigen::Vector4f(-8.0f, 0.4f, 1.0f, 1.0f);
-//   l.position[3] = Eigen::Vector4f(-8.0f, 0.4f, -1.0f, 1.0f);
-//   return lights;
 // }
 } // namespace mango

@@ -54,6 +54,10 @@ public:
     entities_.emplace<DirectionalLight>(entity, light);
   }
 
+  void addComponent(entt::entity entity, const StaticMeshComponent &mesh) {
+    entities_.emplace<StaticMeshComponent>(entity, mesh);
+  }
+
   void setRootTr(const std::shared_ptr<TransformRelationship> &root_tr) {
     root_tr_ = root_tr;
   }
@@ -74,6 +78,7 @@ private:
   entt::registry entities_;
   std::shared_ptr<TransformRelationship>
       root_tr_; // root transform relationship node
+  std::mutex mtx_; // for update or read in different thread
 };
 
 } // namespace mango
