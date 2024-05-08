@@ -147,7 +147,7 @@ bool AssimpImporter::import(const URL &url, World *world) {
   //  add materials and meshes to scene
   auto driver = g_engine.getDriver();
   auto cmd_buffer =
-      driver->requestAsyncCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY); // async will cause command buffer invalid
+      driver->requestSyncCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY); // async will cause command buffer invalid
   cmd_buffer->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
   //std::cout << "importing cmd buffer: " << cmd_buffer->getHandle() << std::endl;
   std::vector<std::shared_ptr<StaticMesh>> meshes =
@@ -165,9 +165,7 @@ bool AssimpImporter::import(const URL &url, World *world) {
   auto scene_tr = std::make_shared<TransformRelationship>();
   std::vector<MeshEntityData> mesh_entity_datas;  
   processNode(scene_tr, a_scene, meshes,
-              mesh_entity_datas); // TODO add lights process
-  cmd_queue->waitIdle();
-  
+              mesh_entity_datas); // TODO add lights process  
   world->enqueue(scene_tr, std::move(mesh_entity_datas));
   
   // lock world do update

@@ -189,13 +189,11 @@ void CommandBuffer::begin(VkCommandBufferUsageFlags flags) {
   begin_info.pInheritanceInfo = nullptr;
 
   auto result = vkBeginCommandBuffer(command_buffer_, &begin_info);
-  std::cout << "begin command buffer: " << command_buffer_ << std::endl;
   VK_THROW_IF_ERROR(result, "failed to begin recording command buffer!");
 }
 
 void CommandBuffer::end() {
   auto result = vkEndCommandBuffer(command_buffer_);
-  std::cout << "end command buffer: " << command_buffer_ << std::endl;
   VK_THROW_IF_ERROR(result, "failed to record command buffer!");
 }
 

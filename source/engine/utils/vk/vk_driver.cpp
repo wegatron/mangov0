@@ -197,9 +197,8 @@ VkDriver::requestSyncCommandBuffer(VkCommandBufferLevel level) {
 }
 
 std::shared_ptr<class CommandBuffer> VkDriver::requestAsyncCommandBuffer(
-    VkCommandBufferLevel level =
-        VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY) {
-  async_command_pool_->requestCommandBuffer(level);
+    VkCommandBufferLevel level) {
+  return async_command_pool_->requestCommandBuffer(level);
 }
 
 void VkDriver::createFramesData() {
