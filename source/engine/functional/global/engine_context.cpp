@@ -100,7 +100,9 @@ void EngineContext::gcTick(float delta_time) {
   resource_cache_->gc();
 }
 
-void EngineContext::logicTick(float delta_time) {}
+void EngineContext::logicTick(float delta_time) {
+  world_->tick(delta_time);
+}
 void EngineContext::renderTick(float delta_time) {
   render_system_->tick(delta_time);
 }

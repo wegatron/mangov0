@@ -62,35 +62,79 @@ World::World()
       });
 }
 
-void World::tick(const float seconds) {
+void World::loadedMesh2World()
+{
+  std::unique_lock<std::mutex> lock(mtx_);
+  for (auto &mesh_entity_dats : mesh_entity_datas_list_)
+  {
+    for (auto &mesh_entity_dat : mesh_entity_dats)
+    {
+      auto entity = createEntity(mesh_entity_dat.name);
+      addComponent(entity, mesh_entity_dat.tr);
+      addComponent(entity, mesh_entity_dat.mesh);
+    }
+  }
+}
+
+void World::updateTransform()
+{
   auto &scene_aabb = root_tr_->aabb;
   scene_aabb.setEmpty();
   //// update rt
   std::queue<std::shared_ptr<TransformRelationship>> q;
+  std::stack<std::shared_ptr<TransformRelationship>> s;
+  s.push(root_tr_);
+  while (!s.empty()) {
+    auto node = s.top();
+
+    // s.pop();
+    // s.pop();
+    // q.emplace(node);
+    // auto ch = node->child;
+    // while (ch != nullptr) {
+    //   s.push(ch);
+    //   ch = ch->sibling;
+    // }
+  }
   // add root->node's children
-  auto rch = root_tr_->child;
-  if (rch != nullptr) {
-    rch->gtransform = rch->ltransform;
-    scene_aabb.extend(rch->aabb.transformed(Eigen::Affine3f(rch->gtransform)));
-  }
-  while (rch != nullptr) // add child nodes
-  {
-    q.emplace(rch);
-    rch = rch->sibling;
-  }
-  while (!q.empty()) {
-    auto node = q.front();
-    q.pop();
-    node->gtransform = node->parent->gtransform * node->ltransform;
-    scene_aabb.extend(
-        node->aabb.transformed(Eigen::Affine3f(node->gtransform)));
-    // add child nodes
-    auto ch = node->child;
-    while (ch != nullptr) {
-      q.emplace(ch);
-      ch = ch->sibling;
-    }
-  }
+  // auto rch = root_tr_->child;
+  // search child
+  
+  // updateTr(root_tr_->child);
+
+  // search child
+  // search sibling
+  // visit self
+
+  // if (rch != nullptr) {
+  //   rch->gtransform = rch->ltransform;
+  //   scene_aabb.extend(rch->aabb.transformed(Eigen::Affine3f(rch->gtransform)));
+  // }
+  // while (rch != nullptr) // add child nodes
+  // {
+  //   q.emplace(rch);
+  //   rch = rch->sibling;
+  // }
+  // while (!q.empty()) {
+  //   auto node = q.front();
+  //   q.pop();
+  //   node->gtransform = node->parent->gtransform * node->ltransform;
+  //   scene_aabb.extend(
+  //       node->aabb.transformed(Eigen::Affine3f(node->gtransform)));
+  //   // add child nodes
+  //   auto ch = node->child;
+  //   while (ch != nullptr) {
+  //     q.emplace(ch);
+  //     ch = ch->sibling;
+  //   }
+  // }
+}
+
+void World::tick(const float seconds) {
+  // append new imported scene to root
+  loadedMesh2World();
+  updateTransform();
+  updateCamera();
 }
 
 void World::importScene(const std::string &url) {

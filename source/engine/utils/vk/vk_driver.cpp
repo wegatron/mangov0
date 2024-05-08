@@ -104,7 +104,7 @@ void VkDriver::initDevice() {
   float queue_priority = 1.0f;
   queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
   queue_info.queueFamilyIndex = graphics_queue_family_index;
-  queue_info.queueCount = 1;
+  queue_info.queueCount = 2;
   queue_info.pQueuePriorities = &queue_priority;
 
   // logical device
@@ -120,6 +120,8 @@ void VkDriver::initDevice() {
       device_, graphics_queue_family_index,
       VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT | VK_QUEUE_COMPUTE_BIT,
       VK_TRUE, 0);
+  transfer_cmd_queue_ = new CommandQueue(
+      device_, graphics_queue_family_index, VK_QUEUE_TRANSFER_BIT, VK_TRUE, 0);
   async_command_pool_ = std::make_unique<CommandPool>(
       shared_from_this(), graphics_queue_family_index,
       CommandPool::CmbResetMode::ResetIndividually);

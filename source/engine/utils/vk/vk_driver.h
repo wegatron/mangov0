@@ -62,6 +62,8 @@ public:
 
   CommandQueue *getGraphicsQueue() const { return graphics_cmd_queue_; }
 
+  CommandQueue *getTransferQueue() const { return transfer_cmd_queue_; }
+
   /**
    * @brief request command buffer from main render thread
    * command buffer is allocated from command pool of current frame, when new frame is started pool will be reset
@@ -156,6 +158,7 @@ private:
   std::vector<FrameData> frames_data_;
 
   CommandQueue *graphics_cmd_queue_{nullptr};
+  CommandQueue *transfer_cmd_queue_{nullptr};
   Swapchain *swapchain_{nullptr};
   std::vector<std::shared_ptr<RenderTarget>> render_targets_;
 

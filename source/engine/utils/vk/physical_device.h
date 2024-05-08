@@ -19,6 +19,10 @@ public:
     return graphics_queue_family_index_;
   }
 
+  uint32_t getTransferQueueFamilyIndex() const {
+    return transfer_queue_family_index_;
+  }
+
   VkPhysicalDevice getHandle() const { return physical_device_; }
 
   VkPhysicalDeviceProperties getProperties() const { return properties_; }
@@ -44,6 +48,7 @@ private:
   VkPhysicalDeviceFeatures features_;             //!< supported features
   std::vector<VkExtensionProperties> extensions_; //!< supported extensions
   uint32_t graphics_queue_family_index_{0xFFFFFFFF};
+  uint32_t transfer_queue_family_index_{0xFFFFFFFF};
   std::vector<VkQueueFamilyProperties> queue_families_;
 };
 } // namespace mango

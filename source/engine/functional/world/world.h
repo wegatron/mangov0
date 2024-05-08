@@ -87,6 +87,16 @@ public:
   World &operator=(World &&) = delete;
 
 private:
+  
+  /**
+   * @brief 将预加载的mesh数据加载到世界中
+   */
+  void loadedMesh2World();
+
+  void updateTransform();
+  
+  void updateCamera();
+
   std::string name_;
   entt::registry entities_;
   std::shared_ptr<TransformRelationship>

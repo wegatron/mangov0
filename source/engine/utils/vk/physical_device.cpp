@@ -43,6 +43,12 @@ PhysicalDevice::getPhysicalDevices(VkInstance instance) {
           (p.queueFlags & VK_QUEUE_TRANSFER_BIT) &&
           (p.queueFlags & VK_QUEUE_COMPUTE_BIT)) {
         physical_devices[i].graphics_queue_family_index_ = j;
+      } else if (p.queueFlags & VK_QUEUE_TRANSFER_BIT) {
+        physical_devices[i].transfer_queue_family_index_ = j;
+      }
+      if (physical_devices[i].transfer_queue_family_index_ == 0xFFFFFFFF) {      
+        physical_devices[i].transfer_queue_family_index_ 
+          = physical_devices[i].graphics_queue_family_index_;
       }
     }
   }

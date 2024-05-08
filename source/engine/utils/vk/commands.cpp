@@ -116,29 +116,61 @@ void CommandPool::reset() {
 
 std::shared_ptr<CommandBuffer>
 CommandPool::requestCommandBuffer(VkCommandBufferLevel level) {
-  if (level == VK_COMMAND_BUFFER_LEVEL_PRIMARY) {
-    if (active_primary_command_buffer_count_ <
-        primary_command_buffers_.size()) {
-      return primary_command_buffers_.at(
-          active_primary_command_buffer_count_++);
+  if (reset_mode_ == CmbResetMode::ResetPool) {
+    if (level == VK_COMMAND_BUFFER_LEVEL_PRIMARY) {
+      if (active_primary_command_buffer_count_ <
+          primary_command_buffers_.size()) {
+        return primary_command_buffers_.at(
+            active_primary_command_buffer_count_++);
+      }
+      primary_command_buffers_.emplace_back(
+          new CommandBuffer(driver_, *this, level));
+      active_primary_command_buffer_count_++;
+      return primary_command_buffers_.back();
     }
-    primary_command_buffers_.emplace_back(
+
+    if (active_secondary_command_buffer_count_ <
+        secondary_command_buffers_.size()) {
+      return secondary_command_buffers_.at(
+          active_secondary_command_buffer_count_++);
+    }
+
+    secondary_command_buffers_.emplace_back(
         new CommandBuffer(driver_, *this, level));
-    active_primary_command_buffer_count_++;
-    return primary_command_buffers_.back();
+    active_secondary_command_buffer_count_++;
+
+    return secondary_command_buffers_.back();
+  } else if(reset_mode_ == CmbResetMode::ResetIndividually) {
+    if (level == VK_COMMAND_BUFFER_LEVEL_PRIMARY) {
+      for (auto &command_buffer : primary_command_buffers_) {
+        if (command_buffer.use_count() == 1) {
+          command_buffer->reset();
+          return command_buffer;
+        }
+      }
+      primary_command_buffers_.emplace_back(new CommandBuffer(driver_, *this, level));
+      return primary_command_buffers_.back();
+    } else {
+      for (auto &command_buffer : secondary_command_buffers_) {
+        if (command_buffer.use_count() == 1) {
+          command_buffer->reset();
+          return command_buffer;
+        }
+      }
+      secondary_command_buffers_.emplace_back(
+        new CommandBuffer(driver_, *this, level));      
+      return secondary_command_buffers_.back();
+    }
+  } else {
+    auto cmd_buffer = new CommandBuffer(driver_, *this, level);
+    if (level == VK_COMMAND_BUFFER_LEVEL_PRIMARY) {
+      primary_command_buffers_.emplace_back(cmd_buffer);
+      return primary_command_buffers_.back();
+    }
+    secondary_command_buffers_.emplace_back(cmd_buffer);
+    return secondary_command_buffers_.back();
   }
-
-  if (active_secondary_command_buffer_count_ <
-      secondary_command_buffers_.size()) {
-    return secondary_command_buffers_.at(
-        active_secondary_command_buffer_count_++);
-  }
-
-  secondary_command_buffers_.emplace_back(
-      new CommandBuffer(driver_, *this, level));
-  active_secondary_command_buffer_count_++;
-
-  return secondary_command_buffers_.back();
+  return nullptr;
 }
 
 CommandBuffer::CommandBuffer(const std::shared_ptr<VkDriver> &driver,

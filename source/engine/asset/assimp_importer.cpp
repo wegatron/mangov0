@@ -165,7 +165,7 @@ bool AssimpImporter::import(const URL &url, World *world) {
   auto scene_tr = std::make_shared<TransformRelationship>();
   std::vector<MeshEntityData> mesh_entity_datas;  
   processNode(scene_tr, a_scene, meshes,
-              mesh_entity_datas); // TODO add lights process  
+              mesh_entity_datas); // TODO add lights process
   world->enqueue(scene_tr, std::move(mesh_entity_datas));
   
   // lock world do update

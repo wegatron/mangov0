@@ -30,7 +30,8 @@ void RenderSystem::onCreateSwapchainObjects(
 }
 
 void RenderSystem::collectRenderDatas() {
-  // TODO
+  auto world = g_engine.getWorld();
+  // world->update(g_engine.calcDeltaTime());
 }
 
 void RenderSystem::tick(float delta_time) {
