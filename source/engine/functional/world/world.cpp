@@ -60,6 +60,15 @@ World::World()
         auto e = std::static_pointer_cast<ImportSceneEvent>(event);
         importScene(e->file_path);
       });
+  // default root tr
+  root_tr_ = std::make_shared<TransformRelationship>();
+
+  // default camera
+  auto camera = CameraComponent();
+  camera.setFovy(M_PI/6.0f);
+  camera.setAspect(16.0f/9.0f);
+  camera.setClipPlanes(-0.1f, -1000.0f);
+  addComponent(createEntity("default##camera"), camera);
 }
 
 void World::loadedMesh2World()
@@ -82,52 +91,24 @@ void World::updateTransform()
   scene_aabb.setEmpty();
   //// update rt
   std::queue<std::shared_ptr<TransformRelationship>> q;
-  std::stack<std::shared_ptr<TransformRelationship>> s;
-  s.push(root_tr_);
-  while (!s.empty()) {
-    auto node = s.top();
+  if(root_tr_->child != nullptr) q.emplace(root_tr_->child);
+  while (!q.empty()) {
+    auto node = q.front(); q.pop();
+    // visit node
+    auto parent = node->parent;
+    node->gtransform = parent->gtransform * node->ltransform;
+    scene_aabb.extend(node->aabb.transformed(Eigen::Affine3f(node->gtransform)));
+    // TODO update aabb for dynamic mesh
 
-    // s.pop();
-    // s.pop();
-    // q.emplace(node);
-    // auto ch = node->child;
-    // while (ch != nullptr) {
-    //   s.push(ch);
-    //   ch = ch->sibling;
-    // }
+    // visit sibling
+    if (node->sibling != nullptr) {
+      q.emplace(node->sibling);
+    }
+    // visit child
+    if (node->child != nullptr) {
+      q.emplace(node->child);
+    }
   }
-  // add root->node's children
-  // auto rch = root_tr_->child;
-  // search child
-  
-  // updateTr(root_tr_->child);
-
-  // search child
-  // search sibling
-  // visit self
-
-  // if (rch != nullptr) {
-  //   rch->gtransform = rch->ltransform;
-  //   scene_aabb.extend(rch->aabb.transformed(Eigen::Affine3f(rch->gtransform)));
-  // }
-  // while (rch != nullptr) // add child nodes
-  // {
-  //   q.emplace(rch);
-  //   rch = rch->sibling;
-  // }
-  // while (!q.empty()) {
-  //   auto node = q.front();
-  //   q.pop();
-  //   node->gtransform = node->parent->gtransform * node->ltransform;
-  //   scene_aabb.extend(
-  //       node->aabb.transformed(Eigen::Affine3f(node->gtransform)));
-  //   // add child nodes
-  //   auto ch = node->child;
-  //   while (ch != nullptr) {
-  //     q.emplace(ch);
-  //     ch = ch->sibling;
-  //   }
-  // }
 }
 
 void World::tick(const float seconds) {

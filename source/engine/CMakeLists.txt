@@ -51,8 +51,6 @@ target_include_directories(engine PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/ImGuiFileDialog    
 )
 
-#target_include_directories(engine )
-
 # linked static libraries should not be linked again in outer target, to avoid duplicate linking
 target_link_libraries(engine PRIVATE
 ${GLFW_LIBRARY}

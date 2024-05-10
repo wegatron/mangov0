@@ -64,10 +64,6 @@ public:
     entities_.emplace<StaticMeshComponent>(entity, mesh);
   }
 
-  void setRootTr(const std::shared_ptr<TransformRelationship> &root_tr) {
-    root_tr_ = root_tr;
-  }
-
   auto getCameras() {
     return entities_.view<std::string, std::shared_ptr<TransformRelationship>,
                           CameraComponent>();

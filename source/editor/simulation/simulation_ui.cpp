@@ -360,20 +360,20 @@ void SimulationUI::constructOperationModeButtons() {
 
 void SimulationUI::updateCamera() {
   auto cameras = g_engine.getWorld()->getCameras();
-  CameraComponent *editor_camera = nullptr;
+  CameraComponent *default_camera = nullptr;
   // std::shared_ptr<TransformRelationship> tr = nullptr;
   for (auto entity : cameras) {
     auto name = cameras.get<std::string>(entity);
-    if (name != "editor##camera")
+    if (name != "default##camera")
       continue;
-    editor_camera = &(cameras.get<CameraComponent>(entity));
+    default_camera = &(cameras.get<CameraComponent>(entity));
     // tr = cameras.get<std::shared_ptr<TransformRelationship>>();
   }
 
   // set camera component
-  // assert(editor_camera != nullptr);
-  if (editor_camera != nullptr)
-    editor_camera->setAspect(content_region_.z() / content_region_.w());
+  // assert(default_camera != nullptr);
+  if (default_camera != nullptr)
+    default_camera->setAspect(content_region_.z() / content_region_.w());
 
   // if (g_engine.isSimulating()) {
   //   m_mouse_right_button_pressed =

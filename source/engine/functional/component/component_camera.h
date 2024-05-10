@@ -55,7 +55,10 @@ public:
     dirty_proj_ = true;
   }
 
-  void setFovy(float fovy) // width / focalLength
+  /**
+   * @brief set the fovy  in radians
+   */
+  void setFovy(float fovy) // height / focalLength
   {
     fovy_ = fovy;
     dirty_proj_ = true;
