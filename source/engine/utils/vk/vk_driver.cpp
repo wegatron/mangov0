@@ -21,8 +21,10 @@
 #include <engine/utils/vk/syncs.h>
 #include <engine/utils/vk/vk_constants.h>
 #include <engine/utils/vk/vk_driver.h>
+#include <engine/utils/vk/syncs.h>
 
 namespace mango {
+
 void VkDriver::initInstance() {
   if (VK_SUCCESS != volkInitialize()) {
     throw std::runtime_error("failed to initialize volk!");
@@ -122,9 +124,40 @@ void VkDriver::initDevice() {
       VK_TRUE, 0);
   transfer_cmd_queue_ = new CommandQueue(
       device_, graphics_queue_family_index, VK_QUEUE_TRANSFER_BIT, VK_TRUE, 0);
-  async_command_pool_ = std::make_unique<CommandPool>(
-      shared_from_this(), graphics_queue_family_index,
-      CommandPool::CmbResetMode::ResetIndividually);
+}
+
+void VkDriver::initCommandPoolForThread(const uint32_t queue_family_index)
+{
+  auto tid = std::this_thread::get_id();
+  auto it = std::find_if(frames_data_l_.begin(), frames_data_l_.end(),
+                         [tid](const FrameDataThreadLocal &data) {
+                           return data.tid == tid;
+                         });
+  if (it == frames_data_l_.end()) {
+    FrameDataThreadLocal data;
+    data.tid = tid;
+    for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+      data.command_pool[i] = std::make_shared<CommandPool>(
+          shared_from_this(), queue_family_index,
+          CommandPool::CmbResetMode::ResetPool);
+      data.command_buffer_available_fence[i] =
+          std::make_shared<Fence>(shared_from_this());
+    }
+    frames_data_l_.push_back(data);
+  }
+}
+
+const FrameDataThreadLocal * VkDriver::getFrameDataL() const
+{
+  auto tid = std::this_thread::get_id();
+  auto it = std::find_if(frames_data_l_.begin(), frames_data_l_.end(),
+                         [tid](const FrameDataThreadLocal &data) {
+                           return data.tid == tid;
+                         });
+  if (it == frames_data_l_.end()) {
+    throw std::runtime_error("thread local frame data not found!");
+  }
+  return &(*it);
 }
 
 void VkDriver::init() {
@@ -137,11 +170,6 @@ void VkDriver::init() {
   createFramesData();
   createDescriptorPool();
   stage_pool_ = new StagePool(shared_from_this());
-}
-
-uint32_t VkDriver::getSwapchainImageCount() const {
-  assert(swapchain_ != nullptr);
-  return swapchain_->getImageCount();
 }
 
 VkFormat VkDriver::getSwapchainImageFormat() const {
@@ -165,10 +193,8 @@ void VkDriver::createSwapchain() {
   }
 
   // create render targets
-  const auto img_cnt = swapchain_->getImageCount();
-  render_targets_.resize(img_cnt);
   auto driver = g_engine.getDriver();
-  for (uint32_t i = 0; i < img_cnt; ++i) {
+  for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
     // auto depth_image = std::make_shared<Image>(
     //     driver, 0,
     //     ds_format_, extent, VK_SAMPLE_COUNT_1_BIT,
@@ -193,37 +219,28 @@ void VkDriver::createSwapchain() {
 }
 
 std::shared_ptr<class CommandBuffer>
-VkDriver::requestSyncCommandBuffer(VkCommandBufferLevel level) {
-  auto cmd_pool = frames_data_[cur_frame_index_].command_pool;
-  return cmd_pool->requestCommandBuffer(level);
+VkDriver::requestCommandBuffer(VkCommandBufferLevel level) {
+  auto current_frame_data_l_ = getFrameDataL(); // command frame data for current thread
+  return current_frame_data_l_->command_pool[cur_frame_index_]->requestCommandBuffer(level);
 }
 
-std::shared_ptr<class CommandBuffer> VkDriver::requestAsyncCommandBuffer(
-    VkCommandBufferLevel level) {
-  return async_command_pool_->requestCommandBuffer(level);
-}
 
 void VkDriver::createFramesData() {
-  auto n = swapchain_->getImageCount();
-  frames_data_.resize(n);
-  for (auto i = 0; i < n; ++i) {
-    frames_data_[i].command_buffer_available_fence =
-        std::make_shared<Fence>(shared_from_this(), true);
-    frames_data_[i].render_result_available_semaphore =
+  for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+    frames_data_g_.render_result_available_semaphore[i] =
         std::make_shared<Semaphore>(shared_from_this());
-    frames_data_[i].image_available_semaphore =
+    frames_data_g_.image_available_semaphore[i] =
         std::make_shared<Semaphore>(shared_from_this());
-    frames_data_[i].command_pool = std::make_shared<CommandPool>(
-        shared_from_this(), graphics_cmd_queue_->getFamilyIndex(),
-        CommandPool::CmbResetMode::ResetPool);
   }
 }
 
 bool VkDriver::waitFrame() {
-  frames_data_[cur_frame_index_]
-      .command_buffer_available_fence->wait(); // wait for cmdbuffer is free
+  // should be in main thread
+  auto frame_data_l = getFrameDataL();
+  frame_data_l->command_buffer_available_fence[cur_frame_index_]
+      ->wait(); // wait for cmdbuffer is free
   auto result = swapchain_->acquireNextImage(
-      frames_data_[cur_frame_index_].image_available_semaphore->getHandle(),
+      frames_data_g_.image_available_semaphore[cur_frame_index_]->getHandle(),
       VK_NULL_HANDLE, cur_image_index_);
   if (result == VK_ERROR_OUT_OF_DATE_KHR) {
     // recreate swapchain
@@ -232,9 +249,7 @@ bool VkDriver::waitFrame() {
   } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
     throw VulkanException(result, "failed to acquire next image");
   }
-  frames_data_[cur_frame_index_]
-      .command_buffer_available_fence->reset(); // reset to unsignaled
-  frames_data_[cur_frame_index_].command_pool->reset();
+  frame_data_l->command_pool[cur_frame_index_]->reset();
   return true;
 }
 
@@ -248,8 +263,8 @@ void VkDriver::presentFrame() {
   present_info.pImageIndices = &cur_image_index_;
   present_info.waitSemaphoreCount = 1;
   auto render_semaphore_handle =
-      frames_data_[cur_frame_index_]
-          .render_result_available_semaphore->getHandle();
+      frames_data_g_
+          .render_result_available_semaphore[cur_frame_index_]->getHandle();
   present_info.pWaitSemaphores = &render_semaphore_handle;
 
   // Present swapchain image
@@ -260,7 +275,7 @@ void VkDriver::presentFrame() {
   } else if (result != VK_SUCCESS) {
     throw VulkanException(result, "failed to present image");
   }
-  cur_frame_index_ = (cur_frame_index_ + 1) % swapchain_->getImageCount();
+  cur_frame_index_ = (cur_frame_index_ + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 void VkDriver::createDescriptorPool() {
@@ -442,9 +457,10 @@ void VkDriver::initAllocator() {
 }
 
 void VkDriver::destroy() {
-  async_command_pool_.reset();
-  frames_data_.clear();
-  render_targets_.clear();
+  frames_data_g_.destroy();
+  for (auto &data : frames_data_l_) {
+    data.destroy();
+  }
   delete swapchain_;
   delete descriptor_pool_;
   delete stage_pool_;

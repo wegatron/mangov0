@@ -85,7 +85,7 @@ RenderTarget::RenderTarget(const std::shared_ptr<VkDriver> &driver,
                             VK_IMAGE_USAGE_SAMPLED_BIT;
   VkExtent3D extent = {width_, height_, 1};
   auto cmd_buffer =
-      driver->requestSyncCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+      driver->requestCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
   cmd_buffer->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
   std::vector<ImageMemoryBarrier> barriers;
   barriers.reserve(color_formats_.size());

@@ -147,7 +147,7 @@ bool AssimpImporter::import(const URL &url, World *world) {
   //  add materials and meshes to scene
   auto driver = g_engine.getDriver();
   auto cmd_buffer =
-      driver->requestSyncCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY); // async will cause command buffer invalid
+      driver->requestCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY); // async will cause command buffer invalid
   cmd_buffer->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
   //std::cout << "importing cmd buffer: " << cmd_buffer->getHandle() << std::endl;
   std::vector<std::shared_ptr<StaticMesh>> meshes =

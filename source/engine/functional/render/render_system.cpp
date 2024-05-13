@@ -43,7 +43,7 @@ void RenderSystem::tick(float delta_time) {
   collectRenderDatas();
   ui_pass_->prepare(); // update ui region for rendering(3d view region)
 
-  auto cmd_buffer = driver->requestSyncCommandBuffer(
+  auto cmd_buffer = driver->requestCommandBuffer(
       VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
   cmd_buffer->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
@@ -60,11 +60,12 @@ void RenderSystem::tick(float delta_time) {
       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
   VkSubmitInfo submit_info{VK_STRUCTURE_TYPE_SUBMIT_INFO};
   VkSemaphore render_result_available_semaphore_handle =
-      driver->getCurrentFrameData()
-          .render_result_available_semaphore->getHandle();
+      driver->getRenderResultAvailableSemaphore()->getHandle();
   VkSemaphore image_available_semaphore_handle =
-      driver->getCurrentFrameData().image_available_semaphore->getHandle();
+      driver->getImageAvailableSemaphore()->getHandle();
   VkCommandBuffer cmd_buf_handle = cmd_buffer->getHandle();
+  auto cur_fence = driver->getCommandBufferAvailableFence();
+  cur_fence->reset();
   submit_info.commandBufferCount = 1;
   submit_info.pCommandBuffers = &cmd_buf_handle;
   submit_info.waitSemaphoreCount = 1;
@@ -72,9 +73,7 @@ void RenderSystem::tick(float delta_time) {
   submit_info.pWaitDstStageMask = &wait_stage;
   submit_info.signalSemaphoreCount = 1;
   submit_info.pSignalSemaphores = &render_result_available_semaphore_handle;
-  cmd_queue->submit({submit_info},
-                    driver->getCurrentFrameData()
-                        .command_buffer_available_fence->getHandle());
+  cmd_queue->submit({submit_info},cur_fence->getHandle());
   driver->presentFrame();
 }
 

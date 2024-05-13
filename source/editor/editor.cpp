@@ -69,12 +69,14 @@ void Editor::destroy() {
 
 void Editor::run() {
   auto window = g_engine.getWindow();
+  auto driver = g_engine.getDriver();
+  driver->initCommandPoolForThread(driver->getGraphicsQueue()->getFamilyIndex());
   while (!window->shouldClose()) {
     window->processEvents();
     float delta_time = g_engine.calcDeltaTime();
     g_engine.gcTick(delta_time);
     g_engine.logicTick(delta_time);
-    g_engine.renderTick(delta_time);
+    g_engine.renderTick(delta_time);    
   }
 }
 

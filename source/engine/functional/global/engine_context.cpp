@@ -58,8 +58,11 @@ bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
 
   // animation & physics manager
   event_process_thread_ = new std::thread([this]() {
-    while(!is_exit_)
-    {
+    auto driver = g_engine.getDriver();
+    driver->initCommandPoolForThread(
+        driver->getGraphicsQueue()->getFamilyIndex());
+    // wait cv from main thread and do tick once
+    while (!is_exit_) {
       event_system_->tick();
     }
   });

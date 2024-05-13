@@ -37,9 +37,8 @@ public:
 
   VkFormat getImageFormat() const { return image_format_; }
 
-  uint32_t getImageCount() const { return image_count_; }
-
   std::shared_ptr<ImageView> getImageView(uint32_t index) const {
+    assert(index < MAX_FRAMES_IN_FLIGHT);
     return image_views_[index];
   }
 
@@ -54,9 +53,8 @@ private:
   VkSwapchainKHR swapchain_{VK_NULL_HANDLE};
   VkExtent2D extent_;
   VkFormat image_format_;
-  uint32_t image_count_{0};
-  std::vector<VkImage> images_;
-  std::vector<std::shared_ptr<ImageView>> image_views_;
+  VkImage images_[MAX_FRAMES_IN_FLIGHT];
+  std::shared_ptr<ImageView> image_views_[MAX_FRAMES_IN_FLIGHT];
 };
 
 } // namespace mango

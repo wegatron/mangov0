@@ -22,9 +22,8 @@ void Swapchain::initSwapchain(VkSurfaceKHR surface,
   extent_.height = std::clamp(properties.extent.height,
                               surface_capabilities.minImageExtent.height,
                               surface_capabilities.maxImageExtent.height);
-  image_count_ =
-      std::clamp(properties.image_count, surface_capabilities.minImageCount,
-                 surface_capabilities.maxImageCount);
+  assert(std::clamp(properties.image_count, surface_capabilities.minImageCount,
+    surface_capabilities.maxImageCount) == MAX_FRAMES_IN_FLIGHT);
   image_format_ = properties.surface_format.format;
 
   // create swapchain
@@ -32,7 +31,7 @@ void Swapchain::initSwapchain(VkSurfaceKHR surface,
   swapchain_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
   swapchain_info.surface = surface;
   swapchain_info.imageExtent = extent_;
-  swapchain_info.minImageCount = image_count_;
+  swapchain_info.minImageCount = MAX_FRAMES_IN_FLIGHT;
 
   auto old_swapchain = swapchain_;
   // imageFormat specifies what the image format is (same as it does in
@@ -58,7 +57,7 @@ void Swapchain::initSwapchain(VkSurfaceKHR surface,
                     "vulkan failed to create swapchain");
 
   if (old_swapchain != VK_NULL_HANDLE) {
-    image_views_.clear();
+    for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) { image_views_[i].reset(); }      
     vkDestroySwapchainKHR(driver->getDevice(), old_swapchain, nullptr);
   }
 
@@ -71,9 +70,9 @@ void Swapchain::initImages() {
   uint32_t image_count;
   vkGetSwapchainImagesKHR(driver->getDevice(), swapchain_, &image_count,
                           nullptr);
-  images_.resize(image_count);
+  assert(image_count == MAX_FRAMES_IN_FLIGHT);
   vkGetSwapchainImagesKHR(driver->getDevice(), swapchain_, &image_count,
-                          images_.data());
+                          images_);
   std::vector<std::shared_ptr<Image>> wraped_images(image_count);
 
   for (auto i = 0; i < image_count; ++i) {
@@ -84,8 +83,7 @@ void Swapchain::initImages() {
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
   }
   // image views
-  image_views_.resize(images_.size());
-  for (auto i = 0; i < images_.size(); ++i) {
+  for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
     image_views_[i] = std::make_shared<ImageView>(
         wraped_images[i], VK_IMAGE_VIEW_TYPE_2D, image_format_,
         VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 1);
@@ -98,8 +96,8 @@ Swapchain::~Swapchain() {
     assert(image_view.use_count() == 1);
   }
 #endif
-  auto driver = g_engine.getDriver();
-  image_views_.clear();
+  auto driver = g_engine.getDriver();  
+  for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) { image_views_[i].reset(); }
   vkDestroySwapchainKHR(driver->getDevice(), swapchain_, nullptr);
 }
 

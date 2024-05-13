@@ -54,7 +54,6 @@ void UIPass::initImgui() {
 
   auto driver = g_engine.getDriver();
   auto queue = driver->getGraphicsQueue();
-  uint32_t image_count = driver->getSwapchainImageCount();
   ImGui_ImplVulkan_InitInfo init_info = {};
   init_info.Instance = driver->getInstance();
   init_info.PhysicalDevice = driver->getPhysicalDevice();
@@ -65,8 +64,8 @@ void UIPass::initImgui() {
   init_info.PipelineCache = g_engine.getResourceCache()->getPipelineCache();
   init_info.DescriptorPool = driver->getDescriptorPool()->getHandle();
   init_info.Allocator = nullptr;
-  init_info.MinImageCount = image_count;
-  init_info.ImageCount = image_count;
+  init_info.MinImageCount = MAX_FRAMES_IN_FLIGHT;
+  init_info.ImageCount = MAX_FRAMES_IN_FLIGHT;
   init_info.CheckVkResultFn = check_vk_result;
   init_info.RenderPass = render_pass_->getHandle();
 
@@ -130,8 +129,8 @@ void UIPass::createRenderPassAndFramebuffer() {
   render_pass_ = std::make_shared<RenderPass>(driver, attachments,
                                               load_store_infos, subpass_infos);
   const auto &rts = driver->getRenderTargets();
-  framebuffers_.resize(rts.size());
-  for (auto i = 0; i < rts.size(); ++i) {
+  framebuffers_.resize(MAX_FRAMES_IN_FLIGHT);
+  for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
     framebuffers_[i] =
         std::make_shared<FrameBuffer>(driver, render_pass_, rts[i]);
   }
@@ -181,8 +180,8 @@ void UIPass::onCreateSwapchainObject(const uint32_t width,
                                      const uint32_t height) {
   const auto &driver = g_engine.getDriver();
   const auto &rts = driver->getRenderTargets();
-  framebuffers_.resize(rts.size());
-  for (auto i = 0; i < rts.size(); ++i) {
+  framebuffers_.resize(MAX_FRAMES_IN_FLIGHT);
+  for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
     framebuffers_[i] =
         std::make_shared<FrameBuffer>(driver, render_pass_, rts[i]);
   }

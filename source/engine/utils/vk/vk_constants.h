@@ -19,4 +19,6 @@ constexpr uint32_t MAX_TEXTURE_NUM_COUNT =
 
 constexpr uint32_t TIME_BEFORE_EVICTION = 4;
 constexpr uint32_t DATA_RESOURCE_TIME_BEFORE_EVICTION = 7200;
+
+constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 3;
 } // namespace mango

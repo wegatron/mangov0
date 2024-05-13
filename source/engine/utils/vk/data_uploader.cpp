@@ -17,7 +17,7 @@ uploadImage(const uint8_t *data, const uint32_t width, const uint32_t height,
   auto driver = g_engine.getDriver();
   std::shared_ptr<CommandBuffer> cur_cmd_buf = cmd_buf;
   if (cmd_buf == nullptr) {
-    cur_cmd_buf = driver->requestSyncCommandBuffer();
+    cur_cmd_buf = driver->requestCommandBuffer();
     cur_cmd_buf->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
   }
   auto image = std::make_shared<Image>(

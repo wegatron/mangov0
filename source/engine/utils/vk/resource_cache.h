@@ -125,7 +125,7 @@ public:
   //   std::shared_ptr<T> ret;
   //   if (cmd_buf == nullptr) {
   //     auto driver = g_engine.getDriver();
-  //     auto ccmd_buf = driver->requestSyncCommandBuffer(
+  //     auto ccmd_buf = driver->requestCommandBuffer(
   //         VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
   //     ccmd_buf->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
   //     ret = load<T>(path, ccmd_buf);
@@ -152,7 +152,7 @@ public:
   //   std::shared_ptr<T> ret;
   //   if (cmd_buf == nullptr) {
   //     auto driver = g_engine.getDriver();
-  //     auto ccmd_buf = driver->requestSyncCommandBuffer(
+  //     auto ccmd_buf = driver->requestCommandBuffer(
   //         VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
   //     ccmd_buf->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
   //     auto ret = load<T>(data, size, ccmd_buf);
@@ -181,7 +181,7 @@ public:
   //   std::shared_ptr<T> ret;
   //   if (cmd_buf == nullptr) {
   //     auto driver = g_engine.getDriver();
-  //     auto ccmd_buf = driver->requestSyncCommandBuffer(
+  //     auto ccmd_buf = driver->requestCommandBuffer(
   //         VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
   //     ccmd_buf->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
   //     ret = load<T>(data, width, height, channel, ccmd_buf);

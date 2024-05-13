@@ -5,8 +5,10 @@
 #include <vector>
 #include <vk_mem_alloc.h>
 #include <volk.h>
+#include <thread>
 
 #include <engine/utils/vk/vk_config.h>
+#include <engine/utils/vk/vk_constants.h>
 
 namespace mango {
 
@@ -16,17 +18,36 @@ class RenderTarget;
 class DescriptorPool;
 class StagePool;
 class CommandPool;
+class Semaphore;
+class Fence;
 
 struct RequestedDeviceExtension {
   const char *name;
   bool required;
 };
 
-struct FrameData {
-  std::shared_ptr<class Fence> command_buffer_available_fence;
-  std::shared_ptr<class Semaphore> image_available_semaphore;
-  std::shared_ptr<class Semaphore> render_result_available_semaphore;
-  std::shared_ptr<CommandPool> command_pool;
+struct FrameDataGlobal {  
+  std::shared_ptr<Semaphore> image_available_semaphore[MAX_FRAMES_IN_FLIGHT];
+  std::shared_ptr<Semaphore> render_result_available_semaphore[MAX_FRAMES_IN_FLIGHT];
+  void destroy() {
+    for (auto i = 0; i<MAX_FRAMES_IN_FLIGHT; ++i) {
+       image_available_semaphore[i].reset();
+       render_result_available_semaphore[i].reset();
+    }
+  }
+};
+
+struct FrameDataThreadLocal {
+  std::thread::id tid;
+  std::shared_ptr<Fence> command_buffer_available_fence[MAX_FRAMES_IN_FLIGHT];
+  std::shared_ptr<CommandPool> command_pool[MAX_FRAMES_IN_FLIGHT];
+  void destroy()
+  {
+    for (auto i = 0; i<MAX_FRAMES_IN_FLIGHT; ++i) {
+      command_buffer_available_fence[i].reset();
+      command_pool[i].reset();
+    }
+  }
 };
 
 class VkDriver final : public std::enable_shared_from_this<VkDriver> {
@@ -43,6 +64,8 @@ public:
    * create swapchain and render targets.
    */
   void init();
+
+  void initCommandPoolForThread(const uint32_t queue_family_index);
 
   /**
    * @brief destroy all resources created by this driver, resource may have
@@ -71,26 +94,32 @@ public:
    * @param level command buffer level
    * @return std::shared_ptr<class CommandBuffer> 
    */
-  std::shared_ptr<class CommandBuffer> requestSyncCommandBuffer(
-      VkCommandBufferLevel level =
-          VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-
-  std::shared_ptr<class CommandBuffer> requestAsyncCommandBuffer(
+  std::shared_ptr<class CommandBuffer> requestCommandBuffer(
       VkCommandBufferLevel level =
           VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
   VkResult waitIdle() const { return vkDeviceWaitIdle(device_); }
 
-  uint32_t getSwapchainImageCount() const;
-
   VkFormat getSwapchainImageFormat() const;
 
   uint32_t getCurImageIndex() const { return cur_frame_index_; }
 
-  FrameData &getCurrentFrameData() { return frames_data_[cur_frame_index_]; }
-
-  const std::vector<std::shared_ptr<RenderTarget>> &getRenderTargets() const {
+  const std::shared_ptr<RenderTarget> * getRenderTargets() const {
     return render_targets_;
+  }
+
+  std::shared_ptr<Semaphore> getImageAvailableSemaphore() const {
+    return frames_data_g_.image_available_semaphore[cur_frame_index_];
+  }
+
+  std::shared_ptr<Semaphore> getRenderResultAvailableSemaphore() const {
+    return frames_data_g_.render_result_available_semaphore[cur_frame_index_];  
+  }
+
+  std::shared_ptr<Fence> getCommandBufferAvailableFence() const
+  {
+    auto frame_data_l = getFrameDataL();
+    return frame_data_l->command_buffer_available_fence[cur_frame_index_];
   }
 
   /**
@@ -114,6 +143,9 @@ public:
   StagePool *getStagePool() const { return stage_pool_; }
 
 private:
+
+  const FrameDataThreadLocal * getFrameDataL() const;
+
   void initInstance();
 
   std::pair<bool, uint32_t> selectPhysicalDevice(
@@ -155,15 +187,15 @@ private:
 
   uint32_t cur_frame_index_{0};
   uint32_t cur_image_index_{0};
-  std::vector<FrameData> frames_data_;
+  
+  FrameDataGlobal frames_data_g_;
+  std::vector<FrameDataThreadLocal> frames_data_l_;
 
   CommandQueue *graphics_cmd_queue_{nullptr};
   CommandQueue *transfer_cmd_queue_{nullptr};
   Swapchain *swapchain_{nullptr};
-  std::vector<std::shared_ptr<RenderTarget>> render_targets_;
-
+  std::shared_ptr<RenderTarget> render_targets_[MAX_FRAMES_IN_FLIGHT];  
   DescriptorPool *descriptor_pool_{nullptr};
   StagePool *stage_pool_{nullptr};
-  std::unique_ptr<CommandPool> async_command_pool_;
 };
 } // namespace mango
