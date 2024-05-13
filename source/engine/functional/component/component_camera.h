@@ -85,7 +85,7 @@ public:
 
   const Eigen::Matrix4f &getViewMatrix() const noexcept { return view_mat_; }
 
-  Eigen::Matrix4f &getViewMatrix() noexcept { return view_mat_; }
+  void setViewMatrix(const Eigen::Matrix4f &view_mat) { view_mat_ = view_mat; }
 
   /**
    * \brief Get the projection matrix of the camera, right-handed coordinate

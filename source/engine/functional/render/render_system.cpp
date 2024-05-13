@@ -41,7 +41,7 @@ void RenderSystem::tick(float delta_time) {
     return;
 
   collectRenderDatas();
-  ui_pass_->prepare(); // update ui region for rendering
+  ui_pass_->prepare(); // update ui region for rendering(3d view region)
 
   auto cmd_buffer = driver->requestSyncCommandBuffer(
       VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);

@@ -111,6 +111,16 @@ void World::updateTransform()
   }
 }
 
+void World::updateCamera()
+{
+  auto view = getCameras();
+  for (auto entity : view) {
+    auto &camera = view.get<CameraComponent>(entity);
+    auto &tr = view.get<std::shared_ptr<TransformRelationship>>(entity);
+    camera.setViewMatrix(tr->gtransform.inverse().matrix());
+  }
+}
+
 void World::tick(const float seconds) {
   // append new imported scene to root
   loadedMesh2World();

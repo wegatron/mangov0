@@ -101,11 +101,11 @@ void VkDriver::initDevice() {
 
   // queue info
   VkDeviceQueueCreateInfo queue_info{};
-  float queue_priority = 1.0f;
+  float queue_priority[2] = {1.0f, 1.0f};
   queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
   queue_info.queueFamilyIndex = graphics_queue_family_index;
   queue_info.queueCount = 2;
-  queue_info.pQueuePriorities = &queue_priority;
+  queue_info.pQueuePriorities = queue_priority;
 
   // logical device
   device_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -215,7 +215,7 @@ void VkDriver::createFramesData() {
         std::make_shared<Semaphore>(shared_from_this());
     frames_data_[i].command_pool = std::make_shared<CommandPool>(
         shared_from_this(), graphics_cmd_queue_->getFamilyIndex(),
-        CommandPool::CmbResetMode::ResetIndividually);
+        CommandPool::CmbResetMode::ResetPool);
   }
 }
 

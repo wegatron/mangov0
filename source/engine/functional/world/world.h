@@ -7,6 +7,7 @@
 #include <engine/functional/component/component_mesh.h>
 #include <entt/entt.hpp>
 #include <shaders/include/shader_structs.h>
+#include <mutex>
 
 namespace mango {
 
