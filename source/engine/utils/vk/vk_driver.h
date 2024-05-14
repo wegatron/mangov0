@@ -18,15 +18,17 @@ class RenderTarget;
 class DescriptorPool;
 class StagePool;
 class CommandPool;
+class CommandBuffer;
 class Semaphore;
 class Fence;
+class VkDriver;
 
 struct RequestedDeviceExtension {
   const char *name;
   bool required;
 };
 
-struct FrameDataGlobal {  
+struct FrameData {  
   std::shared_ptr<Semaphore> image_available_semaphore[MAX_FRAMES_IN_FLIGHT];
   std::shared_ptr<Semaphore> render_result_available_semaphore[MAX_FRAMES_IN_FLIGHT];
   void destroy() {
@@ -37,17 +39,49 @@ struct FrameDataGlobal {
   }
 };
 
-struct FrameDataThreadLocal {
-  std::thread::id tid;
-  std::shared_ptr<Fence> command_buffer_available_fence[MAX_FRAMES_IN_FLIGHT];
-  std::shared_ptr<CommandPool> command_pool[MAX_FRAMES_IN_FLIGHT];
-  void destroy()
+class ThreadLocalCommandBufferManager final {
+public:
+  ThreadLocalCommandBufferManager(const std::shared_ptr<VkDriver> &driver,
+                                  uint32_t queue_family_index);
+
+  ~ThreadLocalCommandBufferManager();                                  
+
+  std::thread::id getThreadId() const { return tid_; }
+
+  void setCurrentFrameIndex(uint32_t frame_index);
+
+  /**
+   * @brief request command buffer for record. the command buffer will be at recording state, do not need to call begin.
+   */
+  std::shared_ptr<CommandBuffer>
+  requestCommandBuffer(VkCommandBufferLevel level);
+
+  /**
+   * @brief push command buffer to candidate executable list. will call command buffer's end() method.   
+   */
+  void enqueueCommandBuffer(const std::shared_ptr<CommandBuffer> &cmd_buf);
+
+  /**
+   * @brief Get the Executable Command Buffers   
+   */
+  std::vector<std::shared_ptr<CommandBuffer>> &getExecutableCommandBuffers();
+
+  std::shared_ptr<Fence> getCommandBufferAvailableFence() const
   {
-    for (auto i = 0; i<MAX_FRAMES_IN_FLIGHT; ++i) {
-      command_buffer_available_fence[i].reset();
-      command_pool[i].reset();
-    }
+    return command_buffer_available_fence_[*current_frame_index_];
   }
+
+  /**
+   * @brief reset command pool   
+   */
+  void resetCurFrameCommandPool();
+
+private:
+  std::thread::id tid_;
+  uint32_t * current_frame_index_{0};
+  std::shared_ptr<Fence> command_buffer_available_fence_[MAX_FRAMES_IN_FLIGHT];
+  std::shared_ptr<CommandPool> command_pool_[MAX_FRAMES_IN_FLIGHT];
+  std::vector<VkCommandBuffer> executable_command_buffers_;
 };
 
 class VkDriver final : public std::enable_shared_from_this<VkDriver> {
@@ -65,7 +99,7 @@ public:
    */
   void init();
 
-  void initCommandPoolForThread(const uint32_t queue_family_index);
+  void initThreadLocalCommandBufferManager(const uint32_t queue_family_index);
 
   /**
    * @brief destroy all resources created by this driver, resource may have
@@ -87,17 +121,6 @@ public:
 
   CommandQueue *getTransferQueue() const { return transfer_cmd_queue_; }
 
-  /**
-   * @brief request command buffer from main render thread
-   * command buffer is allocated from command pool of current frame, when new frame is started pool will be reset
-   *    
-   * @param level command buffer level
-   * @return std::shared_ptr<class CommandBuffer> 
-   */
-  std::shared_ptr<class CommandBuffer> requestCommandBuffer(
-      VkCommandBufferLevel level =
-          VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-
   VkResult waitIdle() const { return vkDeviceWaitIdle(device_); }
 
   VkFormat getSwapchainImageFormat() const;
@@ -109,21 +132,17 @@ public:
   }
 
   std::shared_ptr<Semaphore> getImageAvailableSemaphore() const {
-    return frames_data_g_.image_available_semaphore[cur_frame_index_];
+    return frames_data_.image_available_semaphore[cur_frame_index_];
   }
 
   std::shared_ptr<Semaphore> getRenderResultAvailableSemaphore() const {
-    return frames_data_g_.render_result_available_semaphore[cur_frame_index_];  
+    return frames_data_.render_result_available_semaphore[cur_frame_index_];  
   }
 
-  std::shared_ptr<Fence> getCommandBufferAvailableFence() const
-  {
-    auto frame_data_l = getFrameDataL();
-    return frame_data_l->command_buffer_available_fence[cur_frame_index_];
-  }
+  const ThreadLocalCommandBufferManager & getThreadLocalCommandBufferManager() const;  
 
   /**
-   * @brief accquire next image from swapchain,
+   * @brief accquire next image from swapchain. should be called in main rendering thread
    * update frame_index which will be used in acquire command buffer
    * update image_index/frame buffer index which will be used in ui pass
    */
@@ -143,8 +162,6 @@ public:
   StagePool *getStagePool() const { return stage_pool_; }
 
 private:
-
-  const FrameDataThreadLocal * getFrameDataL() const;
 
   void initInstance();
 
@@ -188,9 +205,8 @@ private:
   uint32_t cur_frame_index_{0};
   uint32_t cur_image_index_{0};
   
-  FrameDataGlobal frames_data_g_;
-  std::vector<FrameDataThreadLocal> frames_data_l_;
-
+  FrameData frames_data_;
+  std::vector<ThreadLocalCommandBufferManager> thread_local_command_buffer_managers_;
   CommandQueue *graphics_cmd_queue_{nullptr};
   CommandQueue *transfer_cmd_queue_{nullptr};
   Swapchain *swapchain_{nullptr};

@@ -126,38 +126,15 @@ void VkDriver::initDevice() {
       device_, graphics_queue_family_index, VK_QUEUE_TRANSFER_BIT, VK_TRUE, 0);
 }
 
-void VkDriver::initCommandPoolForThread(const uint32_t queue_family_index)
+void VkDriver::initThreadLocalCommandBufferManager(const uint32_t queue_family_index)
 {
   auto tid = std::this_thread::get_id();
-  auto it = std::find_if(frames_data_l_.begin(), frames_data_l_.end(),
-                         [tid](const FrameDataThreadLocal &data) {
-                           return data.tid == tid;
-                         });
-  if (it == frames_data_l_.end()) {
-    FrameDataThreadLocal data;
-    data.tid = tid;
-    for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
-      data.command_pool[i] = std::make_shared<CommandPool>(
-          shared_from_this(), queue_family_index,
-          CommandPool::CmbResetMode::ResetPool);
-      data.command_buffer_available_fence[i] =
-          std::make_shared<Fence>(shared_from_this());
-    }
-    frames_data_l_.push_back(data);
+  auto itr = std::find_if(thread_local_command_buffer_managers_.begin(),
+               thread_local_command_buffer_managers_.end(),
+               [&tid](const auto &manager) { return manager.getThreadId() == tid; });
+  if (itr == thread_local_command_buffer_managers_.end()) {
+    thread_local_command_buffer_managers_.emplace_back(queue_family_index);
   }
-}
-
-const FrameDataThreadLocal * VkDriver::getFrameDataL() const
-{
-  auto tid = std::this_thread::get_id();
-  auto it = std::find_if(frames_data_l_.begin(), frames_data_l_.end(),
-                         [tid](const FrameDataThreadLocal &data) {
-                           return data.tid == tid;
-                         });
-  if (it == frames_data_l_.end()) {
-    throw std::runtime_error("thread local frame data not found!");
-  }
-  return &(*it);
 }
 
 void VkDriver::init() {
@@ -218,29 +195,20 @@ void VkDriver::createSwapchain() {
       std::make_shared<RenderCreateSwapchainObjectsEvent>(width, height));
 }
 
-std::shared_ptr<class CommandBuffer>
-VkDriver::requestCommandBuffer(VkCommandBufferLevel level) {
-  auto current_frame_data_l_ = getFrameDataL(); // command frame data for current thread
-  return current_frame_data_l_->command_pool[cur_frame_index_]->requestCommandBuffer(level);
-}
-
-
 void VkDriver::createFramesData() {
   for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
-    frames_data_g_.render_result_available_semaphore[i] =
+    frames_data_.render_result_available_semaphore[i] =
         std::make_shared<Semaphore>(shared_from_this());
-    frames_data_g_.image_available_semaphore[i] =
+    frames_data_.image_available_semaphore[i] =
         std::make_shared<Semaphore>(shared_from_this());
   }
 }
 
 bool VkDriver::waitFrame() {
-  // should be in main thread
-  auto frame_data_l = getFrameDataL();
-  frame_data_l->command_buffer_available_fence[cur_frame_index_]
-      ->wait(); // wait for cmdbuffer is free
+  auto & mgr = getThreadLocalCommandBufferManager();
+  mgr.getCommandBufferAvailableFence()->wait();
   auto result = swapchain_->acquireNextImage(
-      frames_data_g_.image_available_semaphore[cur_frame_index_]->getHandle(),
+      frames_data_.image_available_semaphore[cur_frame_index_]->getHandle(),
       VK_NULL_HANDLE, cur_image_index_);
   if (result == VK_ERROR_OUT_OF_DATE_KHR) {
     // recreate swapchain
@@ -249,7 +217,7 @@ bool VkDriver::waitFrame() {
   } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
     throw VulkanException(result, "failed to acquire next image");
   }
-  frame_data_l->command_pool[cur_frame_index_]->reset();
+  mgr.resetCurFrameCommandPool();
   return true;
 }
 
@@ -263,7 +231,7 @@ void VkDriver::presentFrame() {
   present_info.pImageIndices = &cur_image_index_;
   present_info.waitSemaphoreCount = 1;
   auto render_semaphore_handle =
-      frames_data_g_
+      frames_data_
           .render_result_available_semaphore[cur_frame_index_]->getHandle();
   present_info.pWaitSemaphores = &render_semaphore_handle;
 
@@ -457,10 +425,8 @@ void VkDriver::initAllocator() {
 }
 
 void VkDriver::destroy() {
-  frames_data_g_.destroy();
-  for (auto &data : frames_data_l_) {
-    data.destroy();
-  }
+  thread_local_command_buffer_managers_.clear();
+  frames_data_.destroy();
   delete swapchain_;
   delete descriptor_pool_;
   delete stage_pool_;
