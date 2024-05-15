@@ -60,10 +60,18 @@ bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
   event_process_thread_ = new std::thread([this]() {
     auto driver = g_engine.getDriver();
     driver->initThreadLocalCommandBufferManager(
-        driver->getGraphicsQueue()->getFamilyIndex());
+        driver->getTransferQueue()->getFamilyIndex());
+    auto &cmd_buffer_mgr = driver->getThreadLocalCommandBufferManager();
     // wait cv from main thread and do tick once
     while (!is_exit_) {
+      std::unique_lock<std::mutex> lock(event_process_thread_tick_start_mtx_);
+      event_process_thread_tick_start_cv_.wait(lock);
+      if(is_exit_) break;
+      cmd_buffer_mgr.getCommandBufferAvailableFence()->wait();
       event_system_->tick();
+      // commit command buffer if have
+      cmd_buffer_mgr.commitExecutableCommandBuffers();
+      event_process_thread_tick_finish_cv_.notify_one();
     }
   });
   return true;

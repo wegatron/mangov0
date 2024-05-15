@@ -133,8 +133,20 @@ void VkDriver::initThreadLocalCommandBufferManager(const uint32_t queue_family_i
                thread_local_command_buffer_managers_.end(),
                [&tid](const auto &manager) { return manager.getThreadId() == tid; });
   if (itr == thread_local_command_buffer_managers_.end()) {
-    thread_local_command_buffer_managers_.emplace_back(queue_family_index);
+    thread_local_command_buffer_managers_.emplace_back(g_engine.getDriver(), queue_family_index);
   }
+}
+
+ThreadLocalCommandBufferManager & VkDriver::getThreadLocalCommandBufferManager()
+{
+  auto tid = std::this_thread::get_id();
+  auto itr = std::find_if(thread_local_command_buffer_managers_.begin(),
+               thread_local_command_buffer_managers_.end(),
+               [&tid](auto &manager) { return manager.getThreadId() == tid; });
+  if (itr == thread_local_command_buffer_managers_.end()) {
+    throw std::runtime_error("ThreadLocalCommandBufferManager not found!");
+  }
+  return *itr;
 }
 
 void VkDriver::init() {

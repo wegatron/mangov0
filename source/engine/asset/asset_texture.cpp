@@ -34,8 +34,10 @@ void AssetTexture::load(const URL &url) {
 void AssetTexture::prepare() {
   auto pixel_format = getFormat();
   if (compression_mode_ == ETextureCompressionMode::None) {
+    auto &cmd_buffer_mgr = g_engine.getDriver()->getThreadLocalCommandBufferManager();
+    auto cmd_buffer = cmd_buffer_mgr.requestCommandBuffer(VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
     image_view_ = uploadImage(image_data_.data(), width_, height_, mip_levels_,
-                              layers_, pixel_format, nullptr);
+                              layers_, pixel_format, cmd_buffer);
   } else {
     // compress image data to GPU
   }

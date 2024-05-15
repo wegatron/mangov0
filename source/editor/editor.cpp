@@ -70,9 +70,11 @@ void Editor::destroy() {
 void Editor::run() {
   auto window = g_engine.getWindow();
   auto driver = g_engine.getDriver();
-  driver->initCommandPoolForThread(driver->getGraphicsQueue()->getFamilyIndex());
+  driver->initThreadLocalCommandBufferManager(driver->getGraphicsQueue()->getFamilyIndex());
   while (!window->shouldClose()) {
     window->processEvents();
+    g_engine.waitLastTick();
+    g_engine.newTick();
     float delta_time = g_engine.calcDeltaTime();
     g_engine.gcTick(delta_time);
     g_engine.logicTick(delta_time);

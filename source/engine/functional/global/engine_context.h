@@ -6,6 +6,7 @@
 #include <memory>
 #include <vector>
 #include <thread>
+#include <condition_variable>
 
 namespace mango {
 class EngineContext {
@@ -17,6 +18,20 @@ public:
             const std::string &window_title);
 
   void destroy();
+
+  /**
+   * @brief sync of other threads
+   */
+  void waitLastTick()
+  {
+    std::unique_lock<std::mutex> lock(event_process_thread_tick_finish_mtx_);
+    event_process_thread_tick_finish_cv_.wait(lock, [this] { return is_exit_; });
+  }
+  
+  void newTick()
+  {
+    event_process_thread_tick_start_cv_.notify_all();
+  }
 
   float calcDeltaTime();
   void gcTick(float delta_time);
@@ -49,6 +64,11 @@ private:
   std::shared_ptr<class World> world_;
   std::chrono::steady_clock::time_point last_tick_time_point_;
   std::thread *event_process_thread_ {nullptr};
+
+  std::mutex event_process_thread_tick_finish_mtx_;
+  std::mutex event_process_thread_tick_start_mtx_;
+  std::condition_variable event_process_thread_tick_finish_cv_;
+  std::condition_variable event_process_thread_tick_start_cv_;
   bool is_exit_{false};
 };
 

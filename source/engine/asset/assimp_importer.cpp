@@ -146,9 +146,9 @@ bool AssimpImporter::import(const URL &url, World *world) {
   // file_directory_ = path.substr(0, path.find_last_of('/'));
   //  add materials and meshes to scene
   auto driver = g_engine.getDriver();
-  auto cmd_buffer =
-      driver->requestCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY); // async will cause command buffer invalid
-  cmd_buffer->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+  auto &cmd_buffer_mgr = driver->getThreadLocalCommandBufferManager();
+  auto cmd_buffer = cmd_buffer_mgr.requestCommandBuffer(
+      VK_COMMAND_BUFFER_LEVEL_PRIMARY);
   //std::cout << "importing cmd buffer: " << cmd_buffer->getHandle() << std::endl;
   std::vector<std::shared_ptr<StaticMesh>> meshes =
       processMeshs(a_scene, cmd_buffer);
@@ -156,12 +156,8 @@ bool AssimpImporter::import(const URL &url, World *world) {
   // std::vector<std::shared_ptr<Material>> materials =
   //     processMaterials(a_scene, dir, cmd_buf);
   // std::vector<CameraComponent> cameras = processCameras(a_scene);
-  //auto lights = processLight(a_scene);  
+  //auto lights = processLight(a_scene);
   
-  cmd_buffer->end();
-  auto cmd_queue = driver->getGraphicsQueue();  
-  cmd_queue->submit(cmd_buffer, VK_NULL_HANDLE);
-
   auto scene_tr = std::make_shared<TransformRelationship>();
   std::vector<MeshEntityData> mesh_entity_datas;  
   processNode(scene_tr, a_scene, meshes,

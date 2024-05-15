@@ -73,16 +73,19 @@ World::World()
 
 void World::loadedMesh2World()
 {
-  std::unique_lock<std::mutex> lock(mtx_);
-  for (auto &mesh_entity_dats : mesh_entity_datas_list_)
-  {
-    for (auto &mesh_entity_dat : mesh_entity_dats)
-    {
+  auto prev_frame_index = (g_engine.getDriver()->getCurFrameIndex() + MAX_FRAMES_IN_FLIGHT - 1) % MAX_FRAMES_IN_FLIGHT;
+  auto &scene_data_list = imported_scene_datas_[prev_frame_index];
+  for (auto & scene_data : scene_data_list) {
+    scene_data.scene_root_tr->parent = root_tr_;
+    scene_data.scene_root_tr->sibling = root_tr_->child;
+    root_tr_->child = scene_data.scene_root_tr;    
+    for (auto &mesh_entity_dat : scene_data.mesh_entity_datas) {
       auto entity = createEntity(mesh_entity_dat.name);
       addComponent(entity, mesh_entity_dat.tr);
       addComponent(entity, mesh_entity_dat.mesh);
     }
   }
+  scene_data_list.clear();
 }
 
 void World::updateTransform()

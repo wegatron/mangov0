@@ -113,7 +113,6 @@ public:
                  VkFilter min_filter, VkSamplerMipmapMode mipmap_mode,
                  VkSamplerAddressMode address_mode_u,
                  VkSamplerAddressMode address_mode_v);
-
   // template <typename T>
   // std::shared_ptr<T> request(const std::string &path,
   //                            const std::shared_ptr<CommandBuffer> &cmd_buf) {

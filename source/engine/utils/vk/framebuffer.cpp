@@ -84,9 +84,8 @@ RenderTarget::RenderTarget(const std::shared_ptr<VkDriver> &driver,
                             VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT |
                             VK_IMAGE_USAGE_SAMPLED_BIT;
   VkExtent3D extent = {width_, height_, 1};
-  auto cmd_buffer =
-      driver->requestCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-  cmd_buffer->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+  auto & cmd_buffer_mgr = driver->getThreadLocalCommandBufferManager();
+  auto cmd_buffer = cmd_buffer_mgr.requestCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
   std::vector<ImageMemoryBarrier> barriers;
   barriers.reserve(color_formats_.size());
   for (auto format : color_formats_) {
@@ -134,9 +133,7 @@ RenderTarget::RenderTarget(const std::shared_ptr<VkDriver> &driver,
         .dst_queue_family_index = VK_QUEUE_FAMILY_IGNORED};
     cmd_buffer->imageMemoryBarrier(barrier, image_view);
   }
-
-  cmd_buffer->end();
-  driver->getGraphicsQueue()->submit(cmd_buffer, VK_NULL_HANDLE);
+  cmd_buffer_mgr.enqueueCommandBuffer(cmd_buffer);
 }
 
 RenderTarget::RenderTarget(

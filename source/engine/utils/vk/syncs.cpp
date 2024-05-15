@@ -42,6 +42,7 @@ Semaphore::Semaphore(const std::shared_ptr<VkDriver> &driver)
 }
 
 Semaphore::~Semaphore() {
-  vkDestroySemaphore(driver_->getDevice(), handle_, nullptr);
+  if(handle_ != VK_NULL_HANDLE && driver_ != nullptr)
+    vkDestroySemaphore(driver_->getDevice(), handle_, nullptr);
 }
 } // namespace mango

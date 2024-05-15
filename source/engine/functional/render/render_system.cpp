@@ -34,19 +34,21 @@ void RenderSystem::collectRenderDatas() {
   // world->update(g_engine.calcDeltaTime());
 }
 
-void RenderSystem::tick(float delta_time) {
+void RenderSystem::tick(float delta_time) { 
   // collect render datas
   auto driver = g_engine.getDriver();
   if(!driver->waitFrame())
     return;
-
+  
+  std::list<std::shared_ptr<Semaphore>> semaphores;
+  getPendingSemaphores(driver->getCurFrameIndex(), semaphores);
+  
   collectRenderDatas();
   ui_pass_->prepare(); // update ui region for rendering(3d view region)
 
-  auto cmd_buffer = driver->requestCommandBuffer(
+  auto &cmd_buffer_mgr = driver->getThreadLocalCommandBufferManager();
+  auto cmd_buffer = cmd_buffer_mgr.requestCommandBuffer(
       VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-  cmd_buffer->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-
   // render simulation 3d view
   // shadow pass
   main_pass_->render(cmd_buffer);
@@ -61,19 +63,30 @@ void RenderSystem::tick(float delta_time) {
   VkSubmitInfo submit_info{VK_STRUCTURE_TYPE_SUBMIT_INFO};
   VkSemaphore render_result_available_semaphore_handle =
       driver->getRenderResultAvailableSemaphore()->getHandle();
-  VkSemaphore image_available_semaphore_handle =
-      driver->getImageAvailableSemaphore()->getHandle();
+
+  std::vector<VkSemaphore> waiting_semaphores;
+  waiting_semaphores.reserve(semaphores.size() + 1);
+  for (auto &semaphore : semaphores)
+    waiting_semaphores.emplace_back(semaphore->getHandle());  
+  waiting_semaphores.emplace_back(driver->getImageAvailableSemaphore()->getHandle());
+
+  auto fence = cmd_buffer_mgr.getCommandBufferAvailableFence();
+  fence->reset();
+  auto exec_cmd_buffers = cmd_buffer_mgr.getExecutableCommandBuffers();
   VkCommandBuffer cmd_buf_handle = cmd_buffer->getHandle();
-  auto cur_fence = driver->getCommandBufferAvailableFence();
+  auto cur_fence = cmd_buffer_mgr.getCommandBufferAvailableFence();
   cur_fence->reset();
-  submit_info.commandBufferCount = 1;
-  submit_info.pCommandBuffers = &cmd_buf_handle;
-  submit_info.waitSemaphoreCount = 1;
-  submit_info.pWaitSemaphores = &image_available_semaphore_handle;
+  submit_info.commandBufferCount = exec_cmd_buffers.size();
+  submit_info.pCommandBuffers = exec_cmd_buffers.data();
+  submit_info.waitSemaphoreCount = waiting_semaphores.size();
+  submit_info.pWaitSemaphores = waiting_semaphores.data(); // semaphore from another queue/thread
   submit_info.pWaitDstStageMask = &wait_stage;
   submit_info.signalSemaphoreCount = 1;
   submit_info.pSignalSemaphores = &render_result_available_semaphore_handle;
   cmd_queue->submit({submit_info},cur_fence->getHandle());
+
+  // release semaphores
+  releaseSemaphores(driver->getCurFrameIndex(), semaphores);
   driver->presentFrame();
 }
 

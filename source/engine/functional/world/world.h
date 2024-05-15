@@ -1,13 +1,17 @@
 #pragma once
 
+#include <entt/entt.hpp>
+#include <mutex>
+
 #include <engine/functional/component/component_camera.h>
 #include <engine/functional/component/component_transform.h>
+#include <engine/functional/component/component_mesh.h>
+#include <engine/functional/global/engine_context.h>
+
 // #include <engine/functional/component/material.h>
 #include <engine/asset/url.h>
-#include <engine/functional/component/component_mesh.h>
-#include <entt/entt.hpp>
 #include <shaders/include/shader_structs.h>
-#include <mutex>
+
 
 namespace mango {
 
@@ -15,10 +19,15 @@ struct MeshEntityData {
   std::string name;
   std::shared_ptr<StaticMesh> mesh;
   std::shared_ptr<TransformRelationship> tr;
-};  
+};
+
+struct ImportedSceneData {
+  std::shared_ptr<TransformRelationship> scene_root_tr;
+  std::vector<MeshEntityData> mesh_entity_datas;
+};
+
 class World final {
 public:
-  
   World();
 
   ~World() = default;
@@ -71,10 +80,11 @@ public:
   }
 
   void enqueue(const std::shared_ptr<TransformRelationship> &tr,
-               std::vector<MeshEntityData> &&mesh_entity_datas)
-  {
-    std::lock_guard<std::mutex> lock(mtx_);
-    mesh_entity_datas_list_.emplace_back(std::move(mesh_entity_datas));
+               std::vector<MeshEntityData> &&mesh_entity_datas) {
+    auto driver = g_engine.getDriver();
+    auto &dat = imported_scene_datas_[driver->getCurFrameIndex()].emplace_back();
+    dat.scene_root_tr = tr;
+    dat.mesh_entity_datas = std::move(mesh_entity_datas);
   }
 
   // disable copy/move
@@ -84,22 +94,20 @@ public:
   World &operator=(World &&) = delete;
 
 private:
-  
   /**
    * @brief 将预加载的mesh数据加载到世界中
    */
   void loadedMesh2World();
 
   void updateTransform();
-  
+
   void updateCamera();
 
   std::string name_;
   entt::registry entities_;
   std::shared_ptr<TransformRelationship>
       root_tr_; // root transform relationship node
-  std::mutex mtx_; // for update or read in different thread
-  std::vector<std::vector<MeshEntityData>> mesh_entity_datas_list_;
+  std::vector<ImportedSceneData> imported_scene_datas_[MAX_FRAMES_IN_FLIGHT];
 };
 
 } // namespace mango
