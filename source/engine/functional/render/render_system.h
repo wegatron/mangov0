@@ -56,5 +56,6 @@ private:
   std::mutex semaphores_mtx_;
   std::list<std::shared_ptr<Semaphore>> free_semaphores_[MAX_FRAMES_IN_FLIGHT];
   std::list<std::shared_ptr<Semaphore>> pending_semaphores_[MAX_FRAMES_IN_FLIGHT];
+  std::list<std::shared_ptr<Semaphore>> exec_semaphores_[MAX_FRAMES_IN_FLIGHT];
 };
 } // namespace mango

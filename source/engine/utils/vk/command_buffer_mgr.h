@@ -49,7 +49,7 @@ public:
   void commitExecutableCommandBuffers();
   
   std::shared_ptr<Fence> getCommandBufferAvailableFence() const {
-    return command_buffer_available_fence_[*current_frame_index_];
+    return command_buffer_available_fence_[*cur_frame_index_];
   }
 
   /**
@@ -59,7 +59,10 @@ public:
 
 private:
   std::thread::id tid_;
-  uint32_t *current_frame_index_{0};
+  uint32_t *cur_frame_index_{0};
+  std::shared_ptr<CommandBuffer> cur_primary_command_buffer_;
+  //std::shared_ptr<CommandBuffer> cur_secondary_command_buffer_;
+  
   std::shared_ptr<Fence> command_buffer_available_fence_[MAX_FRAMES_IN_FLIGHT];
   std::shared_ptr<CommandPool> command_pool_[MAX_FRAMES_IN_FLIGHT];
   std::vector<VkCommandBuffer> executable_command_buffers_;
