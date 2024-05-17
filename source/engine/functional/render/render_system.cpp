@@ -34,15 +34,15 @@ void RenderSystem::collectRenderDatas() {
   // world->update(g_engine.calcDeltaTime());
 }
 
-void RenderSystem::tick(float delta_time) { 
+void RenderSystem::tick(float delta_time) {
   // collect render datas
   auto driver = g_engine.getDriver();
-  if(!driver->waitFrame())
+  if (!driver->waitFrame())
     return;
-  
+
   std::list<std::shared_ptr<Semaphore>> semaphores;
   getPendingSemaphores(driver->getCurFrameIndex(), semaphores);
-  
+
   collectRenderDatas();
   ui_pass_->prepare(); // update ui region for rendering(3d view region)
 
@@ -67,23 +67,26 @@ void RenderSystem::tick(float delta_time) {
   std::vector<VkSemaphore> waiting_semaphores;
   waiting_semaphores.reserve(semaphores.size() + 1);
   for (auto &semaphore : semaphores)
-    waiting_semaphores.emplace_back(semaphore->getHandle());  
-  waiting_semaphores.emplace_back(driver->getImageAvailableSemaphore()->getHandle());
+    waiting_semaphores.emplace_back(semaphore->getHandle());
+  waiting_semaphores.emplace_back(
+      driver->getImageAvailableSemaphore()->getHandle());
 
   auto fence = cmd_buffer_mgr.getCommandBufferAvailableFence();
   fence->reset();
-  auto exec_cmd_buffers = cmd_buffer_mgr.getExecutableCommandBuffers();
+  auto exec_cmd_buffers =
+      std::move(cmd_buffer_mgr.getExecutableCommandBuffers());
   VkCommandBuffer cmd_buf_handle = cmd_buffer->getHandle();
   auto cur_fence = cmd_buffer_mgr.getCommandBufferAvailableFence();
   cur_fence->reset();
   submit_info.commandBufferCount = exec_cmd_buffers.size();
   submit_info.pCommandBuffers = exec_cmd_buffers.data();
   submit_info.waitSemaphoreCount = waiting_semaphores.size();
-  submit_info.pWaitSemaphores = waiting_semaphores.data(); // semaphore from another queue/thread
+  submit_info.pWaitSemaphores =
+      waiting_semaphores.data(); // semaphore from another queue/thread
   submit_info.pWaitDstStageMask = &wait_stage;
   submit_info.signalSemaphoreCount = 1;
   submit_info.pSignalSemaphores = &render_result_available_semaphore_handle;
-  cmd_queue->submit({submit_info},cur_fence->getHandle());
+  cmd_queue->submit({submit_info}, cur_fence->getHandle());
 
   // release semaphores
   releaseSemaphores(driver->getCurFrameIndex(), semaphores);
@@ -110,6 +113,16 @@ void RenderSystem::resize3DView(int width, int height) {
   main_pass_->setFrameBuffer(frame_buffer_, width, height);
 }
 
+std::shared_ptr<Semaphore>
+RenderSystem::getFreeSemaphore(uint32_t frame_index) {
+  auto driver = g_engine.getDriver();
+  std::lock_guard<std::mutex> lock(semaphores_mtx_);
+  if (free_semaphores_[frame_index].empty())
+    return std::make_shared<Semaphore>(driver);
+  auto semaphore = free_semaphores_[frame_index].front();
+  free_semaphores_[frame_index].pop_front();
+  return semaphore;
+}
 // void Render::render(World *scene, Gui * gui)
 // {
 //   assert(scene != nullptr);

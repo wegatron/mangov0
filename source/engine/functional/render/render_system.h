@@ -30,16 +30,28 @@ public:
    * @param width
    * @param height
    */
-  void resize3DView(int width, int height);  
+  void resize3DView(int width, int height);
 
   std::shared_ptr<Semaphore> getFreeSemaphore(uint32_t frame_index);
-  
-  void releaseSemaphores(uint32_t frame_index, std::list<std::shared_ptr<Semaphore>> &semaphores);
+
+  void releaseSemaphores(uint32_t frame_index, std::list<std::shared_ptr<Semaphore>> &semaphores)
+  {
+    std::lock_guard<std::mutex> lock(semaphores_mtx_);
+    free_semaphores_[frame_index].splice(free_semaphores_[frame_index].end(), semaphores);
+  }
   
   void addPendingSemaphore(uint32_t frame_index,
-                           const std::shared_ptr<Semaphore> &semaphore);
+                           const std::shared_ptr<Semaphore> &semaphore)
+  {
+    std::lock_guard<std::mutex> lock(semaphores_mtx_);
+    pending_semaphores_[frame_index].push_back(semaphore);
+  }
   
-  void getPendingSemaphores(uint32_t frame_index, std::list<std::shared_ptr<Semaphore>> &semaphore_list);
+  void getPendingSemaphores(uint32_t frame_index, std::list<std::shared_ptr<Semaphore>> &semaphore_list)
+  {
+    std::lock_guard<std::mutex> lock(semaphores_mtx_);
+    semaphore_list = pending_semaphores_[frame_index];
+  }
 private:
   /**
    * @brief update frame buffer's color attachment after swapchain image

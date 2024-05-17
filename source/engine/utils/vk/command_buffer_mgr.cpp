@@ -1,5 +1,6 @@
 #include "command_buffer_mgr.h"
 #include <engine/utils/vk/commands.h>
+#include <engine/utils/vk/syncs.h>
 
 namespace mango {
 
@@ -33,7 +34,23 @@ void ThreadLocalCommandBufferManager::enqueueCommandBuffer(
   cur_primary_command_buffer_ = nullptr;
 }
 
-void ThreadLocalCommandBufferManager::commitExecutableCommandBuffers() {
+std::vector<VkCommandBuffer> &&
+ThreadLocalCommandBufferManager::getExecutableCommandBuffers() {
+  if (cur_primary_command_buffer_ != nullptr) {
+    cur_primary_command_buffer_->end();
+    executable_command_buffers_.push_back(
+        cur_primary_command_buffer_->getHandle());
+    cur_primary_command_buffer_ = nullptr;
+  }
+  return std::move(executable_command_buffers_);
+}
+
+void ThreadLocalCommandBufferManager::resetCurFrameCommandPool() {
+  command_pool_[*cur_frame_index_]->reset();
+}
+
+VkResult ThreadLocalCommandBufferManager::commitExecutableCommandBuffers(
+    const CommandQueue *queue, const std::shared_ptr<Semaphore> &signal_semaphore) {
   if (cur_primary_command_buffer_ != nullptr) {
     cur_primary_command_buffer_->end();
     executable_command_buffers_.push_back(
@@ -42,8 +59,22 @@ void ThreadLocalCommandBufferManager::commitExecutableCommandBuffers() {
   }
 
   if (executable_command_buffers_.empty())
-    return;
-
+    return VK_SUCCESS;
+  auto semaphore_handle = signal_semaphore != VK_NULL_HANDLE ? signal_semaphore->getHandle() : VK_NULL_HANDLE;
   // commit command buffers
+  VkSubmitInfo submit_info{VK_STRUCTURE_TYPE_SUBMIT_INFO};
+  submit_info.commandBufferCount = executable_command_buffers_.size();
+  submit_info.pCommandBuffers = executable_command_buffers_.data();
+  submit_info.waitSemaphoreCount = 0;
+  submit_info.pWaitSemaphores = VK_NULL_HANDLE;
+  submit_info.pWaitDstStageMask = VK_NULL_HANDLE;
+  submit_info.signalSemaphoreCount = signal_semaphore != nullptr ? 1 : 0;
+  submit_info.pSignalSemaphores = &semaphore_handle;
+  auto fence = command_buffer_available_fence_[*cur_frame_index_];
+  fence->reset();
+  auto fence_handle = fence->getHandle();
+  auto result = queue->submit({submit_info}, fence_handle);
+  executable_command_buffers_.clear();
+  return result;
 }
 } // namespace mango

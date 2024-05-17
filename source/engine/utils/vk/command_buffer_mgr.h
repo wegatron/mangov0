@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <memory>
 #include <thread>
 #include <vector>
@@ -11,16 +12,19 @@ class VkDriver;
 class CommandBuffer;
 class Fence;
 class CommandPool;
+class CommandQueue;
+class Semaphore;
 
 class ThreadLocalCommandBufferManager final {
 public:
   ThreadLocalCommandBufferManager(const std::shared_ptr<VkDriver> &driver,
-                                  uint32_t queue_family_index);                               
+                                  uint32_t queue_family_index);
 
   ThreadLocalCommandBufferManager(const ThreadLocalCommandBufferManager &) =
       delete;
 
-  ThreadLocalCommandBufferManager & operator = (const ThreadLocalCommandBufferManager &) = delete;
+  ThreadLocalCommandBufferManager &
+  operator=(const ThreadLocalCommandBufferManager &) = delete;
 
   ThreadLocalCommandBufferManager(ThreadLocalCommandBufferManager &&) = default;
 
@@ -44,10 +48,10 @@ public:
   /**
    * @brief Get the Executable Command Buffers
    */
-  std::vector<VkCommandBuffer> &getExecutableCommandBuffers();
+  std::vector<VkCommandBuffer> &&getExecutableCommandBuffers();
 
-  void commitExecutableCommandBuffers();
-  
+  VkResult commitExecutableCommandBuffers(const CommandQueue * queue, const std::shared_ptr<Semaphore> &signal_semaphore);
+
   std::shared_ptr<Fence> getCommandBufferAvailableFence() const {
     return command_buffer_available_fence_[*cur_frame_index_];
   }
@@ -61,8 +65,7 @@ private:
   std::thread::id tid_;
   uint32_t *cur_frame_index_{0};
   std::shared_ptr<CommandBuffer> cur_primary_command_buffer_;
-  //std::shared_ptr<CommandBuffer> cur_secondary_command_buffer_;
-  
+
   std::shared_ptr<Fence> command_buffer_available_fence_[MAX_FRAMES_IN_FLIGHT];
   std::shared_ptr<CommandPool> command_pool_[MAX_FRAMES_IN_FLIGHT];
   std::vector<VkCommandBuffer> executable_command_buffers_;
