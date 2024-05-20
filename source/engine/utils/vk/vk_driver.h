@@ -77,6 +77,12 @@ public:
 
   uint32_t getCurFrameIndex() const { return cur_frame_index_; }
 
+  const uint32_t & getCurFrameIndexRef() const { return cur_frame_index_; }
+
+  uint32_t getPrevFrameIndex() const {
+    return (cur_frame_index_ + MAX_FRAMES_IN_FLIGHT - 1) % MAX_FRAMES_IN_FLIGHT;
+  }
+
   const std::shared_ptr<RenderTarget> * getRenderTargets() const {
     return render_targets_;
   }

@@ -4,6 +4,17 @@
 
 namespace mango {
 
+ThreadLocalCommandBufferManager::ThreadLocalCommandBufferManager(const std::shared_ptr<VkDriver> &driver,
+                                  uint32_t queue_family_index)
+{  
+  tid_ = std::this_thread::get_id();
+  cur_frame_index_ = &driver->getCurFrameIndexRef();
+  for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+    command_pool_[i] = std::make_shared<CommandPool>(driver, queue_family_index, CommandPool::CmbResetMode::ResetPool);
+    command_buffer_available_fence_[i] = std::make_shared<Fence>(driver);
+  }
+}                                  
+
 std::shared_ptr<CommandBuffer>
 ThreadLocalCommandBufferManager::requestCommandBuffer(
     VkCommandBufferLevel level) {

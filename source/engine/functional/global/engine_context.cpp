@@ -56,12 +56,13 @@ bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
   // world manager
   world_ = std::make_shared<World>();
 
+  driver_->initThreadLocalCommandBufferManager(
+      driver_->getGraphicsQueue()->getFamilyIndex());
   // animation & physics manager
   event_process_thread_ = new std::thread([this]() {
-    auto driver = g_engine.getDriver();
-    driver->initThreadLocalCommandBufferManager(
-        driver->getTransferQueue()->getFamilyIndex());
-    auto &cmd_buffer_mgr = driver->getThreadLocalCommandBufferManager();
+    driver_->initThreadLocalCommandBufferManager(
+        driver_->getTransferQueue()->getFamilyIndex());
+    auto &cmd_buffer_mgr = driver_->getThreadLocalCommandBufferManager();
     // wait cv from main thread and do tick once
     while (!is_exit_) {
       std::unique_lock<std::mutex> lock(event_process_thread_tick_start_mtx_);
@@ -70,11 +71,12 @@ bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
       cmd_buffer_mgr.getCommandBufferAvailableFence()->wait();
       event_system_->tick();
       // commit command buffer if have
-      auto semaphore = g_engine.getRenderSystem()->getFreeSemaphore(driver->getCurFrameIndex());
-      cmd_buffer_mgr.commitExecutableCommandBuffers(driver->getTransferQueue(), semaphore);
+      auto semaphore = g_engine.getRenderSystem()->getFreeSemaphore(driver_->getCurFrameIndex());
+      cmd_buffer_mgr.commitExecutableCommandBuffers(driver_->getTransferQueue(), semaphore);
       event_process_thread_tick_finish_cv_.notify_one();
     }
   });
+  event_process_thread_tick_finish_cv_.notify_one();
   return true;
 }
 

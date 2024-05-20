@@ -73,7 +73,7 @@ World::World()
 
 void World::loadedMesh2World()
 {
-  auto prev_frame_index = (g_engine.getDriver()->getCurFrameIndex() + MAX_FRAMES_IN_FLIGHT - 1) % MAX_FRAMES_IN_FLIGHT;
+  auto prev_frame_index = g_engine.getDriver()->getPrevFrameIndex();
   auto &scene_data_list = imported_scene_datas_[prev_frame_index];
   for (auto & scene_data : scene_data_list) {
     scene_data.scene_root_tr->parent = root_tr_;

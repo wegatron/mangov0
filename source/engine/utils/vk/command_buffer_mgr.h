@@ -63,7 +63,7 @@ public:
 
 private:
   std::thread::id tid_;
-  uint32_t *cur_frame_index_{0};
+  const uint32_t *cur_frame_index_{nullptr};
   std::shared_ptr<CommandBuffer> cur_primary_command_buffer_;
 
   std::shared_ptr<Fence> command_buffer_available_fence_[MAX_FRAMES_IN_FLIGHT];

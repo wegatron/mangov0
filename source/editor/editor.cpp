@@ -70,7 +70,6 @@ void Editor::destroy() {
 void Editor::run() {
   auto window = g_engine.getWindow();
   auto driver = g_engine.getDriver();
-  driver->initThreadLocalCommandBufferManager(driver->getGraphicsQueue()->getFamilyIndex());
   while (!window->shouldClose()) {
     window->processEvents();
     g_engine.waitLastTick();

@@ -34,10 +34,14 @@ public:
 
   std::shared_ptr<Semaphore> getFreeSemaphore(uint32_t frame_index);
 
-  void releaseSemaphores(uint32_t frame_index, std::list<std::shared_ptr<Semaphore>> &semaphores)
+
+  /**
+   * @brief release the exec semaphores from last commit   
+   */
+  void releaseExecSemaphores(uint32_t frame_index)
   {
     std::lock_guard<std::mutex> lock(semaphores_mtx_);
-    free_semaphores_[frame_index].splice(free_semaphores_[frame_index].end(), semaphores);
+    free_semaphores_[frame_index].splice(free_semaphores_[frame_index].end(), exec_semaphores_[frame_index]);
   }
   
   void addPendingSemaphore(uint32_t frame_index,
@@ -47,10 +51,20 @@ public:
     pending_semaphores_[frame_index].push_back(semaphore);
   }
   
-  void getPendingSemaphores(uint32_t frame_index, std::list<std::shared_ptr<Semaphore>> &semaphore_list)
+  /**
+   * @brief Get the Pending Semaphores and add them to exec_semaphores
+   * 
+   * @param frame_index   
+   */
+  const std::vector<VkSemaphore> getPendingSemaphores(uint32_t cur_frame_index, uint32_t prev_frame_index)
   {
     std::lock_guard<std::mutex> lock(semaphores_mtx_);
-    semaphore_list = pending_semaphores_[frame_index];
+    exec_semaphores_[cur_frame_index].splice(exec_semaphores_[cur_frame_index].end(), pending_semaphores_[prev_frame_index]);
+    std::vector<VkSemaphore> waiting_semaphores;
+    waiting_semaphores.reserve(exec_semaphores_[cur_frame_index].size() + 1);
+    for (auto &semaphore : exec_semaphores_[cur_frame_index])
+      waiting_semaphores.emplace_back(semaphore->getHandle());
+    return waiting_semaphores;
   }
 private:
   /**

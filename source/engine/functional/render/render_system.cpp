@@ -39,9 +39,8 @@ void RenderSystem::tick(float delta_time) {
   auto driver = g_engine.getDriver();
   if (!driver->waitFrame())
     return;
-
-  std::list<std::shared_ptr<Semaphore>> semaphores;
-  getPendingSemaphores(driver->getCurFrameIndex(), semaphores);
+  auto cur_frame_index = driver->getCurFrameIndex();
+  releaseExecSemaphores(cur_frame_index);
 
   collectRenderDatas();
   ui_pass_->prepare(); // update ui region for rendering(3d view region)
@@ -64,10 +63,7 @@ void RenderSystem::tick(float delta_time) {
   VkSemaphore render_result_available_semaphore_handle =
       driver->getRenderResultAvailableSemaphore()->getHandle();
 
-  std::vector<VkSemaphore> waiting_semaphores;
-  waiting_semaphores.reserve(semaphores.size() + 1);
-  for (auto &semaphore : semaphores)
-    waiting_semaphores.emplace_back(semaphore->getHandle());
+  auto waiting_semaphores = getPendingSemaphores(cur_frame_index, driver->getPrevFrameIndex());
   waiting_semaphores.emplace_back(
       driver->getImageAvailableSemaphore()->getHandle());
 
@@ -87,9 +83,6 @@ void RenderSystem::tick(float delta_time) {
   submit_info.signalSemaphoreCount = 1;
   submit_info.pSignalSemaphores = &render_result_available_semaphore_handle;
   cmd_queue->submit({submit_info}, cur_fence->getHandle());
-
-  // release semaphores
-  releaseSemaphores(driver->getCurFrameIndex(), semaphores);
   driver->presentFrame();
 }
 
