@@ -22,7 +22,7 @@ public:
   /**
    * @brief sync of other threads
    */
-  void waitLastTick()
+  void threadSync()
   {
     std::unique_lock<std::mutex> lock(event_process_thread_tick_finish_mtx_);
     event_process_thread_tick_finish_cv_.wait(lock, [this] { return is_exit_; });

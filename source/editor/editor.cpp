@@ -12,6 +12,7 @@
 #include <engine/utils/base/macro.h>
 #include <engine/utils/event/event_system.h>
 #include <engine/utils/vk/commands.h>
+#include <engine/utils/vk/vk_driver.h>
 
 namespace mango {
 void Editor::init() {
@@ -49,6 +50,9 @@ void Editor::init() {
   for (auto &editor_ui : editor_uis_) {
     editor_ui->init();
   }
+  auto driver = g_engine.getDriver();
+  driver->getThreadLocalCommandBufferManager().commitExecutableCommandBuffers(
+      driver->getGraphicsQueue(), nullptr);
 
   // set construct ui function to UIPass through RenderSystem
   g_engine.getEventSystem()->addListener(
@@ -72,12 +76,12 @@ void Editor::run() {
   auto driver = g_engine.getDriver();
   while (!window->shouldClose()) {
     window->processEvents();
-    g_engine.waitLastTick();
     g_engine.newTick();
     float delta_time = g_engine.calcDeltaTime();
     g_engine.gcTick(delta_time);
     g_engine.logicTick(delta_time);
     g_engine.renderTick(delta_time);    
+    g_engine.threadSync();    
   }
 }
 

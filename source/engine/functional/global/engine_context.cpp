@@ -59,24 +59,23 @@ bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
   driver_->initThreadLocalCommandBufferManager(
       driver_->getGraphicsQueue()->getFamilyIndex());
   // animation & physics manager
-  event_process_thread_ = new std::thread([this]() {
-    driver_->initThreadLocalCommandBufferManager(
-        driver_->getTransferQueue()->getFamilyIndex());
-    auto &cmd_buffer_mgr = driver_->getThreadLocalCommandBufferManager();
-    // wait cv from main thread and do tick once
-    while (!is_exit_) {
-      std::unique_lock<std::mutex> lock(event_process_thread_tick_start_mtx_);
-      event_process_thread_tick_start_cv_.wait(lock);
-      if(is_exit_) break;
-      cmd_buffer_mgr.getCommandBufferAvailableFence()->wait();
-      event_system_->tick();
-      // commit command buffer if have
-      auto semaphore = g_engine.getRenderSystem()->getFreeSemaphore(driver_->getCurFrameIndex());
-      cmd_buffer_mgr.commitExecutableCommandBuffers(driver_->getTransferQueue(), semaphore);
-      event_process_thread_tick_finish_cv_.notify_one();
-    }
-  });
-  event_process_thread_tick_finish_cv_.notify_one();
+  // event_process_thread_ = new std::thread([this]() {
+  //   driver_->initThreadLocalCommandBufferManager(
+  //       driver_->getTransferQueue()->getFamilyIndex());
+  //   auto &cmd_buffer_mgr = driver_->getThreadLocalCommandBufferManager();
+  //   // wait cv from main thread and do tick once
+  //   while (!is_exit_) {
+  //     std::unique_lock<std::mutex> lock(event_process_thread_tick_start_mtx_);
+  //     event_process_thread_tick_start_cv_.wait(lock);
+  //     if(is_exit_) break;
+  //     cmd_buffer_mgr.getCommandBufferAvailableFence()->wait();
+  //     event_system_->tick();
+  //     // commit command buffer if have
+  //     auto semaphore = g_engine.getRenderSystem()->getFreeSemaphore(driver_->getCurFrameIndex());
+  //     cmd_buffer_mgr.commitExecutableCommandBuffers(driver_->getTransferQueue(), semaphore);
+  //     event_process_thread_tick_finish_cv_.notify_one();
+  //   }
+  // });
   return true;
 }
 
