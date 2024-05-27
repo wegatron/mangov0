@@ -36,14 +36,15 @@ public:
     texture_type_ = texture_type;
   }
 
+  std::shared_ptr<ImageView> getImageView() { return image_view_; }
+
+private:
+
   /*
    * @brief prepare texture, upload texture data to GPU with appropriate format
    */
   void prepare();
 
-  std::shared_ptr<ImageView> getImageView() { return image_view_; }
-
-protected:
   bool isSRGB();
 
   VkFormat getFormat();

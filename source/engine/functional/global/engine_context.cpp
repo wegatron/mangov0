@@ -10,6 +10,7 @@
 #include <engine/utils/vk/resource_cache.h>
 #include <engine/utils/vk/stage_pool.h>
 #include <engine/utils/vk/vk_driver.h>
+#include <engine/utils/base/macro.h>
 
 namespace mango {
 EngineContext g_engine;
@@ -56,26 +57,26 @@ bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
   // world manager
   world_ = std::make_shared<World>();
 
-  driver_->initThreadLocalCommandBufferManager(
-      driver_->getGraphicsQueue()->getFamilyIndex());
+  driver_->initThreadLocalCommandBufferManagers(
+      { driver_->getGraphicsQueue()->getFamilyIndex(), driver_->getTransferQueue()->getFamilyIndex() });
+  
+  driver_->setThreadLocalCommandBufferManagerTid(0, std::this_thread::get_id());
   // animation & physics manager
-  // event_process_thread_ = new std::thread([this]() {
-  //   driver_->initThreadLocalCommandBufferManager(
-  //       driver_->getTransferQueue()->getFamilyIndex());
-  //   auto &cmd_buffer_mgr = driver_->getThreadLocalCommandBufferManager();
-  //   // wait cv from main thread and do tick once
-  //   while (!is_exit_) {
-  //     std::unique_lock<std::mutex> lock(event_process_thread_tick_start_mtx_);
-  //     event_process_thread_tick_start_cv_.wait(lock);
-  //     if(is_exit_) break;
-  //     cmd_buffer_mgr.getCommandBufferAvailableFence()->wait();
-  //     event_system_->tick();
-  //     // commit command buffer if have
-  //     auto semaphore = g_engine.getRenderSystem()->getFreeSemaphore(driver_->getCurFrameIndex());
-  //     cmd_buffer_mgr.commitExecutableCommandBuffers(driver_->getTransferQueue(), semaphore);
-  //     event_process_thread_tick_finish_cv_.notify_one();
-  //   }
-  // });
+  event_process_thread_ = new std::thread([this]() {
+    driver_->setThreadLocalCommandBufferManagerTid(1, std::this_thread::get_id());
+    auto &cmd_buffer_mgr = driver_->getThreadLocalCommandBufferManager();
+    // wait cv from main thread and do tick once
+    while (!is_exit_) {
+      sem_event_process_start_.acquire();
+      if(is_exit_) break;
+      cmd_buffer_mgr.getCommandBufferAvailableFence()->wait();
+      event_system_->tick();
+      // commit command buffer if have
+      auto semaphore = g_engine.getRenderSystem()->getFreeSemaphore(driver_->getCurFrameIndex());
+      cmd_buffer_mgr.commitExecutableCommandBuffers(driver_->getTransferQueue(), semaphore);
+      sem_event_process_finish_.release();
+    }
+  });
   return true;
 }
 

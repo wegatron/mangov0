@@ -6,6 +6,7 @@
 #include <engine/utils/vk/syncs.h>
 #include <vector>
 #include <list>
+#include <mutex>
 
 namespace mango {
 class ImageView;

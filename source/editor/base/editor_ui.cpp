@@ -42,7 +42,6 @@ void EditorUI::updateWindowRegion() {
 std::shared_ptr<ImGuiImage> EditorUI::loadImGuiImageFromFile(const URL &url) {
   std::shared_ptr<AssetTexture> texture = std::make_shared<AssetTexture>();
   texture->load(url);
-  texture->prepare();
   return loadImGuiImageFromTexture(texture);
 }
 

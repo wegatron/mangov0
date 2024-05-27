@@ -11,7 +11,7 @@ ThreadLocalCommandBufferManager::ThreadLocalCommandBufferManager(const std::shar
   cur_frame_index_ = &driver->getCurFrameIndexRef();
   for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
     command_pool_[i] = std::make_shared<CommandPool>(driver, queue_family_index, CommandPool::CmbResetMode::ResetPool);
-    command_buffer_available_fence_[i] = std::make_shared<Fence>(driver);
+    command_buffer_available_fence_[i] = std::make_shared<Fence>(driver, true);
   }
 }                                  
 

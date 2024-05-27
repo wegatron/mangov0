@@ -126,14 +126,11 @@ void VkDriver::initDevice() {
       device_, graphics_queue_family_index, VK_QUEUE_TRANSFER_BIT, VK_TRUE, 0);
 }
 
-void VkDriver::initThreadLocalCommandBufferManager(const uint32_t queue_family_index)
+void VkDriver::initThreadLocalCommandBufferManagers(const std::initializer_list<uint32_t> & queue_family_indices)
 {
-  auto tid = std::this_thread::get_id();
-  auto itr = std::find_if(thread_local_command_buffer_managers_.begin(),
-               thread_local_command_buffer_managers_.end(),
-               [&tid](const auto &manager) { return manager.getThreadId() == tid; });
-  if (itr == thread_local_command_buffer_managers_.end()) {
-    thread_local_command_buffer_managers_.emplace_back(g_engine.getDriver(), queue_family_index);
+  for(auto findex : queue_family_indices)
+  {
+    thread_local_command_buffer_managers_.emplace_back(shared_from_this(), findex);
   }
 }
 

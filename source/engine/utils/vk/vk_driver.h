@@ -95,8 +95,13 @@ public:
     return frames_data_.render_result_available_semaphore[cur_frame_index_];  
   }
 
-  void initThreadLocalCommandBufferManager(const uint32_t queue_family_index);
- 
+  void initThreadLocalCommandBufferManagers(const std::initializer_list<uint32_t> & queue_family_indices);
+
+  void setThreadLocalCommandBufferManagerTid(const size_t index, std::thread::id id)
+  {
+    thread_local_command_buffer_managers_[index].setThreadId(id);
+  }
+
   ThreadLocalCommandBufferManager & getThreadLocalCommandBufferManager();
   
   /**

@@ -54,7 +54,6 @@ void RenderSystem::tick(float delta_time) {
 
   // render ui
   ui_pass_->render(cmd_buffer);
-  cmd_buffer->end();
   auto cmd_queue = driver->getGraphicsQueue();
 
   VkPipelineStageFlags wait_stage{
@@ -67,11 +66,8 @@ void RenderSystem::tick(float delta_time) {
   waiting_semaphores.emplace_back(
       driver->getImageAvailableSemaphore()->getHandle());
 
-  auto fence = cmd_buffer_mgr.getCommandBufferAvailableFence();
-  fence->reset();
   auto exec_cmd_buffers =
       std::move(cmd_buffer_mgr.getExecutableCommandBuffers());
-  VkCommandBuffer cmd_buf_handle = cmd_buffer->getHandle();
   auto cur_fence = cmd_buffer_mgr.getCommandBufferAvailableFence();
   cur_fence->reset();
   submit_info.commandBufferCount = exec_cmd_buffers.size();

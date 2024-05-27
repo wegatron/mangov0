@@ -32,6 +32,8 @@ public:
 
   std::thread::id getThreadId() const { return tid_; }
 
+  void setThreadId(std::thread::id tid) { tid_ = tid; }
+
   /**
    * @brief request command buffer for record. the command buffer will be at
    * recording state, do not need to call begin.
