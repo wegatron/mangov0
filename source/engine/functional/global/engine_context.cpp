@@ -84,6 +84,7 @@ void EngineContext::destroy() {
   is_exit_ = true;
   if(event_process_thread_ != nullptr)
   {
+    sem_event_process_start_.release();
     event_process_thread_->join();
   }
   resource_cache_.reset();

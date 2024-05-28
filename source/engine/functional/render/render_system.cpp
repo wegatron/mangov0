@@ -4,6 +4,7 @@
 #include <engine/functional/render/render_system.h>
 #include <engine/utils/event/event_system.h>
 #include <engine/utils/vk/commands.h>
+#include <engine/functional/world/world.h>
 
 namespace mango {
 
@@ -31,7 +32,28 @@ void RenderSystem::onCreateSwapchainObjects(
 
 void RenderSystem::collectRenderDatas() {
   auto world = g_engine.getWorld();
-  // world->update(g_engine.calcDeltaTime());
+  auto static_meshes_view = world->getStaticMeshes();
+  auto render_data = std::make_shared<RenderData>();
+  auto static_mesh_data = render_data->static_mesh_render_data;
+  static_mesh_data.reserve(static_meshes_view.size_hint());
+  for (auto [entity, name, tr, mesh] : static_meshes_view.each()) {
+    assert(mesh != nullptr);
+    TransformPCO transform_pco{
+      .m = tr->gtransform,
+      .nm = tr->gtransform.inverse().transpose(),
+      .mvp = // TODO
+    };
+
+    auto data = StaticMeshRenderData{
+      .vertex_buffer = mesh->getVertexBuffer(),
+      .index_buffer = mesh->getIndexBuffer(),
+      .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+      .transform_pco = transform_pco      
+    };
+    
+    static_mesh_data.emplace_back(data);
+  }
+  main_pass_->setRenderData(render_data);
 }
 
 void RenderSystem::tick(float delta_time) {

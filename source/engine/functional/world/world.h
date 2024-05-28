@@ -79,6 +79,11 @@ public:
                           CameraComponent>();
   }
 
+  auto getStaticMeshes() {
+    return entities_.view<std::string, std::shared_ptr<TransformRelationship>,
+                          StaticMeshComponent>();
+  }
+
   void enqueue(const std::shared_ptr<TransformRelationship> &tr,
                std::vector<MeshEntityData> &&mesh_entity_datas) {
     auto driver = g_engine.getDriver();

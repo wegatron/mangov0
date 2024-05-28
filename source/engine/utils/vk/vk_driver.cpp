@@ -436,6 +436,9 @@ void VkDriver::initAllocator() {
 void VkDriver::destroy() {
   thread_local_command_buffer_managers_.clear();
   frames_data_.destroy();
+  for (auto &rt : render_targets_) {
+    rt.reset();
+  }
   delete swapchain_;
   delete descriptor_pool_;
   delete stage_pool_;

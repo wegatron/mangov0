@@ -14,8 +14,8 @@ public:
 
   void render(const std::shared_ptr<CommandBuffer> &cmd_buffer) override;
 
-  void setRenderData(const RenderData *p_render_data) {
-    p_render_data_ = p_render_data;
+  void setRenderData(const std::shared_ptr<RenderData> &render_data) {
+    render_data_ = render_data;
   }
 
   void setFrameBuffer(const std::shared_ptr<FrameBuffer> &frame_buffer,
@@ -28,7 +28,7 @@ public:
 protected:
   void draw(const std::shared_ptr<CommandBuffer> &cmd_buffer,
             const std::vector<StaticMeshRenderData> &static_meshs);
-  const RenderData *p_render_data_{nullptr};
+  std::shared_ptr<RenderData> render_data_;
   std::shared_ptr<FrameBuffer> frame_buffer_;
 };
 } // namespace mango

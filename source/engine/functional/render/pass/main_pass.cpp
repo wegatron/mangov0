@@ -83,8 +83,8 @@ void MainPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
   cmd_buffer->setViewPort({VkViewport{0, 0, static_cast<float>(width_),
                                       static_cast<float>(height_), 0.f, 1.f}});
   cmd_buffer->setScissor({VkRect2D{{0, 0}, {width_, height_}}});
-  if (p_render_data_ != nullptr)
-    draw(cmd_buffer, p_render_data_->static_mesh_render_data);
+  if (render_data_ != nullptr)
+    draw(cmd_buffer, render_data_->static_mesh_render_data);
   cmd_buffer->endRenderPass();
   // add image barrier
   color_img_view->transitionLayout(cmd_buffer->getHandle(),
