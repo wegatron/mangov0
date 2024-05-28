@@ -68,13 +68,15 @@ World::World()
   camera.setFovy(M_PI/6.0f);
   camera.setAspect(16.0f/9.0f);
   camera.setClipPlanes(-0.1f, -1000.0f);
-  addComponent(createEntity("default##camera"), camera);
+  default_camera_ = createEntity("default##camera");
+  addComponent(default_camera_, camera);
 }
 
 void World::loadedMesh2World()
 {
   auto prev_frame_index = g_engine.getDriver()->getPrevFrameIndex();
   auto &scene_data_list = imported_scene_datas_[prev_frame_index];
+  if(!scene_data_list.empty()) focus_camera2world_=true;
   for (auto & scene_data : scene_data_list) {
     scene_data.scene_root_tr->parent = root_tr_;
     scene_data.scene_root_tr->sibling = root_tr_->child;
@@ -121,6 +123,16 @@ void World::updateCamera()
     auto &camera = view.get<CameraComponent>(entity);
     auto &tr = view.get<std::shared_ptr<TransformRelationship>>(entity);
     camera.setViewMatrix(tr->gtransform.inverse().matrix());
+  }
+
+  if(focus_camera2world_)
+  {
+    auto &camera_comp = entities_.get<CameraComponent>(default_camera_);
+    auto dis = root_tr_->aabb.sizes().norm() * 2;
+    auto c = root_tr_->aabb.center();
+    auto eye = c - Eigen::Vector3f(0, 0, 1) * dis;
+    camera_comp.setLookAt(eye, Eigen::Vector3f(0, 1, 0), c);
+    focus_camera2world_ = false;
   }
 }
 

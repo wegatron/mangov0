@@ -87,6 +87,8 @@ public:
     dat.mesh_entity_datas = std::move(mesh_entity_datas);
   }
 
+  void focusCamera2World() { focus_camera2world_ = true; }
+
   // disable copy/move
   World(const World &) = delete;
   World(World &&) = delete;
@@ -108,6 +110,8 @@ private:
   std::shared_ptr<TransformRelationship>
       root_tr_; // root transform relationship node
   std::vector<ImportedSceneData> imported_scene_datas_[MAX_FRAMES_IN_FLIGHT];
+  entt::entity default_camera_;
+  bool focus_camera2world_{false};
 };
 
 } // namespace mango
