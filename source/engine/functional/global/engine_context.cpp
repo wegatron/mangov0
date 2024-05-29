@@ -72,7 +72,7 @@ bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
       cmd_buffer_mgr.getCommandBufferAvailableFence()->wait();
       event_system_->tick();
       // commit command buffer if have
-      auto semaphore = g_engine.getRenderSystem()->getFreeSemaphore(driver_->getCurFrameIndex());
+      auto semaphore = g_engine.getRenderSystem()->getFreeSemaphore();
       cmd_buffer_mgr.commitExecutableCommandBuffers(driver_->getTransferQueue(), semaphore);
       sem_event_process_finish_.release();
     }

@@ -33,7 +33,7 @@ public:
    */
   void resize3DView(int width, int height);
 
-  std::shared_ptr<Semaphore> getFreeSemaphore(uint32_t frame_index);
+  std::shared_ptr<Semaphore> getFreeSemaphore();
 
 
   /**
@@ -42,7 +42,7 @@ public:
   void releaseExecSemaphores(uint32_t frame_index)
   {
     std::lock_guard<std::mutex> lock(semaphores_mtx_);
-    free_semaphores_[frame_index].splice(free_semaphores_[frame_index].end(), exec_semaphores_[frame_index]);
+    free_semaphores_.splice(free_semaphores_.end(), exec_semaphores_[frame_index]);
   }
   
   void addPendingSemaphore(uint32_t frame_index,
@@ -81,7 +81,7 @@ private:
   std::shared_ptr<FrameBuffer> frame_buffer_; //!< 3d view's frame buffer
 
   std::mutex semaphores_mtx_;
-  std::list<std::shared_ptr<Semaphore>> free_semaphores_[MAX_FRAMES_IN_FLIGHT];
+  std::list<std::shared_ptr<Semaphore>> free_semaphores_;
   std::list<std::shared_ptr<Semaphore>> pending_semaphores_[MAX_FRAMES_IN_FLIGHT];
   std::list<std::shared_ptr<Semaphore>> exec_semaphores_[MAX_FRAMES_IN_FLIGHT];
 };

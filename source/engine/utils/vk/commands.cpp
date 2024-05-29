@@ -271,7 +271,7 @@ void CommandBuffer::bindPipelineWithDescriptorSets(
                                  : VK_PIPELINE_BIND_POINT_COMPUTE;
   vkCmdBindPipeline(command_buffer_, pipeline_bind_point,
                     pipeline->getHandle());
-  if (descriptor_sets.size() != 0)
+  if (descriptor_sets.size() == 0)
     return;
   std::vector<VkDescriptorSet> ds(descriptor_sets.size());
   for (auto i = 0; i < descriptor_sets.size(); ++i) {

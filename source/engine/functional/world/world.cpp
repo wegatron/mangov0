@@ -75,8 +75,9 @@ World::World()
 void World::loadedMesh2World()
 {
   auto prev_frame_index = g_engine.getDriver()->getPrevFrameIndex();
-  auto &scene_data_list = imported_scene_datas_[prev_frame_index];
-  if(!scene_data_list.empty()) focus_camera2world_=true;
+  auto &scene_data_list = imported_scene_datas_[prev_frame_index];  
+  if(scene_data_list.empty())
+    return;
   for (auto & scene_data : scene_data_list) {
     scene_data.scene_root_tr->parent = root_tr_;
     scene_data.scene_root_tr->sibling = root_tr_->child;
@@ -88,6 +89,7 @@ void World::loadedMesh2World()
     }
   }
   scene_data_list.clear();
+  focus_camera2world_ = true;
 }
 
 void World::updateTransform()

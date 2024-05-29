@@ -47,8 +47,10 @@ public:
 
   void saveWorld();
 
-  entt::entity createEntity(const std::string &name) {
-    return entities_.create();
+  entt::entity createEntity(const std::string &name) {    
+    auto ret = entities_.create();
+    entities_.emplace<std::string>(ret, name);
+    return ret;
   }
 
   void removeEntity(entt::entity entity) { entities_.destroy(entity); }
@@ -77,6 +79,11 @@ public:
   auto getCameras() {
     return entities_.view<std::string, std::shared_ptr<TransformRelationship>,
                           CameraComponent>();
+  }
+
+  auto &getDefaultCameraComp()
+  {
+    return entities_.get<CameraComponent>(default_camera_);
   }
 
   auto getStaticMeshes() {

@@ -32,16 +32,20 @@ void RenderSystem::onCreateSwapchainObjects(
 
 void RenderSystem::collectRenderDatas() {
   auto world = g_engine.getWorld();
+  auto &default_camera_comp = world->getDefaultCameraComp();
   auto static_meshes_view = world->getStaticMeshes();
   auto render_data = std::make_shared<RenderData>();
-  auto static_mesh_data = render_data->static_mesh_render_data;
+  auto & static_mesh_data = render_data->static_mesh_render_data;
   static_mesh_data.reserve(static_meshes_view.size_hint());
+  auto poj_mat = default_camera_comp.getProjMatrix();
+  auto view_mat = default_camera_comp.getViewMatrix();
+  auto proj_view_mat = poj_mat * view_mat;
   for (auto [entity, name, tr, mesh] : static_meshes_view.each()) {
     assert(mesh != nullptr);
     TransformPCO transform_pco{
       .m = tr->gtransform,
-      .nm = tr->gtransform.inverse().transpose(),
-      .mvp = // TODO
+      .nm = tr->gtransform.inverse().transpose(), // normal matrix
+      .mvp = proj_view_mat * tr->gtransform
     };
 
     auto data = StaticMeshRenderData{
@@ -125,13 +129,13 @@ void RenderSystem::resize3DView(int width, int height) {
 }
 
 std::shared_ptr<Semaphore>
-RenderSystem::getFreeSemaphore(uint32_t frame_index) {
+RenderSystem::getFreeSemaphore() {
   auto driver = g_engine.getDriver();
   std::lock_guard<std::mutex> lock(semaphores_mtx_);
-  if (free_semaphores_[frame_index].empty())
+  if (free_semaphores_.empty())
     return std::make_shared<Semaphore>(driver);
-  auto semaphore = free_semaphores_[frame_index].front();
-  free_semaphores_[frame_index].pop_front();
+  auto semaphore = free_semaphores_.front();
+  free_semaphores_.pop_front();
   return semaphore;
 }
 // void Render::render(World *scene, Gui * gui)
