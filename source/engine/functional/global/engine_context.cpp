@@ -86,9 +86,10 @@ void EngineContext::destroy() {
   {
     sem_event_process_start_.release();
     event_process_thread_->join();
-  }
+  }  
   resource_cache_.reset();
   render_system_.reset();
+  world_.reset();
   driver_->destroy();
   window_.reset();
   event_system_.reset();
