@@ -40,6 +40,11 @@ void RenderSystem::collectRenderDatas() {
   auto poj_mat = default_camera_comp.getProjMatrix();
   auto view_mat = default_camera_comp.getViewMatrix();
   auto proj_view_mat = poj_mat * view_mat;
+  // std::cout << "--------------------------------" << std::endl;  
+  // std::cout << "poj_mat:" << poj_mat << std::endl;
+  // std::cout << "view_mat:" << view_mat << std::endl;
+  // std::cout << "proj_view_mat:" << proj_view_mat << std::endl;
+  // std::cout << "--------------------------------" << std::endl;
   for (auto [entity, name, tr, mesh] : static_meshes_view.each()) {
     assert(mesh != nullptr);
     TransformPCO transform_pco{

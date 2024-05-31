@@ -66,7 +66,6 @@ World::World()
   // default camera
   auto camera = CameraComponent();
   camera.setFovy(M_PI/6.0f);
-  camera.setAspect(16.0f/9.0f);
   camera.setClipPlanes(-0.1f, -1000.0f);
   default_camera_ = createEntity("default##camera");
   addComponent(default_camera_, camera);
@@ -130,9 +129,9 @@ void World::updateCamera()
   if(focus_camera2world_)
   {
     auto &camera_comp = entities_.get<CameraComponent>(default_camera_);
-    auto dis = root_tr_->aabb.sizes().norm() * 2;
-    auto c = root_tr_->aabb.center();
-    auto eye = c + Eigen::Vector3f(0, 0, 1) * dis;
+    float dis = root_tr_->aabb.sizes().norm() * 2;
+    Eigen::Vector3f c = root_tr_->aabb.center();
+    Eigen::Vector3f eye = c + Eigen::Vector3f(0, 0, 1) * dis;
     camera_comp.setLookAt(eye, Eigen::Vector3f(0, 1, 0), c);
     focus_camera2world_ = false;
   }
