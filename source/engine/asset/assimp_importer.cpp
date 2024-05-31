@@ -51,6 +51,7 @@ processMeshs(const aiScene *a_scene,
       tri_v_inds[j * 3 + 2] = tmp_a_mesh->mFaces[j].mIndices[2];
     }
     ret_meshes[i]->setIndices(tri_v_inds);
+    ret_meshes[i]->setSubMeshs({{nf*3, 0}});
     ret_meshes[i]->inflate(cmd_buffer);
   }
   return ret_meshes;

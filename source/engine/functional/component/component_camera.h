@@ -25,6 +25,7 @@ public:
     view_mat_.block<1, 3>(1, 0) = ny;
     view_mat_.block<1, 3>(2, 0) = nz;
     view_mat_.block<3, 1>(0, 3) = view_mat_.block<3, 3>(0, 0) * -eye;
+    view_mat_.block<1, 4>(3, 0) << 0, 0, 0, 1;
   }
 
   // default: z: front, x: right, y: up
@@ -96,8 +97,10 @@ public:
       return proj_mat_;
     float f = 1.0f / tan(fovy_ * 0.5f);
     float r = 1.0f / (far_ - near_);
-    proj_mat_ << f / aspect_, 0.0f, 0.0f, 0.0f, 0.0f, f, 0.0f, 0.0f, 0.0f, 0.0f,
-        -far_ * r, far_ * near_ * r, 0.0f, 0.0f, -1.0f, 0.0f;
+    proj_mat_ << f / aspect_, 0.0f, 0.0f, 0.0f, //
+        0.0f, f, 0.0f, 0.0f, 0.0f,              //
+        0.0f, -far_ * r, far_ * near_ * r,      //
+        0.0f, 0.0f, -1.0f, 0.0f;
     dirty_proj_ = false;
     return proj_mat_;
   }

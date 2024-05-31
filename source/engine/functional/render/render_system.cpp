@@ -52,9 +52,13 @@ void RenderSystem::collectRenderDatas() {
       .vertex_buffer = mesh->getVertexBuffer(),
       .index_buffer = mesh->getIndexBuffer(),
       .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-      .transform_pco = transform_pco      
+      .transform_pco = transform_pco
     };
-    
+
+    for (auto &sub_mesh : mesh->getSubMeshs()) {
+      data.index_counts.push_back(sub_mesh.index_count);
+      data.first_index.push_back(sub_mesh.index_offset);
+    }
     static_mesh_data.emplace_back(data);
   }
   main_pass_->setRenderData(render_data);

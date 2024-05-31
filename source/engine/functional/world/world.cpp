@@ -132,7 +132,7 @@ void World::updateCamera()
     auto &camera_comp = entities_.get<CameraComponent>(default_camera_);
     auto dis = root_tr_->aabb.sizes().norm() * 2;
     auto c = root_tr_->aabb.center();
-    auto eye = c - Eigen::Vector3f(0, 0, 1) * dis;
+    auto eye = c + Eigen::Vector3f(0, 0, 1) * dis;
     camera_comp.setLookAt(eye, Eigen::Vector3f(0, 1, 0), c);
     focus_camera2world_ = false;
   }

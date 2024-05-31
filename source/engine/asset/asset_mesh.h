@@ -11,8 +11,8 @@ class CommandBuffer;
  * different submesh may have different material
  */
 struct SubMesh {
-  uint32_t index_offset;
   uint32_t index_count;
+  uint32_t index_offset;  
   // std::shared_ptr<Material> m_material;
 };
 class Mesh {

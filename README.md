@@ -9,6 +9,9 @@ setup:
 * download [buster-drone gltf scene](https://sketchfab.com/3d-models/buster-drone-294e79652f494130ad2ab00a13fdbafd), put it to data
 * build and run
 
+asset:
+https://drive.google.com/file/d/1GvQA9yCLWtsdc3wsg7r0WjV07JqKn63A/view?usp=sharing
+
 <!-- ## 
     https://github.com/taskflow/taskflow.git -->
 
