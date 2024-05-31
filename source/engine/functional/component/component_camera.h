@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Eigen/Dense>
+#include <engine/utils/base/trackball.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
 namespace mango {
@@ -111,6 +112,11 @@ public:
   const Eigen::Vector3f getCameraPos() const noexcept {
     return view_mat_.block<3, 3>(0, 0).transpose() *
            -view_mat_.block<3, 1>(0, 3);
+  }
+
+  void rotate(const Eigen::Vector4f &normalized_mouse_pos)
+  {
+      trackballRotate(view_mat_, normalized_mouse_pos);     
   }
 
 private:

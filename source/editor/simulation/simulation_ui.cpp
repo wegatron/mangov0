@@ -3,6 +3,7 @@
 #include <engine/functional/global/engine_context.h>
 #include <engine/functional/world/world.h>
 #include <engine/utils/event/event_system.h>
+#include <engine/utils/base/macro.h>
 // #include "editor/global/editor_context.h"
 
 // #include "engine/core/vulkan/vulkan_rhi.h"
@@ -359,28 +360,43 @@ void SimulationUI::constructOperationModeButtons() {
 // }
 
 void SimulationUI::updateCamera() {
-  auto cameras = g_engine.getWorld()->getCameras();
-  CameraComponent *default_camera = nullptr;
-  // std::shared_ptr<TransformRelationship> tr = nullptr;
-  for (auto entity : cameras) {
-    auto name = cameras.get<std::string>(entity);
-    if (name != "default##camera")
-      continue;
-    default_camera = &(cameras.get<CameraComponent>(entity));
-    // tr = cameras.get<std::shared_ptr<TransformRelationship>>();
-  }
+  // auto cameras = g_engine.getWorld()->getCameras();
+  // CameraComponent *default_camera = nullptr;
+  // // std::shared_ptr<TransformRelationship> tr = nullptr;
+  // for (auto entity : cameras) {
+  //   auto name = cameras.get<std::string>(entity);
+  //   if (name != "default##camera")
+  //     continue;
+  //   default_camera = &(cameras.get<CameraComponent>(entity));
+  //   // tr = cameras.get<std::shared_ptr<TransformRelationship>>();
+  // }
 
-  // set camera component
-  // assert(default_camera != nullptr);
-  if (default_camera != nullptr)
-    default_camera->setAspect(content_region_.z() / content_region_.w());
+  // // set camera component
+  // // assert(default_camera != nullptr);
+  // if (default_camera != nullptr)
+  //   default_camera->setAspect(content_region_.z() / content_region_.w());
 
   // if (g_engine.isSimulating()) {
   //   m_mouse_right_button_pressed =
   //   ImGui::IsMouseDown(ImGuiMouseButton_Right);
   // } else {
+  auto &default_camera = g_engine.getWorld()->getDefaultCameraComp();
   mouse_right_button_pressed_ =
       ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Right);
+  if(ImGui::IsItemHovered() && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+  {
+    auto delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
+    ImGui::ResetMouseDragDelta(ImGuiMouseButton_Left);
+    // get current mouse position
+    auto cur_pos = ImGui::GetMousePos();
+    Eigen::Vector2i cpos(cur_pos.x, cur_pos.y);
+    cpos = (cpos - content_region_.head<2>()) - (content_region_.tail<2>())/2;// -half to half
+    float normalize_l = std::min(content_region_.z(), content_region_.w());
+    Eigen::Vector4f pos(cpos.x()-delta.x, cpos.y()-delta.y,
+                        cpos.x(), cpos.y());
+    pos = (2.0f / normalize_l) * pos;
+    default_camera.rotate(pos);
+  }
   // }
 
   // m_camera_component.lock()->setInput(m_mouse_right_button_pressed,
