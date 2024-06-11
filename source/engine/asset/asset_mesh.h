@@ -34,9 +34,6 @@ public:
 
   const Eigen::AlignedBox3f &getBoundingBox() const { return bounding_box_; }
 
-  virtual void inflate(const std::shared_ptr<CommandBuffer>
-                           &cmd_buffer) = 0; //!< upload data to gpu
-
 protected:
   std::vector<SubMesh> sub_meshes_; //!< submesh: index offset, index
                                     // count, vertex offset, vertex count
@@ -62,11 +59,11 @@ public:
 
   void load(const URL &url) override; //!< deserialize from file
 
-  void setVertices(const std::vector<StaticVertex> &vertices) {
-    vertices_ = vertices;
+  void setVertices(std::vector<StaticVertex> &&vertices) {
+    vertices_ = std::move(vertices);
   }
 
-  void inflate(const std::shared_ptr<CommandBuffer> &cmd_buffer) override;
+  void inflate() override;
 
 private:
   std::vector<StaticVertex> vertices_;

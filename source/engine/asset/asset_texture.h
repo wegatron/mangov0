@@ -38,12 +38,9 @@ public:
 
   std::shared_ptr<ImageView> getImageView() { return image_view_; }
 
+  void inflate() override;
+  
 private:
-
-  /*
-   * @brief prepare texture, upload texture data to GPU with appropriate format
-   */
-  void prepare();
 
   bool isSRGB();
 

@@ -7,8 +7,9 @@
 
 namespace mango {
 Buffer::Buffer(const std::shared_ptr<VkDriver> &driver,
-               VkBufferCreateFlags flags, VkDeviceSize size,
+               VkDeviceSize size,
                VkBufferUsageFlags buffer_usage,
+               VkBufferCreateFlags flags,               
                VmaAllocationCreateFlags allocation_flags,
                VmaMemoryUsage memory_usage)
     : driver_(driver), flags_(flags), size_(size), buffer_usage_(buffer_usage),

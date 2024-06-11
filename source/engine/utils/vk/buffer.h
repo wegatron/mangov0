@@ -11,8 +11,8 @@ class CommandBuffer;
 class StagePool;
 class Buffer final {
 public:
-  Buffer(const std::shared_ptr<VkDriver> &driver, VkBufferCreateFlags flags,
-         VkDeviceSize size, VkBufferUsageFlags buffer_usage,
+  Buffer(const std::shared_ptr<VkDriver> &driver, VkDeviceSize size,
+         VkBufferUsageFlags buffer_usage, VkBufferCreateFlags flags,
          VmaAllocationCreateFlags allocation_flags,
          VmaMemoryUsage memory_usage);
   ~Buffer();

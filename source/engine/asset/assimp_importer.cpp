@@ -14,8 +14,7 @@
 namespace mango {
 
 std::vector<std::shared_ptr<StaticMesh>>
-processMeshs(const aiScene *a_scene,
-             const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+processMeshs(const aiScene *a_scene) {
   auto a_meshes = a_scene->mMeshes;
   std::vector<std::shared_ptr<StaticMesh>> ret_meshes(a_scene->mNumMeshes);
   for (auto i = 0; i < a_scene->mNumMeshes; ++i) {
@@ -39,7 +38,7 @@ processMeshs(const aiScene *a_scene,
           Eigen::Vector2f(tmp_a_mesh->mTextureCoords[0][vi].x,  // NOLINT
                           tmp_a_mesh->mTextureCoords[0][vi].y); // NOLINT
     }
-    ret_meshes[i]->setVertices(vertices);
+    ret_meshes[i]->setVertices(std::move(vertices));
 
     // faces
     auto nf = tmp_a_mesh->mNumFaces;
@@ -52,7 +51,7 @@ processMeshs(const aiScene *a_scene,
     }
     ret_meshes[i]->setIndices(tri_v_inds);
     ret_meshes[i]->setSubMeshs({{nf*3, 0}});
-    ret_meshes[i]->inflate(cmd_buffer);
+    ret_meshes[i]->inflate();
   }
   return ret_meshes;
 }
@@ -146,13 +145,13 @@ bool AssimpImporter::import(const URL &url, World *world) {
   }
   // file_directory_ = path.substr(0, path.find_last_of('/'));
   //  add materials and meshes to scene
-  auto driver = g_engine.getDriver();
-  auto &cmd_buffer_mgr = driver->getThreadLocalCommandBufferManager();
-  auto cmd_buffer = cmd_buffer_mgr.requestCommandBuffer(
-      VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+  // auto driver = g_engine.getDriver();
+  // auto &cmd_buffer_mgr = driver->getThreadLocalCommandBufferManager();
+  // auto cmd_buffer = cmd_buffer_mgr.requestCommandBuffer(
+  //     VK_COMMAND_BUFFER_LEVEL_PRIMARY);
   //std::cout << "importing cmd buffer: " << cmd_buffer->getHandle() << std::endl;
   std::vector<std::shared_ptr<StaticMesh>> meshes =
-      processMeshs(a_scene, cmd_buffer);
+      processMeshs(a_scene);
   
   // std::vector<std::shared_ptr<Material>> materials =
   //     processMaterials(a_scene, dir, cmd_buf);

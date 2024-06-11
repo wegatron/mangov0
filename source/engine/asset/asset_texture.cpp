@@ -28,10 +28,10 @@ void AssetTexture::load(const URL &url) {
   } else {
     throw std::runtime_error("unsupported texture file format");
   }
-  prepare();
+  inflate();
 }
 
-void AssetTexture::prepare() {
+void AssetTexture::inflate() {
   auto pixel_format = getFormat();
   if (compression_mode_ == ETextureCompressionMode::None) {
     auto &cmd_buffer_mgr = g_engine.getDriver()->getThreadLocalCommandBufferManager();

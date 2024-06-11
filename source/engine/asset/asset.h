@@ -33,6 +33,8 @@ public:
 
   virtual void load(const URL &url) = 0;
 
+  virtual void inflate() = 0;
+
 protected:
   URL url_;
   EAssetType asset_type_;
