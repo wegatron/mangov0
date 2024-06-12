@@ -1,9 +1,10 @@
 #pragma once
 
-#include <cereal/access.hpp>
-#include <engine/asset/asset.h>
 #include <vector>
 #include <volk.h>
+#include <stbi/stb_image.h>
+#include <cereal/access.hpp>
+#include <engine/asset/asset.h>
 
 namespace mango {
 class ImageView;
@@ -31,6 +32,8 @@ public:
   }
 
   void load(const URL &url) override;
+
+  void load(uint32_t width, uint32_t height, stbi_uc *data);
 
   void setTextureType(ETextureType texture_type) {
     texture_type_ = texture_type;

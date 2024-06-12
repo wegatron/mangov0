@@ -124,6 +124,8 @@ public:
 
   StagePool *getStagePool() const { return stage_pool_; }
 
+  uint32_t getMinUboAlignSize() const { return min_ubo_align_size_; }
+  
 private:
 
   void initInstance();
@@ -167,7 +169,8 @@ private:
 
   uint32_t cur_frame_index_{0};
   uint32_t cur_image_index_{0};
-  
+  uint32_t min_ubo_align_size_{0};
+
   FrameData frames_data_;
   std::vector<ThreadLocalCommandBufferManager> thread_local_command_buffer_managers_;
   CommandQueue *graphics_cmd_queue_{nullptr};

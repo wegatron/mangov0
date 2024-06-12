@@ -13,7 +13,17 @@ using mat3 = Eigen::Matrix3f;
 using uint = uint32_t;
 #endif // __cplusplus
 
-struct DirectionalLight {
+struct UMaterial {
+  uint albedo_type;
+  uint emissive_type;
+  uint metallic_roughness_occlution_type;
+  uint padding0;
+  vec4 albedo_color;
+  vec4 emssive_color;
+  vec4 metallic_roughness_occlution;
+};
+
+struct UDirectionalLight {
   vec3 direction;
   int cast_shadow;
   vec3 color;
@@ -22,7 +32,7 @@ struct DirectionalLight {
   vec4 cascade_splits;
 };
 
-struct PointLight {
+struct UPointLight {
   vec3 position;
   float padding0; // inner_cutoff for SpotLight, cast shadow for PointLight
 
@@ -35,7 +45,7 @@ struct PointLight {
   int cast_shadow;
 };
 
-struct LightUBO {
+struct ULight {
   // camera
   vec3 camera_pos;
   float exposure;
@@ -43,8 +53,8 @@ struct LightUBO {
   mat4 inv_camera_view_proj;
 
   // lights
-  DirectionalLight directional_light[MAX_DIRECTIONAL_LIGHT_NUM];
-  PointLight point_lights[MAX_POINT_LIGHT_NUM];
+  UDirectionalLight directional_light[MAX_DIRECTIONAL_LIGHT_NUM];
+  UPointLight point_lights[MAX_POINT_LIGHT_NUM];
 
   int directional_light_num;
   int point_light_num;
@@ -54,9 +64,9 @@ struct LightUBO {
   // int shader_debug_option;
 };
 
-struct ShadowCascadeUBO {
-  mat4 cascade_view_projs[SHADOW_CASCADE_NUM];
-};
+// struct ShadowCascadeUBO {
+//   mat4 cascade_view_projs[SHADOW_CASCADE_NUM];
+// };
 
 // struct ShadowCubeUBO {
 //   mat4 face_view_projs[SHADOW_FACE_NUM];

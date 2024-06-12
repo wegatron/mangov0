@@ -1,15 +1,16 @@
 #include <engine/asset/assimp_importer.h>
 
+#include <queue>
 #include <Eigen/Dense>
+#include <engine/utils/base/macro.h>
+#include <engine/utils/vk/commands.h>
 #include <engine/asset/asset_mesh.h>
+#include <engine/asset/asset_material.h>
 #include <engine/functional/component/component_camera.h>
 #include <engine/functional/component/component_transform.h>
 #include <engine/functional/global/engine_context.h>
-#include <engine/utils/base/macro.h>
-#include <engine/utils/vk/commands.h>
-#include <queue>
-#include <stbi/stb_image.h>
 #include <engine/functional/world/world.h>
+
 
 namespace mango {
 
@@ -54,6 +55,60 @@ processMeshs(const aiScene *a_scene) {
     ret_meshes[i]->inflate();
   }
   return ret_meshes;
+}
+
+
+std::shared_ptr<AssetTexture> loadTexture(const aiTexture *a_texture,
+                                          const char *texture_path) {
+  auto ret_texture = std::make_shared<AssetTexture>();
+  if (a_texture == nullptr) {
+    ret_texture->load(texture_path);
+  } else {
+    int width, height, channels;
+    stbi_uc *data = stbi_load_from_memory(
+        reinterpret_cast<const stbi_uc *>(a_texture->pcData), a_texture->mWidth,
+        &width, &height, &channels, STBI_rgb_alpha);
+    if (data == nullptr) {
+      throw std::runtime_error("Failed to load texture: " +
+                              std::string(texture_path));
+    }
+    ret_texture->load(width, height, data);
+    stbi_image_free(data);
+  }
+  return ret_texture;
+}
+
+std::vector<std::shared_ptr<Material>>
+processMaterials(const aiScene *a_scene)
+{
+  std::vector<std::shared_ptr<Material>> ret_mats(a_scene->mNumMaterials);
+  for (uint32_t i = 0; i < a_scene->mNumMaterials; ++i)
+  {
+    auto a_mat = a_scene->mMaterials[i];
+    auto cur_mat = std::make_shared<Material>();
+    ret_mats[i] = cur_mat;
+    aiString texture_path;
+    if (AI_SUCCESS ==
+        a_mat->GetTexture(aiTextureType_BASE_COLOR, 0, &texture_path)) {
+        auto a_texture = a_scene->GetEmbeddedTexture(texture_path.C_Str());
+        cur_mat->setAlbedoTexture(loadTexture(a_texture, texture_path.C_Str()));
+    }
+    if (AI_SUCCESS == a_mat->GetTexture(aiTextureType_NORMALS, 0, &texture_path))
+    {
+      auto a_texture = a_scene->GetEmbeddedTexture(texture_path.C_Str());
+      cur_mat->setNormalTexture(loadTexture(a_texture, texture_path.C_Str()));
+    }
+    if (AI_SUCCESS == a_mat->GetTexture(aiTextureType_EMISSIVE, 0, &texture_path))
+    {
+      auto a_texture = a_scene->GetEmbeddedTexture(texture_path.C_Str());
+      cur_mat->setEmissiveTexture(loadTexture(a_texture, texture_path.C_Str()));      
+    }
+    if (AI_SUCCESS == a_mat->GetTexture(AI_MATKEY_ROUGHNESS_TEXTURE, &texture_path))
+    {
+      
+    }
+  }
+  return ret_mats;
 }
 
 // Lights processLights(const aiScene *a_scene) {
@@ -154,8 +209,8 @@ bool AssimpImporter::import(const URL &url, World *world) {
   std::vector<std::shared_ptr<StaticMesh>> meshes =
       processMeshs(a_scene);
   
-  // std::vector<std::shared_ptr<Material>> materials =
-  //     processMaterials(a_scene, dir, cmd_buf);
+  std::vector<std::shared_ptr<Material>> materials =
+      processMaterials(a_scene, dir);
   // std::vector<CameraComponent> cameras = processCameras(a_scene);
   //auto lights = processLight(a_scene);
   
@@ -164,70 +219,6 @@ bool AssimpImporter::import(const URL &url, World *world) {
   processNode(scene_tr, a_scene, meshes,
               mesh_entity_datas); // TODO add lights process
   world->enqueue(scene_tr, std::move(mesh_entity_datas));
-  
-  // lock world do update
-  
-  // // process root node's mesh
-  // auto root_tr = std::make_shared<TransformRelationship>();
-  // scene.setRootTr(root_tr);
-  // auto scene_root = processNode(nullptr, a_scene->mRootNode, a_scene, scene,
-  //                               meshes, materials);
-  // root_tr->child = scene_root;
-  // scene_root->parent = root_tr;
-
-  // std::queue<std::pair<std::shared_ptr<TransformRelationship>,
-  //                      aiNode *>> // parent tr, parent node
-  //     process_queue;
-  // process_queue.push(std::make_pair(scene_root, a_scene->mRootNode));
-
-  // auto camera_node_name =
-  //     cameras.empty() ? "vk_engine_default_main_camera" :
-  //     cameras[0].getName();
-  // auto camera_tr = root_tr;
-  // // auto light_tr = root_tr;
-  // while (!process_queue.empty()) {
-  //   auto e = process_queue.front();
-  //   process_queue.pop();
-
-  //   auto parent_tr = e.first;
-  //   auto pnode = e.second;
-  //   std::shared_ptr<TransformRelationship> pre_tr_re = nullptr;
-  //   for (auto i = 0; i < pnode->mNumChildren; ++i) {
-  //     // process children's mesh
-  //     auto cur_tr_re = processNode(parent_tr, pnode->mChildren[i], a_scene,
-  //                                  scene, meshes, materials);
-
-  //     if (!cameras.empty() &&
-  //         pnode->mChildren[i]->mName.C_Str() == camera_node_name)
-  //       camera_tr = cur_tr_re;
-
-  //     if (i == 0)
-  //       parent_tr->child = cur_tr_re;
-  //     else if (i != 0)
-  //       pre_tr_re->sibling = cur_tr_re;
-
-  //     pre_tr_re = cur_tr_re;
-  //     process_queue.push(std::make_pair(cur_tr_re, pnode->mChildren[i]));
-  //   }
-  // }
-
-  // if (cameras.empty()) {
-  //   CameraComponent default_camera;
-  //   default_camera.setName(camera_node_name);
-  //   scene.update(0);
-  //   const auto &scene_aabb = root_tr->aabb;
-  //   Eigen::Vector3f center = scene_aabb.center();
-  //   float radius = 0.5f * scene_aabb.sizes().norm();
-  //   Eigen::Vector3f eye = center + Eigen::Vector3f(0, 0, 5.0f * radius);
-  //   default_camera.setLookAt(eye, Eigen::Vector3f(0, 1, 0), center);
-  //   default_camera.setFovy(0.6f);
-  //   scene.createCameraEntity(camera_node_name, camera_tr, default_camera);
-  // } else
-  //   scene.createCameraEntity(camera_node_name, camera_tr, cameras[0]);
-
-  // scene.createLightEntity("default_light", root_tr, lights.l[0]);
-
-
   
   // load the default camera if have
   LOGI("load scene: {}", path.c_str());

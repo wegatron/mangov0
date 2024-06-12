@@ -61,9 +61,11 @@ void VkDriver::initDevice() {
     throw std::runtime_error("failed to select physical device!");
   }
 
-  physical_device_ = physical_devices[physical_device_index].getHandle();
-  auto graphics_queue_family_index =
-      physical_devices[physical_device_index].getGraphicsQueueFamilyIndex();
+  auto & ph_device = physical_devices[physical_device_index];
+  physical_device_ = ph_device.getHandle();
+  auto graphics_queue_family_index = ph_device.getGraphicsQueueFamilyIndex();
+  // get minUniformBufferOffsetAlignment
+  ph_device.getProperties().limits.minUniformBufferOffsetAlignment;
 
 // for print out memory infos
 #ifndef NDEBUG
