@@ -41,10 +41,27 @@ public:
     return global_bind_pose_ * global_inverse_bind_pose_;
   }
 
+  void setChildIndex(uint32_t index)
+  {
+    child_index_ = index;
+  }
+
+  void setSiblingIndex(uint32_t index)
+  {
+    sibling_index_ = index;
+  }
+
+  void setParentIndex(uint32_t index)
+  {
+    parent_index_ = index;
+  }
+
 private:
   std::string name_;
+  uint32_t child_index_;
+  uint32_t sibling_index_;
   uint32_t parent_index_;
-  
+
   // local transform
   Eigen::Vector3f scale_;
   Eigen::Vector3f translation_;
