@@ -104,6 +104,7 @@ void processNode(const std::shared_ptr<TransformRelationship> &root_tr,
     q.pop();
     memcpy(tr->ltransform.data(), &node->mTransformation,
          sizeof(Eigen::Matrix4f));
+    tr->ltransform.transposeInPlace(); // row major to column major
     for (auto i = 0; i < node->mNumMeshes; ++i)
     {
       aiMesh *a_mesh = a_scene->mMeshes[node->mMeshes[i]];
@@ -159,7 +160,7 @@ bool AssimpImporter::import(const URL &url, World *world) {
   //auto lights = processLight(a_scene);
   
   auto scene_tr = std::make_shared<TransformRelationship>();
-  std::vector<MeshEntityData> mesh_entity_datas;  
+  std::vector<MeshEntityData> mesh_entity_datas;
   processNode(scene_tr, a_scene, meshes,
               mesh_entity_datas); // TODO add lights process
   world->enqueue(scene_tr, std::move(mesh_entity_datas));
