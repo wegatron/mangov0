@@ -9,9 +9,9 @@ enum class ParamType : uint32_t { CONSTANT_VALUE = 0, Texture = 1 };
 
 class Material {
 public:
-    void setUMaterial(const UMaterial &material) { material_ = material; }
-    void setAlbedoTexture(const std::shared_ptr<AssetTexture> &texture) {
-        albedo_texture_ = texture;
+  UMaterial & getUMaterial() { return material_; }
+  void setAlbedoTexture(const std::shared_ptr<AssetTexture> &texture) {
+    albedo_texture_ = texture;
     }
     void setNormalTexture(const std::shared_ptr<AssetTexture> &texture) {
         normal_texture_ = texture;

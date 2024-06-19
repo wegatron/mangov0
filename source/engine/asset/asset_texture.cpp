@@ -31,11 +31,23 @@ void AssetTexture::load(const URL &url) {
   inflate();
 }
 
+void AssetTexture::load(uint32_t width, uint32_t height, stbi_uc *data) {
+  if (data == nullptr) {
+    throw std::runtime_error("failed to load texture");
+  }
+  layers_ = mip_levels_ = 1;
+  image_data_.resize(width_ * height_ * 4);
+  memcpy(image_data_.data(), data, image_data_.size());
+  inflate();
+}
+
 void AssetTexture::inflate() {
   auto pixel_format = getFormat();
   if (compression_mode_ == ETextureCompressionMode::None) {
-    auto &cmd_buffer_mgr = g_engine.getDriver()->getThreadLocalCommandBufferManager();
-    auto cmd_buffer = cmd_buffer_mgr.requestCommandBuffer(VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+    auto &cmd_buffer_mgr =
+        g_engine.getDriver()->getThreadLocalCommandBufferManager();
+    auto cmd_buffer = cmd_buffer_mgr.requestCommandBuffer(
+        VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
     image_view_ = uploadImage(image_data_.data(), width_, height_, mip_levels_,
                               layers_, pixel_format, cmd_buffer);
   } else {

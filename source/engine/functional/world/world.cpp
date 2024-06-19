@@ -85,6 +85,7 @@ void World::loadedMesh2World()
       auto entity = createEntity(mesh_entity_dat.name);
       addComponent(entity, mesh_entity_dat.tr);
       addComponent(entity, mesh_entity_dat.mesh);
+      addComponent(entity, mesh_entity_dat.material);
     }
   }
   scene_data_list.clear();

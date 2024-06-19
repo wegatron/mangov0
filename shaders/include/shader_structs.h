@@ -19,7 +19,7 @@ struct UMaterial {
   uint metallic_roughness_occlution_type;
   uint padding0;
   vec4 albedo_color;
-  vec4 emssive_color;
+  vec4 emissive_color;
   vec4 metallic_roughness_occlution;
 };
 

@@ -79,7 +79,7 @@ std::shared_ptr<AssetTexture> loadTexture(const aiTexture *a_texture,
 }
 
 std::vector<std::shared_ptr<Material>>
-processMaterials(const aiScene *a_scene)
+processMaterials(const aiScene *a_scene, const std::string &dir)
 {
   std::vector<std::shared_ptr<Material>> ret_mats(a_scene->mNumMaterials);
   for (uint32_t i = 0; i < a_scene->mNumMaterials; ++i)
@@ -88,24 +88,54 @@ processMaterials(const aiScene *a_scene)
     auto cur_mat = std::make_shared<Material>();
     ret_mats[i] = cur_mat;
     aiString texture_path;
+    auto &u_material = cur_mat->getUMaterial();
     if (AI_SUCCESS ==
         a_mat->GetTexture(aiTextureType_BASE_COLOR, 0, &texture_path)) {
-        auto a_texture = a_scene->GetEmbeddedTexture(texture_path.C_Str());
-        cur_mat->setAlbedoTexture(loadTexture(a_texture, texture_path.C_Str()));
+      u_material.albedo_type = static_cast<uint32_t>(ParamType::Texture);
+      auto a_texture = a_scene->GetEmbeddedTexture(texture_path.C_Str());
+      std::string texture_path_str = dir + std::string(texture_path.C_Str());
+      // load texture data from memory or file file
+      cur_mat->setAlbedoTexture(
+          loadTexture(a_texture, texture_path_str.c_str()));
+    } else {
+      u_material.albedo_type = static_cast<uint32_t>(ParamType::CONSTANT_VALUE);
+      aiColor3D value(0.0f, 0.0f, 0.0f);
+      a_mat->Get(AI_MATKEY_BASE_COLOR, value);
+      u_material.albedo_color = Eigen::Vector4f(value.r, value.g, value.b, 1.0);
     }
     if (AI_SUCCESS == a_mat->GetTexture(aiTextureType_NORMALS, 0, &texture_path))
-    {
+    {      
       auto a_texture = a_scene->GetEmbeddedTexture(texture_path.C_Str());
-      cur_mat->setNormalTexture(loadTexture(a_texture, texture_path.C_Str()));
+      std::string texture_path_str = dir + std::string(texture_path.C_Str());
+      cur_mat->setNormalTexture(loadTexture(a_texture, texture_path_str.c_str()));
     }
     if (AI_SUCCESS == a_mat->GetTexture(aiTextureType_EMISSIVE, 0, &texture_path))
     {
+      u_material.emissive_type = static_cast<uint32_t>(ParamType::Texture);
       auto a_texture = a_scene->GetEmbeddedTexture(texture_path.C_Str());
-      cur_mat->setEmissiveTexture(loadTexture(a_texture, texture_path.C_Str()));      
+      std::string texture_path_str = dir + std::string(texture_path.C_Str());
+      cur_mat->setEmissiveTexture(loadTexture(a_texture, texture_path_str.c_str()));      
+    } else {
+      u_material.emissive_type = static_cast<uint32_t>(ParamType::CONSTANT_VALUE);
+      aiColor3D value(0.0f, 0.0f, 0.0f);
+      a_mat->Get(AI_MATKEY_COLOR_EMISSIVE, value);
+      u_material.emissive_color = Eigen::Vector4f(value.r, value.g, value.b, 1.0f);
     }
+
+    // assert metallic and roughness share the same texture
     if (AI_SUCCESS == a_mat->GetTexture(AI_MATKEY_ROUGHNESS_TEXTURE, &texture_path))
     {
-      
+      u_material.metallic_roughness_occlution_type = static_cast<uint32_t>(ParamType::Texture);
+      auto a_texture = a_scene->GetEmbeddedTexture(texture_path.C_Str());
+      std::string texture_path_str = dir + std::string(texture_path.C_Str());
+      cur_mat->setMetallicRoughnessOcclutionTexture(loadTexture(a_texture, texture_path_str.c_str()));  
+    } else {
+      u_material.metallic_roughness_occlution_type = static_cast<uint32_t>(ParamType::CONSTANT_VALUE);
+      float value = 0.0f;
+      a_mat->Get(AI_MATKEY_METALLIC_FACTOR, value);
+      u_material.metallic_roughness_occlution[0] = value;
+      a_mat->Get(AI_MATKEY_ROUGHNESS_FACTOR, value);
+      u_material.metallic_roughness_occlution[1] = value;
     }
   }
   return ret_mats;
@@ -150,6 +180,7 @@ processMaterials(const aiScene *a_scene)
 void processNode(const std::shared_ptr<TransformRelationship> &root_tr,
                  const aiScene *a_scene,
                  const std::vector<std::shared_ptr<StaticMesh>> &meshes,
+                 const std::vector<std::shared_ptr<Material>> &materials,
                  std::vector<MeshEntityData> &mesh_entity_datas) {
   std::queue<std::pair<aiNode *, std::shared_ptr<TransformRelationship>>> q;
   q.emplace(std::make_pair(a_scene->mRootNode, root_tr));
@@ -163,11 +194,13 @@ void processNode(const std::shared_ptr<TransformRelationship> &root_tr,
     for (auto i = 0; i < node->mNumMeshes; ++i)
     {
       aiMesh *a_mesh = a_scene->mMeshes[node->mMeshes[i]];
-      // TODO assign material
+      
       mesh_entity_datas.emplace_back(a_mesh->mName.C_Str(),
-                                     meshes[node->mMeshes[i]], tr);
+                                     meshes[node->mMeshes[i]],
+                                     materials[a_mesh->mMaterialIndex],
+                                     tr);
       tr->aabb.extend(meshes[node->mMeshes[i]]->getBoundingBox());
-    }
+    }    
     auto prev_tr = tr;
     for (auto i = 0; i < node->mNumChildren; ++i)
     {
@@ -216,7 +249,7 @@ bool AssimpImporter::import(const URL &url, World *world) {
   
   auto scene_tr = std::make_shared<TransformRelationship>();
   std::vector<MeshEntityData> mesh_entity_datas;
-  processNode(scene_tr, a_scene, meshes,
+  processNode(scene_tr, a_scene, meshes, materials,
               mesh_entity_datas); // TODO add lights process
   world->enqueue(scene_tr, std::move(mesh_entity_datas));
   

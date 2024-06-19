@@ -6,6 +6,7 @@
 #include <engine/functional/component/component_camera.h>
 #include <engine/functional/component/component_transform.h>
 #include <engine/functional/component/component_mesh.h>
+#include <engine/asset/asset_material.h>
 #include <engine/functional/global/engine_context.h>
 
 // #include <engine/functional/component/material.h>
@@ -18,6 +19,7 @@ namespace mango {
 struct MeshEntityData {
   std::string name;
   std::shared_ptr<StaticMesh> mesh;
+  std::shared_ptr<Material> material;
   std::shared_ptr<TransformRelationship> tr;
 };
 
@@ -55,25 +57,9 @@ public:
 
   void removeEntity(entt::entity entity) { entities_.destroy(entity); }
 
-  void addComponent(entt::entity entity,
-                    const std::shared_ptr<TransformRelationship> &tr) {
-    entities_.emplace<std::shared_ptr<TransformRelationship>>(entity, tr);
-  }
-
-  void addComponent(entt::entity entity, const CameraComponent &camera) {
-    entities_.emplace<CameraComponent>(entity, camera);
-  }
-
-  void addComponent(entt::entity entity, const PointLight &light) {
-    entities_.emplace<PointLight>(entity, light);
-  }
-
-  void addComponent(entt::entity entity, const DirectionalLight &light) {
-    entities_.emplace<DirectionalLight>(entity, light);
-  }
-
-  void addComponent(entt::entity entity, const StaticMeshComponent &mesh) {
-    entities_.emplace<StaticMeshComponent>(entity, mesh);
+  template<typename T>
+  void addComponent(entt::entity entity, const T &comp) {
+    entities_.emplace<T>(entity, comp);
   }
 
   auto getCameras() {
