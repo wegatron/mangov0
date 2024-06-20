@@ -12,6 +12,7 @@
 #include <engine/utils/vk/render_pass.h>
 #include <engine/utils/vk/resource_cache.h>
 #include <engine/utils/vk/vk_driver.h>
+#include <engine/utils/vk/swapchain.h>
 #include <imgui/backends/imgui_impl_glfw.h>
 #include <imgui/backends/imgui_impl_vulkan.h>
 #include <imgui/imgui.h>
@@ -115,7 +116,8 @@ void UIPass::initImgui() {
 
 void UIPass::createRenderPassAndFramebuffer() {
   const auto &driver = g_engine.getDriver();
-  auto color_format = driver->getSwapchainImageFormat();
+  const auto swapchain = driver->getSwapchain();
+  auto color_format = swapchain->getImageFormat();
   std::vector<Attachment> attachments{Attachment{
       color_format, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_LAYOUT_UNDEFINED}};
   std::vector<LoadStoreInfo> load_store_infos{
@@ -128,12 +130,7 @@ void UIPass::createRenderPassAndFramebuffer() {
   }};
   render_pass_ = std::make_shared<RenderPass>(driver, attachments,
                                               load_store_infos, subpass_infos);
-  const auto &rts = driver->getRenderTargets();
-  framebuffers_.resize(MAX_FRAMES_IN_FLIGHT);
-  for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
-    framebuffers_[i] =
-        std::make_shared<FrameBuffer>(driver, render_pass_, rts[i]);
-  }
+  driver->getSwapchain()->createFrameBuffer(render_pass_);
 }
 
 void UIPass::prepare() {
@@ -153,8 +150,10 @@ void UIPass::prepare() {
 }
 
 void UIPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
-  auto cur_img_index = g_engine.getDriver()->getCurImageIndex();
-  cmd_buffer->beginRenderPass(render_pass_, framebuffers_[cur_img_index]);
+  auto driver = g_engine.getDriver();
+  auto cur_img_index = driver->getCurImageIndex();
+  auto frame_buffer = driver->getSwapchain()->getFrameBuffer(cur_img_index);
+  cmd_buffer->beginRenderPass(render_pass_, frame_buffer);
 
   ImDrawData *draw_data = ImGui::GetDrawData();
   ImGui_ImplVulkan_RenderDrawData(draw_data, cmd_buffer->getHandle());
@@ -173,18 +172,12 @@ void UIPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
       .dst_queue_family_index = VK_QUEUE_FAMILY_IGNORED};
   cmd_buffer->imageMemoryBarrier(
       barrier,
-      framebuffers_[cur_img_index]->getRenderTarget()->getImageViews()[0]);
+      frame_buffer->getRenderTarget()->getImageViews()[0]);
 }
 
 void UIPass::onCreateSwapchainObject(const uint32_t width,
                                      const uint32_t height) {
-  const auto &driver = g_engine.getDriver();
-  const auto &rts = driver->getRenderTargets();
-  framebuffers_.resize(MAX_FRAMES_IN_FLIGHT);
-  for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
-    framebuffers_[i] =
-        std::make_shared<FrameBuffer>(driver, render_pass_, rts[i]);
-  }
-  std::cout << "frame buffer updated\n" << std::endl;
+  g_engine.getDriver()->getSwapchain()->createFrameBuffer(render_pass_);
 }
+
 } // namespace mango

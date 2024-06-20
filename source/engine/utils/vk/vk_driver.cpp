@@ -160,48 +160,29 @@ void VkDriver::init() {
   stage_pool_ = new StagePool(shared_from_this());
 }
 
-VkFormat VkDriver::getSwapchainImageFormat() const {
-  assert(swapchain_ != nullptr);
-  return swapchain_->getImageFormat();
-}
-
 void VkDriver::createSwapchain() {
   uint32_t width, height;
   auto window = g_engine.getWindow();
   window->getWindowSize(width, height);
 
-  SwapchainProperties properties{
-      .extent = {width, height},
-      .surface_format = {.format = VK_FORMAT_B8G8R8A8_SRGB},
-  };
-  if (swapchain_ == nullptr)
-    swapchain_ = new Swapchain(surface_, properties);
-  else {
-    swapchain_->initSwapchain(surface_, properties);
-  }
+  if(swapchain_ == nullptr)
+  {
+    SwapchainProperties properties{
+        .extent = {width, height},
+        .surface_format = {.format = VK_FORMAT_B8G8R8A8_SRGB},
+    };
 
-  // create render targets
-  auto driver = g_engine.getDriver();
-  for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
-    // auto depth_image = std::make_shared<Image>(
-    //     driver, 0,
-    //     ds_format_, extent, VK_SAMPLE_COUNT_1_BIT,
-    //     VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-    //     VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE);
-    // auto depth_img_view = std::make_shared<ImageView>(
-    //     depth_image, VK_IMAGE_VIEW_TYPE_2D, ds_format_,
-    //     VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0, 0, 1, 1);
-    render_targets_[i] = std::make_shared<RenderTarget>(
-        std::initializer_list<std::shared_ptr<ImageView>>{
-            swapchain_->getImageView(i)},
-        std::initializer_list<VkFormat>{
-            swapchain_->getImageFormat()}, // color format
-        VK_FORMAT_UNDEFINED, // depth stencil format, undefined means no depth
-                             // stencil attachment
-        width, height, 1u);
+    swapchain_ = new Swapchain(surface_, properties);
+  } else {
+    // recreate swapchain
+    // wait idle and clean up render targets/frame buffers swapchain
+    waitIdle();
+    swapchain_->update(surface_, width, height);
   }
 
   // event for render system to update
+  // recreate framebuffers
+  // update camera aspect ratio
   g_engine.getEventSystem()->syncDispatch(
       std::make_shared<RenderCreateSwapchainObjectsEvent>(width, height));
 }
@@ -220,9 +201,8 @@ bool VkDriver::waitFrame() {
   mgr.getCommandBufferAvailableFence()->wait();
   auto result = swapchain_->acquireNextImage(
       frames_data_.image_available_semaphore[cur_frame_index_]->getHandle(),
-      VK_NULL_HANDLE, cur_image_index_);
+      VK_NULL_HANDLE, cur_image_index_);  
   if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-    // recreate swapchain
     createSwapchain();
     return false;
   } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
@@ -246,10 +226,9 @@ void VkDriver::presentFrame() {
           .render_result_available_semaphore[cur_frame_index_]->getHandle();
   present_info.pWaitSemaphores = &render_semaphore_handle;
 
-  // Present swapchain image
+  // Present swapchain image  
   auto result = graphics_cmd_queue_->present(present_info);
   if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
-    // recreate swapchain
     createSwapchain();
   } else if (result != VK_SUCCESS) {
     throw VulkanException(result, "failed to present image");
@@ -438,9 +417,6 @@ void VkDriver::initAllocator() {
 void VkDriver::destroy() {
   thread_local_command_buffer_managers_.clear();
   frames_data_.destroy();
-  for (auto &rt : render_targets_) {
-    rt.reset();
-  }
   delete swapchain_;
   delete descriptor_pool_;
   delete stage_pool_;

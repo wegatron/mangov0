@@ -71,9 +71,9 @@ public:
 
   VkResult waitIdle() const { return vkDeviceWaitIdle(device_); }
 
-  VkFormat getSwapchainImageFormat() const;
+  Swapchain * getSwapchain() const { return swapchain_; }
 
-  uint32_t getCurImageIndex() const { return cur_frame_index_; }
+  uint32_t getCurImageIndex() const { return cur_image_index_; }
 
   uint32_t getCurFrameIndex() const { return cur_frame_index_; }
 
@@ -81,10 +81,6 @@ public:
 
   uint32_t getPrevFrameIndex() const {
     return (cur_frame_index_ + MAX_FRAMES_IN_FLIGHT - 1) % MAX_FRAMES_IN_FLIGHT;
-  }
-
-  const std::shared_ptr<RenderTarget> * getRenderTargets() const {
-    return render_targets_;
   }
 
   std::shared_ptr<Semaphore> getImageAvailableSemaphore() const {
@@ -175,8 +171,7 @@ private:
   std::vector<ThreadLocalCommandBufferManager> thread_local_command_buffer_managers_;
   CommandQueue *graphics_cmd_queue_{nullptr};
   CommandQueue *transfer_cmd_queue_{nullptr};
-  Swapchain *swapchain_{nullptr};
-  std::shared_ptr<RenderTarget> render_targets_[MAX_FRAMES_IN_FLIGHT];  
+  Swapchain *swapchain_{nullptr};  
   DescriptorPool *descriptor_pool_{nullptr};
   StagePool *stage_pool_{nullptr};
 };

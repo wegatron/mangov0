@@ -407,7 +407,7 @@ void SimulationUI::onWindowResize() {
   // resize render pass
   g_engine.getRenderSystem()->resize3DView(content_region_.z(),
                                            content_region_.w());
-  // TODO update camera's aspect ratio
+  // update camera's aspect ratio
   auto &default_camera = g_engine.getWorld()->getDefaultCameraComp();
   default_camera.setAspect(1.0f*content_region_.z() / content_region_.w());
   // recreate color image and view

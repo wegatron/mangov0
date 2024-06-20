@@ -1,11 +1,23 @@
 #include <engine/functional/global/engine_context.h>
 #include <engine/utils/base/error.h>
 #include <engine/utils/vk/swapchain.h>
+#include <engine/utils/vk/render_pass.h>
+#include <engine/utils/vk/framebuffer.h>
 
 namespace mango {
 Swapchain::Swapchain(VkSurfaceKHR surface,
                      const SwapchainProperties &properties) {
+  extent_ = properties.extent;                      
+  initSwapchain(surface, properties);
+}
 
+void Swapchain::update(VkSurfaceKHR surface, const uint32_t width, const uint32_t height)
+{
+  extent_ = {width, height};
+  SwapchainProperties properties{
+      .extent = extent_,
+      .surface_format = {.format = VK_FORMAT_B8G8R8A8_SRGB},
+  };
   initSwapchain(surface, properties);
 }
 
@@ -55,13 +67,15 @@ void Swapchain::initSwapchain(VkSurfaceKHR surface,
   VK_THROW_IF_ERROR(vkCreateSwapchainKHR(driver->getDevice(), &swapchain_info,
                                          nullptr, &swapchain_),
                     "vulkan failed to create swapchain");
+  initImages();
 
+  // clean up old swapchain    
   if (old_swapchain != VK_NULL_HANDLE) {
-    for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) { image_views_[i].reset(); }      
+    for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) { 
+      framebuffers_[i].reset();
+    }
     vkDestroySwapchainKHR(driver->getDevice(), old_swapchain, nullptr);
   }
-
-  initImages();
 }
 
 void Swapchain::initImages() {
@@ -80,7 +94,7 @@ void Swapchain::initImages() {
         driver, images_[i], false, image_format_,
         VkExtent3D{extent_.width, extent_.height, 1}, 1, 1,
         VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        VK_IMAGE_LAYOUT_UNDEFINED);
   }
   // image views
   for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
@@ -90,14 +104,28 @@ void Swapchain::initImages() {
   }
 }
 
-Swapchain::~Swapchain() {
-#if !NDEBUG
-  for (auto &image_view : image_views_) {
-    assert(image_view.use_count() == 1);
+void Swapchain::createFrameBuffer(const std::shared_ptr<RenderPass> &render_pass)
+{  
+  for(auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+      auto rt = std::make_shared<RenderTarget>(
+        std::initializer_list<std::shared_ptr<ImageView>>{image_views_[i]},
+        std::initializer_list<VkFormat>{
+            image_format_}, // color format
+        VK_FORMAT_UNDEFINED, // depth stencil format, undefined means no depth
+                             // stencil attachment
+        extent_.width, extent_.height, 1u);
+      framebuffers_[i] = std::make_shared<FrameBuffer>(g_engine.getDriver(), render_pass, rt);
   }
-#endif
+}
+
+Swapchain::~Swapchain() {
   auto driver = g_engine.getDriver();  
-  for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) { image_views_[i].reset(); }
+  for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+    assert(framebuffers_[i].use_count() == 1);
+    framebuffers_[i].reset();
+    assert(image_views_[i].use_count() == 1);
+    image_views_[i].reset();
+  }
   vkDestroySwapchainKHR(driver->getDevice(), swapchain_, nullptr);
 }
 

@@ -7,6 +7,8 @@
 #include <engine/utils/vk/vk_driver.h>
 
 namespace mango {
+class RenderPass;
+class FrameBuffer;
 
 enum ImageFormat { sRGB, UNORM };
 
@@ -26,6 +28,8 @@ class Swapchain final {
 public:
   Swapchain(VkSurfaceKHR surface, const SwapchainProperties &properties);
 
+  void update(VkSurfaceKHR surface, const uint32_t width, const uint32_t height);
+
   ~Swapchain();
 
   Swapchain(const Swapchain &) = delete;
@@ -37,17 +41,20 @@ public:
 
   VkFormat getImageFormat() const { return image_format_; }
 
-  std::shared_ptr<ImageView> getImageView(uint32_t index) const {
+  void createFrameBuffer(const std::shared_ptr<RenderPass> &render_pass);
+
+  std::shared_ptr<FrameBuffer> getFrameBuffer(const uint32_t index) const {
     assert(index < MAX_FRAMES_IN_FLIGHT);
-    return image_views_[index];
+    assert(framebuffers_[index] != nullptr);
+    return framebuffers_[index];
   }
 
   VkResult acquireNextImage(VkSemaphore semaphore, VkFence fence, uint32_t &image_index);
-
+  
+private:
   void initSwapchain(VkSurfaceKHR surface,
                      const SwapchainProperties &properties);
 
-private:
   void initImages();
 
   VkSwapchainKHR swapchain_{VK_NULL_HANDLE};
@@ -55,6 +62,7 @@ private:
   VkFormat image_format_;
   VkImage images_[MAX_FRAMES_IN_FLIGHT];
   std::shared_ptr<ImageView> image_views_[MAX_FRAMES_IN_FLIGHT];
+  std::shared_ptr<FrameBuffer> framebuffers_[MAX_FRAMES_IN_FLIGHT];
 };
 
 } // namespace mango
