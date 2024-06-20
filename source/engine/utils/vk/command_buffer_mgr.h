@@ -52,6 +52,8 @@ public:
    */
   std::vector<VkCommandBuffer> &&getExecutableCommandBuffers();
 
+  bool needCommit() const { return (cur_primary_command_buffer_ != nullptr) || (executable_command_buffers_.size()!=0); }
+  
   VkResult commitExecutableCommandBuffers(const CommandQueue * queue, const std::shared_ptr<Semaphore> &signal_semaphore);
 
   std::shared_ptr<Fence> getCommandBufferAvailableFence() const {

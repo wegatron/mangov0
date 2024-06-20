@@ -268,7 +268,7 @@ void MenuUI::construct() {
         std::string file_path =
             ImGuiFileDialog::Instance()->GetFilePathName();
         // import scene
-        g_engine.getEventSystem()->syncDispatch(std::make_shared<ImportSceneEvent>(file_path));
+        g_engine.getEventSystem()->asyncDispatch(std::make_shared<ImportSceneEvent>(file_path));
       }
 
       // close
