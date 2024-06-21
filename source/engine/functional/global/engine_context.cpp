@@ -2,6 +2,7 @@
 #include <engine/functional/global/engine_context.h>
 #include <engine/functional/render/render_system.h>
 #include <engine/functional/world/world.h>
+#include <engine/functional/global/resource_binding_mgr.h>
 #include <engine/platform/file_system.h>
 #include <engine/platform/glfw_window.h>
 #include <engine/utils/base/timer.h>
@@ -11,6 +12,7 @@
 #include <engine/utils/vk/stage_pool.h>
 #include <engine/utils/vk/vk_driver.h>
 #include <engine/utils/base/macro.h>
+
 
 namespace mango {
 EngineContext g_engine;
@@ -49,6 +51,9 @@ bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
   // asset manager
   asset_manager_ = std::make_shared<AssetManager>();
   asset_manager_->init();
+
+  // resource binding manager
+  resource_binding_mgr_ = std::make_shared<ResourceBindingMgr>(driver_);
 
   // render system
   render_system_ = std::make_shared<RenderSystem>();

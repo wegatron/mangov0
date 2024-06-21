@@ -23,11 +23,15 @@ public:
         const std::shared_ptr<AssetTexture> &texture) {
         metallic_roughness_occlution_texture_ = texture;
     }
-private:
-  UMaterial material_;
-  std::shared_ptr<AssetTexture> albedo_texture_;
-  std::shared_ptr<AssetTexture> normal_texture_;
-  std::shared_ptr<AssetTexture> emissive_texture_;
-  std::shared_ptr<AssetTexture> metallic_roughness_occlution_texture_;
+  private:
+    UMaterial material_;
+    std::shared_ptr<AssetTexture> albedo_texture_;
+    std::shared_ptr<AssetTexture> normal_texture_;
+    std::shared_ptr<AssetTexture> emissive_texture_;
+    std::shared_ptr<AssetTexture> metallic_roughness_occlution_texture_;
+
+    std::shared_ptr<DescriptorSet> descriptor_set_;
+    std::shared_ptr<Buffer> material_buffer_; // uniform buffer
+    uint32_t offset_{0};
 };
 } // namespace mango

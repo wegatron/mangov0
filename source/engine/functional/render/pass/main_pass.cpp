@@ -72,6 +72,8 @@ void MainPass::init() {
 
   // using default color blend state: not blend
   // create descriptor set
+  const auto &mat_set = pipeline_->getPipelineLayout()->getDescriptorSetLayout(1);
+  
 }
 
 void MainPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
