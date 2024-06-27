@@ -65,7 +65,7 @@ void VkDriver::initDevice() {
   physical_device_ = ph_device.getHandle();
   auto graphics_queue_family_index = ph_device.getGraphicsQueueFamilyIndex();
   // get minUniformBufferOffsetAlignment
-  ph_device.getProperties().limits.minUniformBufferOffsetAlignment;
+  min_ubo_align_size_ = ph_device.getProperties().limits.minUniformBufferOffsetAlignment;
 
 // for print out memory infos
 #ifndef NDEBUG

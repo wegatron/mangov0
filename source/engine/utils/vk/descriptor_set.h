@@ -31,7 +31,7 @@ private:
   std::shared_ptr<VkDriver> driver_;
   VkDescriptorPoolCreateFlags flags_;
   VkDescriptorPool descriptor_pool_{VK_NULL_HANDLE};
-  std::vector<std::shared_ptr<DescriptorSet>> descriptor_sets_;
+  std::vector<std::weak_ptr<DescriptorSet>> descriptor_sets_;
 };
 
 class DescriptorSet {

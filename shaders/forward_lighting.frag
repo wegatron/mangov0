@@ -1,9 +1,9 @@
 #version 450
 #extension GL_GOOGLE_include_directive : enable
 
-#include "material.h"
+#include "shader_structs.h"
 
-layout(set = 1, binding = 0, std140)  uniform _UMaterial {
+layout(set = 1, binding = 0)  uniform _UMaterial {
 	UMaterial material;
 };
 
@@ -16,6 +16,6 @@ void main()
 {
 	//MaterialInfo mat_info = calc_material_info();
 	//o_color = calc_pbr(mat_info);
-	o_color = texture(material.base_color, uv);
-	// o_color = vec4(1.0, 0.0, 0.0, 1.0);
+	//o_color = texture(material.base_color, uv);
+	o_color = vec4(1.0, 0.0, 0.0, 1.0);
 }

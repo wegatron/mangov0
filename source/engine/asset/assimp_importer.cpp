@@ -137,6 +137,7 @@ processMaterials(const aiScene *a_scene, const std::string &dir)
       a_mat->Get(AI_MATKEY_ROUGHNESS_FACTOR, value);
       u_material.metallic_roughness_occlution[1] = value;
     }
+    cur_mat->inflate();
   }
   return ret_mats;
 }

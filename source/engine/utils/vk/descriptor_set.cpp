@@ -29,7 +29,6 @@ DescriptorPool::~DescriptorPool() {
           "descriptor pool reseting with descriptor set is still in use!");
     }
   }
-  descriptor_sets_.clear();
   // all descriptor sets allocated from the pool are implicitly freed and become
   // invalid.
   vkDestroyDescriptorPool(driver_->getDevice(), descriptor_pool_, nullptr);
