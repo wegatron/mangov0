@@ -1,5 +1,6 @@
 #include <engine/utils/base/error.h>
 #include <engine/utils/vk/pipeline_layout.h>
+#include <engine/utils/vk/resource_cache.h>
 #include <stdexcept>
 
 namespace mango {
@@ -53,15 +54,16 @@ PipelineLayout::PipelineLayout(
     }
   }
 
+  auto rs_cache = g_engine.getResourceCache();
   // create descriptor set layouts
+  auto num_ds_set = max_set_index + 1;
   std::vector<VkDescriptorSetLayout> descriptor_set_layout_handles(
-      max_set_index + 1);
-  descriptor_set_layouts_.resize(max_set_index + 1);
-  for (auto itr = set_resources_.begin(); itr != set_resources_.end(); ++itr) {
-    auto set_index = itr->first;
-    auto &set_resources = itr->second;
-    descriptor_set_layouts_[set_index] = std::make_shared<DescriptorSetLayout>(
-        driver, set_index, set_resources.data(), set_resources.size());
+      num_ds_set, VK_NULL_HANDLE);
+  descriptor_set_layouts_.resize(num_ds_set, nullptr);
+  for (auto set_index = 0; set_index < num_ds_set; ++set_index) {
+    auto &set_resources = set_resources_[set_index]; // binding a empry descriptor set if no resources
+    descriptor_set_layouts_[set_index] =
+        rs_cache->requestDescriptorSetLayout(driver, set_resources);
     descriptor_set_layout_handles[set_index] =
         descriptor_set_layouts_[set_index]->getHandle();
   }
@@ -86,12 +88,7 @@ PipelineLayout::~PipelineLayout() {
 
 const DescriptorSetLayout &
 PipelineLayout::getDescriptorSetLayout(const uint32_t set_index) const {
-  auto itr = std::find_if(
-      descriptor_set_layouts_.begin(), descriptor_set_layouts_.end(),
-      [set_index](const std::shared_ptr<DescriptorSetLayout> &e) {
-        return e->getSetIndex() == set_index;
-      });
-  assert(itr != descriptor_set_layouts_.end());
-  return *(*itr);
+  assert(set_index < descriptor_set_layouts_.size());
+  return *descriptor_set_layouts_[set_index];
 }
 } // namespace mango

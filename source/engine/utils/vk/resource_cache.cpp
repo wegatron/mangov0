@@ -48,11 +48,10 @@ std::shared_ptr<Shader> ResourceCache::requestShader(
 }
 
 std::shared_ptr<DescriptorSetLayout> ResourceCache::requestDescriptorSetLayout(
-    const std::shared_ptr<VkDriver> &driver, const size_t set_index,
+    const std::shared_ptr<VkDriver> &driver,
     const std::vector<ShaderResource> &resources) {
   size_t hash_code = 0;
   for (const auto &rs : resources) {
-    assert(rs.set == set_index || rs.set == 0XFFFFFFFF);
     auto tmp_hash_code = ShaderResource::hash(rs);
     hash_combine(hash_code, tmp_hash_code);
   }
@@ -62,7 +61,7 @@ std::shared_ptr<DescriptorSetLayout> ResourceCache::requestDescriptorSetLayout(
     return itr->second;
 
   auto descriptor_set_layout = std::make_shared<DescriptorSetLayout>(
-      driver, set_index, resources.data(), resources.size());
+      driver, resources.data(), resources.size());
   state_.descriptor_set_layouts[hash_code] = descriptor_set_layout;
   return descriptor_set_layout;
 }

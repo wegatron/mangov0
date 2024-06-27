@@ -95,7 +95,6 @@ public:
 
   std::shared_ptr<DescriptorSetLayout>
   requestDescriptorSetLayout(const std::shared_ptr<VkDriver> &driver,
-                             const size_t set_index,
                              const std::vector<ShaderResource> &resources);
 
   std::shared_ptr<PipelineLayout> requestPipelineLayout(

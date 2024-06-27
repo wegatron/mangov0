@@ -1,0 +1,1 @@
+https://chunkstories.xyz/blog/a-note-on-descriptor-indexing/

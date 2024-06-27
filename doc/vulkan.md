@@ -237,3 +237,7 @@ Vulkan中的三种同步对象:
 
 #### 渲染过程
 ![](render_process.png)
+
+## Reference
+
+limit: https://vulkan.gpuinfo.org/displaydevicelimit.php?platform=macos&name=minUniformBufferOffsetAlignment

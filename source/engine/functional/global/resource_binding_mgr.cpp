@@ -48,7 +48,7 @@ ShaderResource kStandardMaterialResources[] = {
   }  
 };
 ResourceBindingMgr::ResourceBindingMgr(const std::shared_ptr<VkDriver> &driver)
-    : driver_(driver), standard_material_layout_(driver, 1, kStandardMaterialResources,
+    : driver_(driver), standard_material_layout_(driver, kStandardMaterialResources,
                                 sizeof(kStandardMaterialResources) /
                                     sizeof(ShaderResource)) {
   VkDescriptorPoolSize pool_sizes[] = {
