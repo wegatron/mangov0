@@ -3,6 +3,7 @@
 #include <engine/functional/global/engine_context.h>
 #include <engine/utils/event/event_system.h>
 #include <engine/utils/base/macro.h>
+#include <engine/utils/vk/vk_driver.h>
 #include <queue>
 
 
@@ -123,7 +124,7 @@ void World::updateCamera()
   auto view = getCameras();
   for (auto entity : view) {
     auto &camera = view.get<CameraComponent>(entity);
-    auto &tr = view.get<std::shared_ptr<TransformRelationship>>(entity);
+    auto &tr = view.get<TransformComponent>(entity);
     camera.setViewMatrix(tr->gtransform.inverse().matrix());
   }
 

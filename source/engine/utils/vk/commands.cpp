@@ -260,23 +260,30 @@ void CommandBuffer::setScissor(
   vkCmdSetScissor(command_buffer_, 0, scissors.size(), scissors.begin());
 }
 
-void CommandBuffer::bindPipelineWithDescriptorSets(
-    const std::shared_ptr<Pipeline> &pipeline,
-    const std::initializer_list<std::shared_ptr<DescriptorSet>>
-        &descriptor_sets,
-    const std::initializer_list<uint32_t> &dynamic_offsets,
-    const uint32_t first_set) {
+void CommandBuffer::bindPipeline(
+    const std::shared_ptr<Pipeline> &pipeline)
+{
   auto pipeline_bind_point = pipeline->getType() == Pipeline::Type::GRAPHICS
                                  ? VK_PIPELINE_BIND_POINT_GRAPHICS
                                  : VK_PIPELINE_BIND_POINT_COMPUTE;
   vkCmdBindPipeline(command_buffer_, pipeline_bind_point,
                     pipeline->getHandle());
-  if (descriptor_sets.size() == 0)
-    return;
+}
+
+void CommandBuffer::bindDescriptorSets(
+    const std::shared_ptr<Pipeline> &pipeline,
+    const std::initializer_list<std::shared_ptr<DescriptorSet>>
+        &descriptor_sets,
+    const std::initializer_list<uint32_t> &dynamic_offsets,
+    const uint32_t first_set) {
+  if (descriptor_sets.size() == 0) return;
   std::vector<VkDescriptorSet> ds(descriptor_sets.size());
   for (auto i = 0; i < descriptor_sets.size(); ++i) {
     ds[i] = descriptor_sets.begin()[i]->getHandle();
   }
+  auto pipeline_bind_point = pipeline->getType() == Pipeline::Type::GRAPHICS
+                                 ? VK_PIPELINE_BIND_POINT_GRAPHICS
+                                 : VK_PIPELINE_BIND_POINT_COMPUTE;  
   vkCmdBindDescriptorSets(command_buffer_, pipeline_bind_point,
                           pipeline->getPipelineLayout()->getHandle(), first_set,
                           descriptor_sets.size(), ds.data(),

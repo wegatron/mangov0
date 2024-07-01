@@ -65,9 +65,10 @@ public:
   // https://arm-software.github.io/vulkan_best_practice_for_mobile_developers/samples/performance/command_buffer_usage/command_buffer_usage_tutorial.html#allocate-and-free
   /**
    * \brief Command buffer reset mode
-   * AlwaysAllocate: allocate new command buffer every time, reset will clear all command buffer
-   * ResetIndividually: reset command buffer individually, save command buffer's ptr in pool, when call reset, reset all command buffers which ref count is 1
-   * ResetPool: reset all command buffers in pool
+   * AlwaysAllocate: allocate new command buffer every time, reset will clear
+   * all command buffer ResetIndividually: reset command buffer individually,
+   * save command buffer's ptr in pool, when call reset, reset all command
+   * buffers which ref count is 1 ResetPool: reset all command buffers in pool
    */
   enum class CmbResetMode {
     AlwaysAllocate = 0,
@@ -129,13 +130,15 @@ public:
 
   void setScissor(const std::initializer_list<VkRect2D> &scissors);
 
-  void bindPipelineWithDescriptorSets(
-      const std::shared_ptr<Pipeline> &pipeline,
-      const std::initializer_list<std::shared_ptr<DescriptorSet>>
-          &descriptor_sets,
-      const std::initializer_list<uint32_t> &dynamic_offsets,
-      const uint32_t first_set);
+  void bindPipeline(const std::shared_ptr<Pipeline> &pipeline);
 
+  void
+  bindDescriptorSets(const std::shared_ptr<Pipeline> &pipeline,
+                     const std::initializer_list<std::shared_ptr<DescriptorSet>>
+                         &descriptor_sets,
+                     const std::initializer_list<uint32_t> &dynamic_offsets,
+                     const uint32_t first_set);
+  
   void bindVertexBuffers(
       const std::initializer_list<std::shared_ptr<Buffer>> &buffer,
       const std::initializer_list<VkDeviceSize> &offsets,

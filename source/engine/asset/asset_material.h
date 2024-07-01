@@ -29,6 +29,10 @@ public:
 
   void inflate();
 
+  std::shared_ptr<DescriptorSet> getDescriptorSet() const {
+    return descriptor_set_;
+  }
+
 private:
   UMaterial material_;
   std::shared_ptr<AssetTexture> albedo_texture_;

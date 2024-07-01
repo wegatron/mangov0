@@ -5,13 +5,14 @@
 
 #include <engine/functional/component/component_camera.h>
 #include <engine/functional/component/component_transform.h>
-#include <engine/functional/component/component_mesh.h>
-#include <engine/asset/asset_material.h>
+#include <engine/functional/component/components.h>
 #include <engine/functional/global/engine_context.h>
-
-// #include <engine/functional/component/material.h>
+#include <engine/asset/asset_material.h>
 #include <engine/asset/url.h>
 #include <shaders/include/shader_structs.h>
+#include <engine/utils/vk/vk_constants.h>
+#include <engine/utils/vk/vk_driver.h>
+
 
 
 namespace mango {
@@ -73,8 +74,7 @@ public:
   }
 
   auto getStaticMeshes() {
-    return entities_.view<std::string, std::shared_ptr<TransformRelationship>,
-                          StaticMeshComponent>();
+    return entities_.view<std::string, TransformComponent, StaticMeshComponent, MaterialComponent>();
   }
 
   void enqueue(const std::shared_ptr<TransformRelationship> &tr,

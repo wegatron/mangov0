@@ -8,7 +8,6 @@
 
 namespace mango {
 class World;
-class MaterialComponent;
 class TransformRelationship;
 class CommandBuffer;
 class CameraComponent;

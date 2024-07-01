@@ -2,6 +2,8 @@
 #include <engine/functional/render/pass/main_pass.h>
 #include <engine/functional/render/pass/ui_pass.h>
 #include <engine/functional/render/render_system.h>
+#include <engine/asset/asset_mesh.h>
+#include <engine/asset/asset_material.h>
 #include <engine/utils/event/event_system.h>
 #include <engine/utils/vk/commands.h>
 #include <engine/functional/world/world.h>
@@ -45,7 +47,7 @@ void RenderSystem::collectRenderDatas() {
   // std::cout << "view_mat:" << view_mat << std::endl;
   // std::cout << "proj_view_mat:" << proj_view_mat << std::endl;
   // std::cout << "--------------------------------" << std::endl;
-  for (auto [entity, name, tr, mesh] : static_meshes_view.each()) {
+  for (auto [entity, name, tr, mesh, material] : static_meshes_view.each()) {
     assert(mesh != nullptr);
     TransformPCO transform_pco{
       .m = tr->gtransform,
@@ -56,6 +58,7 @@ void RenderSystem::collectRenderDatas() {
     auto data = StaticMeshRenderData{
       .vertex_buffer = mesh->getVertexBuffer(),
       .index_buffer = mesh->getIndexBuffer(),
+      .material_descriptor_set = material->getDescriptorSet(),
       .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
       .transform_pco = transform_pco
     };

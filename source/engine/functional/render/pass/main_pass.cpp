@@ -109,8 +109,10 @@ void MainPass::draw(
     const std::shared_ptr<CommandBuffer> &cmd_buffer,
     const std::vector<StaticMeshRenderData> &static_meshe_datas) {
 
-  cmd_buffer->bindPipelineWithDescriptorSets(pipeline_, {}, {}, 0);
+  cmd_buffer->bindPipeline(pipeline_);
   for (auto &data : static_meshe_datas) {
+    // descriptor set layout compatibility: https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#descriptorsets-compatibility
+    cmd_buffer->bindDescriptorSets(pipeline_, {data.material_descriptor_set}, {}, 1);
     cmd_buffer->pushConstants(pipeline_, VK_SHADER_STAGE_VERTEX_BIT, 0,
                               sizeof(TransformPCO), &data.transform_pco);
     cmd_buffer->bindVertexBuffers({data.vertex_buffer}, {0}, 0);
