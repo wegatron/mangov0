@@ -35,13 +35,15 @@ public:
     KHR_SWAPCHAIN = 9,
     KHR_UNIFORM_BUFFER_STANDARD_LAYOUT = 10,
     VK_KHR_SHADER_NON_SEMANTIC_INFO = 11,
+    DESCRIPTOR_INDEX = 12,
+    VK_EXT_ROBUSTNESS_2 = 13,
 
     // VMA support these extensions
-    KHR_GET_MEMORY_REQUIREMENTS_2 = 12,
-    KHR_DEDICATED_ALLOCATION = 13,
-    KHR_BUFFER_DEVICE_ADDRESS = 14,
-    KHR_DEVICE_GROUP = 15,
-    DEVICE_EXTENSION_END_PIVOT = 16,
+    KHR_GET_MEMORY_REQUIREMENTS_2 = 14,
+    KHR_DEDICATED_ALLOCATION = 15,
+    KHR_BUFFER_DEVICE_ADDRESS = 16,
+    KHR_DEVICE_GROUP = 17,
+    DEVICE_EXTENSION_END_PIVOT = 18,
 
     //// Device features
     MAX_FEATURE_EXTENSION_COUNT
@@ -63,11 +65,13 @@ public:
       VK_KHR_SWAPCHAIN_EXTENSION_NAME,                      // 9
       VK_KHR_UNIFORM_BUFFER_STANDARD_LAYOUT_EXTENSION_NAME, // 10
       VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME,       // 11
-      VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,      // 12
-      VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME,           // 13
-      VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,          // 14
-      VK_KHR_DEVICE_GROUP_EXTENSION_NAME,                   // 15
-      "DEVICE_EXTENSION_END_PIVOT",                         // 16
+      VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,            // 12
+      VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,                   // 13
+      VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,      // 14
+      VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME,           // 15
+      VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,          // 16
+      VK_KHR_DEVICE_GROUP_EXTENSION_NAME,                   // 17
+      "DEVICE_EXTENSION_END_PIVOT",                         // 18
   };
 
   VkConfig()
@@ -145,11 +149,14 @@ public:
         FeatureExtension::KHR_DEVICE_GROUP_CREATION)] = EnableState::REQUIRED;
     enableds_[static_cast<uint32_t>(FeatureExtension::KHR_DEVICE_GROUP)] =
         EnableState::REQUIRED;
+    enableds_[static_cast<uint32_t>(FeatureExtension::DESCRIPTOR_INDEX)] = EnableState::REQUIRED;
 
     // enableds_[static_cast<uint32_t>(FeatureExtension::KHR_UNIFORM_BUFFER_STANDARD_LAYOUT)]
     // = EnableState::REQUIRED;
     enableds_[static_cast<uint32_t>(
         FeatureExtension::VK_KHR_SHADER_NON_SEMANTIC_INFO)] =
+        EnableState::REQUIRED;
+    enableds_[static_cast<uint32_t>(FeatureExtension::VK_EXT_ROBUSTNESS_2)] =
         EnableState::REQUIRED;
   }
 

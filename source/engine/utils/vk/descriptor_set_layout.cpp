@@ -69,9 +69,9 @@ DescriptorSetLayout::DescriptorSetLayout(
         resource.type, resource.mode == ShaderResourceMode::Dynamic);
 
     if (resource.mode == ShaderResourceMode::UpdateAfterBind)
-      binding_flags_.push_back(VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT_EXT);
+      binding_flags_.push_back(VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT_EXT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
     else
-      binding_flags_.push_back(0);
+      binding_flags_.push_back(VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
 
     VkDescriptorSetLayoutBinding layout_binding{};
     layout_binding.binding = resource.binding;

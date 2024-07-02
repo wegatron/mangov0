@@ -24,13 +24,44 @@ uint32_t Vk13Config::checkSelectAndUpdate(
       EnableState::DISABLED) {
     auto ext_feature =
         std::make_shared<VkPhysicalDeviceBufferDeviceAddressFeaturesKHR>();
-    ext_feature->sType =
-        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_KHR;
     extension_features_.emplace(
         VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_KHR,
         ext_feature);
+    ext_feature->sType =
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_KHR;
     ext_feature->pNext = extension_features_list_;
     extension_features_list_ = ext_feature.get();
+  }
+
+  if (enableds_[static_cast<uint32_t>(FeatureExtension::DESCRIPTOR_INDEX)] !=
+      EnableState::DISABLED) {
+    auto ext_feature =
+        std::make_shared<VkPhysicalDeviceDescriptorIndexingFeatures>();
+    extension_features_.emplace(
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES,
+        ext_feature);
+    ext_feature->sType =
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
+    ext_feature->descriptorBindingPartiallyBound = VK_TRUE;
+    ext_feature->pNext = extension_features_list_;
+    extension_features_list_ = ext_feature.get();
+  }
+
+  if (enableds_[static_cast<uint32_t>(FeatureExtension::VK_EXT_ROBUSTNESS_2)] !=
+      EnableState::DISABLED) {
+    auto ext_feature =
+        std::make_shared<VkPhysicalDeviceRobustness2FeaturesEXT>();
+    extension_features_.emplace(
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
+        ext_feature);
+    ext_feature->sType =
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
+    ext_feature->nullDescriptor = VK_TRUE;
+    ext_feature->pNext = extension_features_list_;
+    extension_features_list_ = ext_feature.get();
+    
+    // though robustBufferAccess2 is false, but still enabled, so set  robustBufferAccess here
+    device_features_.robustBufferAccess = VK_TRUE;
   }
 
   uint32_t selected_physical_device_index = -1;
