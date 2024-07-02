@@ -16,9 +16,9 @@ https://drive.google.com/file/d/1GvQA9yCLWtsdc3wsg7r0WjV07JqKn63A/view?usp=shari
     https://github.com/taskflow/taskflow.git -->
 
 ## TODO List
-- [ ] mesh camera transformation basic pass rendering fine
+- [x] mesh camera transformation basic pass rendering fine
 - [ ] trackball
-- [ ] material data
+- [x] material data
 - [ ] brdf (point light, directional light)
 - [ ] shadow
 - [ ] IBL

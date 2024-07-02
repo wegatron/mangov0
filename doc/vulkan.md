@@ -214,6 +214,9 @@ classDiagram
 * 更新和复用
     参考[writing-an-efficient-vulkan-renderer](https://zeux.io/2020/02/27/writing-an-efficient-vulkan-renderer/), 为了更好的性能, 避免不必要的DescriptorSet创建开销. 对OBJECT_SET_INDEX(MeshParamsPool), MATERIAL_SET_INDEX(MatGpuResourcePool), GLOBAL_SET_INDEX(AppContext.descriptor_pool)分别设置了不同规格的DescriptorSetPool, 并对使用完的DescriptorSet进行缓存复用. 
 
+* Partially bind and nullDescriptor
+    参考[descriptor update ignore entries](https://github.com/KhronosGroup/Vulkan-Docs/issues/1971). shader根据uniform buffer...的一些flag, 选择性地读取一些资源.
+
 #### CommandPool & CommandBuffer
 与DescriptorSet类似, CommandBuffer同Pool中去申请以提升性能. 在这里每一个FrameBuffer绑定一个CommandPool, 在每帧开始时将CommandPool进行Reset(所有从中创建的CommandBuffer返回到initial state), 然后取一个已经创建或新建(若不足)一个CommandBuffer进行命令录制.
 ![](cmd_buf_state.png)

@@ -46,7 +46,7 @@ classDiagram
     Mesh --o Entity
     TransformRelationship --o Entity
     Camera --o Entity
-    Light --o Entity
+    Light --o Entity    
 ```
 
 [为什么使用ECS](why_ecs.md)
