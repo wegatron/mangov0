@@ -47,6 +47,7 @@ uint32_t Vk13Config::checkSelectAndUpdate(
     extension_features_list_ = ext_feature.get();
   }
 
+  // refer to: https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#features-nullDescriptor
   if (enableds_[static_cast<uint32_t>(FeatureExtension::VK_EXT_ROBUSTNESS_2)] !=
       EnableState::DISABLED) {
     auto ext_feature =
@@ -60,7 +61,8 @@ uint32_t Vk13Config::checkSelectAndUpdate(
     ext_feature->pNext = extension_features_list_;
     extension_features_list_ = ext_feature.get();
     
-    // though robustBufferAccess2 is false, but still enabled, so set  robustBufferAccess here
+    // though robustBufferAccess2 is false, but still enabled(maybe a bug),
+    // so set  robustBufferAccess here
     device_features_.robustBufferAccess = VK_TRUE;
   }
 

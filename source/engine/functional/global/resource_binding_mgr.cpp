@@ -7,7 +7,7 @@ namespace mango {
 constexpr uint32_t kMaxMaterialCount = 100;
 ShaderResource kStandardMaterialResources[] = {
   {
-    .stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+    .stages = VK_SHADER_STAGE_FRAGMENT_BIT,
     .type = ShaderResourceType::BufferUniform,
     .mode = ShaderResourceMode::Static,
     .set = 1,

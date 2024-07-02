@@ -100,6 +100,7 @@ void EngineContext::destroy() {
   resource_cache_.reset();
   render_system_.reset();
   world_.reset();
+  resource_binding_mgr_.reset();
   driver_->destroy();
   window_.reset();
   event_system_.reset();
