@@ -3,7 +3,6 @@
 ## Design
 ![archi](imgs/mango_archi.svg)
 
-
 * platform
     * file system
         provides ability to read, write, create, remove, copy file
@@ -19,8 +18,8 @@
     * base
         macros and some helper functions.
 
-    
-    
+实现细节:
+* [Rendering System]()
 
 ## setup
 run `prepare.sh` to download and build thirdparty libs.

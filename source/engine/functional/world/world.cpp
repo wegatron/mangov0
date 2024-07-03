@@ -121,12 +121,12 @@ void World::updateTransform()
 
 void World::updateCamera()
 {
-  auto view = getCameras();
-  for (auto entity : view) {
-    auto &camera = view.get<CameraComponent>(entity);
-    auto &tr = view.get<TransformComponent>(entity);
-    camera.setViewMatrix(tr->gtransform.inverse().matrix());
-  }
+  // auto view = getCameras();
+  // for (auto entity : view) {
+  //   auto &camera = view.get<CameraComponent>(entity);
+  //   auto &tr = view.get<TransformComponent>(entity);
+  //   camera.setViewMatrix(tr->gtransform.inverse().matrix());
+  // }
 
   if(focus_camera2world_)
   {

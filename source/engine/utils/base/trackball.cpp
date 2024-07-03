@@ -2,6 +2,7 @@
 #include <iostream>
 
 namespace mango {
+
 // according to https://www.khronos.org/opengl/wiki/Object_Mouse_Trackball
 Eigen::Vector3f tbc(const Eigen::Vector2f &v) {
   float l = v.norm();
@@ -9,7 +10,7 @@ Eigen::Vector3f tbc(const Eigen::Vector2f &v) {
   return Eigen::Vector3f(v.x(), v.y(), z);
 }
 
-void trackballRotate(Eigen::Matrix4f &view_mat,
+void doRotate(Eigen::Matrix4f &view_mat,
                      const Eigen::Vector4f &normalized_mouse_pos) {
   Eigen::Vector3f prev_tbc = tbc(normalized_mouse_pos.head<2>());
   Eigen::Vector3f cur_tbc = tbc(normalized_mouse_pos.tail<2>());
@@ -23,5 +24,10 @@ void trackballRotate(Eigen::Matrix4f &view_mat,
     Eigen::Matrix3f r = view_mat.block<3, 3>(0, 0);
     view_mat.block<3, 3>(0, 0) = rotate * r;
   }
+}
+
+void doPan(Eigen::Matrix4f &view_mat, const Eigen::Vector4f &normalized_mouse_pos)
+{
+  
 }
 } // namespace mango

@@ -15,7 +15,9 @@ public:
 
   void setName(const std::string &name) { name_ = name; }
 
-  // default z: front, x: right, y: up
+  //// for view matrix stuff
+  
+  // default -z: front, x: right, y: up
   void setLookAt(const Eigen::Vector3f &eye, const Eigen::Vector3f &up,
                  const Eigen::Vector3f &center) {
     dis_ = (eye - center).norm();
@@ -47,6 +49,43 @@ public:
     view_mat_.block<3, 3>(0, 0) = r;
   }
 
+  const Eigen::Matrix4f &getViewMatrix() const noexcept { return view_mat_; }
+
+  void setViewMatrix(const Eigen::Matrix4f &view_mat) {
+    view_mat_ = view_mat;
+  }
+
+  const float getDis() const noexcept { return dis_; }
+
+  const Eigen::Vector3f getCameraPos() const noexcept {
+    return view_mat_.block<3, 3>(0, 0).transpose() *
+           -view_mat_.block<3, 1>(0, 3); // [R T], 这里T是相机坐标系下(旋转之后)的偏移量. 因此在世界坐标系下是-R^T
+  }
+
+  const Eigen::Vector3f getCameraLookAt() const noexcept {
+    return view_mat_.block<3,3>(0,0).transpose() * Eigen::Vector3f(0, 0, -1); // -z 向前, 再转换到世界坐标系
+  }
+
+  void rotate(const Eigen::Vector4f &normalized_mouse_pos)
+  {
+    doRotate(view_mat_, normalized_mouse_pos);     
+  }
+
+  /**
+   * @brief 调整相机与目标的距离
+   */
+  void adjustDistance(const float delta)
+  {
+    doZoom(view_mat_, dis_, delta * 0.3f);
+  }
+
+  void pan(const Eigen::Vector4f &normalized_mouse_pos)
+  {
+    doPan(view_mat_, normalized_mouse_pos);
+  }
+
+  //// for projection stuff  
+
   /**
    * \param near The near clipping plane distance from the camera < 0
    * \param far The far clipping plane distance from the camera < 0
@@ -73,23 +112,6 @@ public:
     dirty_proj_ = true;
   }
 
-  void setExposure(const float aperture, const float shutter_speed,
-                   const float sensitivity) {
-    aperture_ = aperture;
-    shutter_speed_ = shutter_speed;
-    sensitivity_ = sensitivity;
-    assert(shutter_speed_ > 1e-6f);
-    assert(sensitivity_ > 1.0f);
-    ev100_ = std::log2f(aperture_ * aperture_ / shutter_speed_ * 100.0f /
-                        sensitivity_);
-  }
-
-  float ev100() const noexcept { return ev100_; }
-
-  const Eigen::Matrix4f &getViewMatrix() const noexcept { return view_mat_; }
-
-  void setViewMatrix(const Eigen::Matrix4f &view_mat) { view_mat_ = view_mat; }
-
   /**
    * \brief Get the projection matrix of the camera, right-handed coordinate
    * system depth: [0, 1] \return The projection matrix
@@ -105,19 +127,22 @@ public:
         0.0f, 0.0f, -1.0f, 0.0f;
     dirty_proj_ = false;
     return proj_mat_;
+  }  
+
+  //// for exposure stuff
+
+  void setExposure(const float aperture, const float shutter_speed,
+                   const float sensitivity) {
+    aperture_ = aperture;
+    shutter_speed_ = shutter_speed;
+    sensitivity_ = sensitivity;
+    assert(shutter_speed_ > 1e-6f);
+    assert(sensitivity_ > 1.0f);
+    ev100_ = std::log2f(aperture_ * aperture_ / shutter_speed_ * 100.0f /
+                        sensitivity_);
   }
 
-  const float getDis() const noexcept { return dis_; }
-
-  const Eigen::Vector3f getCameraPos() const noexcept {
-    return view_mat_.block<3, 3>(0, 0).transpose() *
-           -view_mat_.block<3, 1>(0, 3);
-  }
-
-  void rotate(const Eigen::Vector4f &normalized_mouse_pos)
-  {
-      trackballRotate(view_mat_, normalized_mouse_pos);     
-  }
+  float ev100() const noexcept { return ev100_; }
 
 private:
   std::string name_;
