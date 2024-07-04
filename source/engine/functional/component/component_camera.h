@@ -76,12 +76,12 @@ public:
    */
   void adjustDistance(const float delta)
   {
-    doZoom(view_mat_, dis_, delta * 0.3f);
+    doZoom(view_mat_, dis_, delta * 0.1f);
   }
 
   void pan(const Eigen::Vector4f &normalized_mouse_pos)
   {
-    doPan(view_mat_, normalized_mouse_pos);
+    doPan(view_mat_, aspect_, dis_, normalized_mouse_pos);
   }
 
   //// for projection stuff  
@@ -150,7 +150,7 @@ private:
   float near_{-0.1f};
   float far_{-1000.0f};
   float fovy_{M_PI * 0.333f};
-  float aspect_{1.0f};
+  float aspect_{1.0f}; //!< width / height
   float dis_{1.0f};
   float aperture_{1.0f};
   float shutter_speed_{1.0f};

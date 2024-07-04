@@ -82,8 +82,10 @@ void MainPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
   color_img_view->transitionLayout(cmd_buffer->getHandle(),
                                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
   cmd_buffer->beginRenderPass(render_pass_, frame_buffer_);
-  cmd_buffer->setViewPort({VkViewport{0, 0, static_cast<float>(width_),
-                                      static_cast<float>(height_), 0.f, 1.f}});
+  cmd_buffer->setViewPort({VkViewport{0, static_cast<float>(height_), static_cast<float>(width_),
+                                      -static_cast<float>(height_), 0.f, 1.f}});
+  // cmd_buffer->setViewPort({VkViewport{0, 0, static_cast<float>(width_),
+  //                                     static_cast<float>(height_), 0.f, 1.f}});  
   cmd_buffer->setScissor({VkRect2D{{0, 0}, {width_, height_}}});
   if (render_data_ != nullptr)
     draw(cmd_buffer, render_data_->static_mesh_render_data);

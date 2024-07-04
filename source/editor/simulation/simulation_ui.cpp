@@ -377,6 +377,8 @@ void SimulationUI::updateCamera() {
     Eigen::Vector4f pos(cpos.x()-delta.x, cpos.y()-delta.y,
                         cpos.x(), cpos.y());
     pos = (2.0f / normalize_l) * pos;
+    pos.y() = -pos.y();
+    pos.w() = -pos.w();
     default_camera.rotate(pos);
   }
 
@@ -400,6 +402,8 @@ void SimulationUI::updateCamera() {
     Eigen::Vector4f pos(cpos.x()-delta.x, cpos.y()-delta.y,
                         cpos.x(), cpos.y());
     pos = (2.0f / normalize_l) * pos;
+    pos.y() = -pos.y();
+    pos.w() = -pos.w();    
     default_camera.pan(pos);
   }
 }
