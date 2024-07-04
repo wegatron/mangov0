@@ -17,9 +17,10 @@ https://drive.google.com/file/d/1GvQA9yCLWtsdc3wsg7r0WjV07JqKn63A/view?usp=shari
 
 ## TODO List
 - [x] mesh camera transformation basic pass rendering fine
-- [ ] trackball
+- [x] trackball
 - [x] material data
-- [ ] brdf (point light, directional light)
+- [ ] brdf (point light)
+- [ ] brdf (directional light)
 - [ ] shadow
 - [ ] IBL
 - [ ] area light

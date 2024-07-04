@@ -36,6 +36,7 @@ void AssetTexture::load(uint32_t width, uint32_t height, stbi_uc *data) {
     throw std::runtime_error("failed to load texture");
   }
   layers_ = mip_levels_ = 1;
+  width_  = width; height_ = height;
   image_data_.resize(width_ * height_ * 4);
   memcpy(image_data_.data(), data, image_data_.size());
   inflate();
