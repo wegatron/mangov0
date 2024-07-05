@@ -19,7 +19,7 @@
         macros and some helper functions.
 
 实现细节:
-* [Rendering System]()
+* [Rendering System](render_system.md)
 
 ## setup
 run `prepare.sh` to download and build thirdparty libs.

@@ -3,6 +3,10 @@
 
 #include "shader_structs.h"
 
+layout(set=0, binding = 0) uniform _ULighting {
+	ULighting lighting;
+};
+
 layout(set = 1, binding = 0)  uniform _UMaterial {
 	UMaterial material;
 };

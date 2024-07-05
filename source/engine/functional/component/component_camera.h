@@ -130,18 +130,9 @@ public:
   }  
 
   //// for exposure stuff
-
-  void setExposure(const float aperture, const float shutter_speed,
-                   const float sensitivity) {
-    aperture_ = aperture;
-    shutter_speed_ = shutter_speed;
-    sensitivity_ = sensitivity;
-    assert(shutter_speed_ > 1e-6f);
-    assert(sensitivity_ > 1.0f);
-    ev100_ = std::log2f(aperture_ * aperture_ / shutter_speed_ * 100.0f /
-                        sensitivity_);
+  void setExposureValue(const float ev100) {
+    ev100_ = ev100;
   }
-
   float ev100() const noexcept { return ev100_; }
 
 private:
@@ -152,9 +143,7 @@ private:
   float fovy_{M_PI * 0.333f};
   float aspect_{1.0f}; //!< width / height
   float dis_{1.0f};
-  float aperture_{1.0f};
-  float shutter_speed_{1.0f};
-  float sensitivity_{100};
+
   float ev100_{0.0f};
 
   Eigen::Matrix4f proj_mat_;

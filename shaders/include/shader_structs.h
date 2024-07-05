@@ -24,41 +24,23 @@ struct UMaterial {
 };
 
 struct UDirectionalLight {
-  vec3 direction;
-  int cast_shadow;
-  vec3 color;
-  float padding0;
-  mat4 cascade_view_projs[SHADOW_CASCADE_NUM];
-  vec4 cascade_splits;
+  vec4 direction; //!< direction, last float for padding
+  vec4 illuminance; //!< lux(lm/m^2), last float for padding
 };
 
 struct UPointLight {
-  vec3 position;
-  float padding0; // inner_cutoff for SpotLight, cast shadow for PointLight
-
-  vec3 color;
-  float padding1; // outer_cutoff for SpotLight
-
-  float radius;
-  float linear_attenuation;
-  float quadratic_attenuation;
-  int cast_shadow;
+  vec4 position; //!< position, last float for padding
+  vec4 luminous_intensity; //!< candela(cd), last float for padding
 };
 
-struct ULight {
-  // camera
-  vec3 camera_pos;
-  float exposure;
-  mat4 camera_view;
-  mat4 inv_camera_view_proj;
-
+struct ULighting {
   // lights
   UDirectionalLight directional_light[MAX_DIRECTIONAL_LIGHT_NUM];
   UPointLight point_lights[MAX_POINT_LIGHT_NUM];
 
   int directional_light_num;
   int point_light_num;
-
+  float ev100;
   // // debug
   // vec3 camera_dir;
   // int shader_debug_option;

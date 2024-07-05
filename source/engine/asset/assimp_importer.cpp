@@ -223,7 +223,7 @@ bool AssimpImporter::import(const URL &url, World *world) {
   auto path = url.getAbsolute();
   const aiScene *a_scene =
       importer.ReadFile(path, aiProcessPreset_TargetRealtime_Quality |
-                                  aiProcess_GenBoundingBoxes);
+                                  aiProcess_GenBoundingBoxes | aiProcess_FlipUVs);
 
   std::size_t found = path.find_last_of("/\\");
   std::string dir =

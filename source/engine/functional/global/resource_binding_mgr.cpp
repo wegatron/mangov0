@@ -47,12 +47,24 @@ ShaderResource kStandardMaterialResources[] = {
     .name = "metallic_roughness_occlusion_sampler"
   }  
 };
+
+ShaderResource kLightingResources[] = {
+  {
+    .stages = VK_SHADER_STAGE_FRAGMENT_BIT,
+    .type = ShaderResourceType::BufferUniform,
+    .mode = ShaderResourceMode::Static,
+    .set = 0,
+    .binding = 0,
+    .name = "lighting_ubo"
+  }
+};
+
 ResourceBindingMgr::ResourceBindingMgr(const std::shared_ptr<VkDriver> &driver)
     : driver_(driver), standard_material_layout_(driver, kStandardMaterialResources,
                                 sizeof(kStandardMaterialResources) /
                                     sizeof(ShaderResource)) {
   VkDescriptorPoolSize pool_sizes[] = {
-      {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, kMaxMaterialCount},
+      {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, kMaxMaterialCount+1}, // add one for lighting ubo
       {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4*kMaxMaterialCount}, // albedo, normal, metallic_roughness_occlusion, emissive
   };
   desc_pool_ = std::make_unique<DescriptorPool>(
@@ -65,6 +77,12 @@ ResourceBindingMgr::ResourceBindingMgr(const std::shared_ptr<VkDriver> &driver)
       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
       0, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT,
       VMA_MEMORY_USAGE_AUTO_PREFER_HOST);
+  lighting_buffer_ = std::make_shared<Buffer>(
+      driver, sizeof(ULighting),
+      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+      0, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT,
+      VMA_MEMORY_USAGE_AUTO_PREFER_HOST);
+  //desc_pool_
 }
 
 std::tuple<std::shared_ptr<DescriptorSet>, std::shared_ptr<Buffer>, uint32_t>
@@ -93,5 +111,10 @@ ResourceBindingMgr::~ResourceBindingMgr()
 {
   umaterial_buffer_.reset();
   desc_pool_.reset();
+}
+
+std::pair<std::shared_ptr<DescriptorSet>, std::shared_ptr<Buffer>> ResourceBindingMgr::requestLighting()
+{
+
 }
 } // namespace mango
