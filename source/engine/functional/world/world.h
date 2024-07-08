@@ -24,6 +24,18 @@ struct MeshEntityData {
   std::shared_ptr<TransformRelationship> tr;
 };
 
+enum class LightType : uint16_t {
+  DIRECTIONAL = 0,
+  POINT = 1,
+  SPOT = 2,
+};
+
+struct LightEntityData {
+  std::string name;
+  std::shared_ptr<TransformRelationship> tr;
+  uint32_t light_info; //!< 16bit type, 16bit index of that type
+};
+
 struct ImportedSceneData {
   std::shared_ptr<TransformRelationship> scene_root_tr;
   std::vector<MeshEntityData> mesh_entity_datas;
