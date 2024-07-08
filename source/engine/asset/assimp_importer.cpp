@@ -150,7 +150,7 @@ std::pair<ULighting, std::vector<std::pair<const char *, uint32_t>>> processLigh
   ULighting lights;
   lights.directional_light_num = 0;
   lights.point_light_num = 0;
-  std::vector<std::pair<aiNode *, uint32_t>> light_nodes_info;
+  std::vector<std::pair<const char *, uint32_t>> light_nodes_info;
   light_nodes_info.reserve(a_scene->mNumLights);
   for (auto i = 0; i < a_scene->mNumLights; ++i) {
     auto a_light = a_scene->mLights[i];    
@@ -263,10 +263,9 @@ bool AssimpImporter::import(const URL &url, World *world) {
 
 
   auto scene_tr = std::make_shared<TransformRelationship>();
-  auto mesh_entity_datas =
+  auto [mesh_entity_datas, light_entity_datas] =
       processNode(scene_tr, a_scene, meshes, materials, light_nodes_info);
-  world->enqueue(scene_tr, std::move(mesh_entity_datas));
-
+  world->enqueue(scene_tr, std::move(mesh_entity_datas), std::move(light_entity_datas));
   // load the default camera if have
   LOGI("load scene: {}", path.c_str());
   return true;

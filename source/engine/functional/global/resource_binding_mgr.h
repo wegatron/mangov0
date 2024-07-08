@@ -17,7 +17,15 @@ public:
 
   std::tuple<std::shared_ptr<DescriptorSet>, std::shared_ptr<Buffer>, uint32_t> requestStandardMaterial();
 
-  std::pair<std::shared_ptr<DescriptorSet>, std::shared_ptr<Buffer>> requestLighting();
+  std::shared_ptr<Buffer> getLightingUbo() noexcept
+  {
+    return lighting_buffer_;    
+  }
+
+  std::shared_ptr<DescriptorSet> getGlobalDescSet() noexcept
+  {
+    return glob_desc_set_;
+  }
 
 private:
   std::shared_ptr<VkDriver> driver_;
@@ -27,7 +35,7 @@ private:
   DescriptorSetLayout standard_material_layout_;
   std::shared_ptr<Buffer> umaterial_buffer_; //!< support 100 materials
   std::shared_ptr<Buffer> lighting_buffer_; //!< support lighting ubo
-  std::shared_ptr<DescriptorSet> lighting_desc_set_;
+  std::shared_ptr<DescriptorSet> glob_desc_set_; //!< global descriptor set, including lighting ubo
   uint32_t standard_material_align_size_{0};
   uint32_t offset_{0};
 

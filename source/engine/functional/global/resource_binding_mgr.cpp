@@ -48,7 +48,7 @@ ShaderResource kStandardMaterialResources[] = {
   }  
 };
 
-ShaderResource kLightingResources[] = {
+ShaderResource kGlobResources[] = {
   {
     .stages = VK_SHADER_STAGE_FRAGMENT_BIT,
     .type = ShaderResourceType::BufferUniform,
@@ -82,26 +82,13 @@ ResourceBindingMgr::ResourceBindingMgr(const std::shared_ptr<VkDriver> &driver)
       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
       0, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT,
       VMA_MEMORY_USAGE_AUTO_PREFER_HOST);
-  //desc_pool_
+  glob_desc_set_ = desc_pool_->requestDescriptorSet(DescriptorSetLayout(driver, kGlobResources,
+                                sizeof(kGlobResources) / sizeof(ShaderResource)));
 }
 
 std::tuple<std::shared_ptr<DescriptorSet>, std::shared_ptr<Buffer>, uint32_t>
 ResourceBindingMgr::requestStandardMaterial() {  
   auto standard_material_set = desc_pool_->requestDescriptorSet(standard_material_layout_);
-  // // write descriptor set
-  // VkDescriptorBufferInfo desc_buffer_info{
-  //     .buffer = umaterial_buffer_->getHandle(),
-  //     .offset = 0,
-  //     .range = standard_material_align_size_ * kMaxMaterialCount
-  // };  
-  // driver_->update({VkWriteDescriptorSet{
-  //   .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-  //   .dstSet = standard_material_set->getHandle(),
-  //   .dstBinding = 0,
-  //   .descriptorCount = 1,
-  //   .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-  //   .pBufferInfo = &desc_buffer_info
-  // }});  
   auto ret = std::make_tuple(standard_material_set, umaterial_buffer_, offset_);
   offset_ += standard_material_align_size_;
   return ret;
@@ -111,10 +98,5 @@ ResourceBindingMgr::~ResourceBindingMgr()
 {
   umaterial_buffer_.reset();
   desc_pool_.reset();
-}
-
-std::pair<std::shared_ptr<DescriptorSet>, std::shared_ptr<Buffer>> ResourceBindingMgr::requestLighting()
-{
-
 }
 } // namespace mango

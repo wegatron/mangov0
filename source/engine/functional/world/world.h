@@ -39,6 +39,7 @@ struct LightEntityData {
 struct ImportedSceneData {
   std::shared_ptr<TransformRelationship> scene_root_tr;
   std::vector<MeshEntityData> mesh_entity_datas;
+  std::vector<LightEntityData> light_entity_datas;
 };
 
 class World final {
@@ -90,11 +91,13 @@ public:
   }
 
   void enqueue(const std::shared_ptr<TransformRelationship> &tr,
-               std::vector<MeshEntityData> &&mesh_entity_datas) {
+               std::vector<MeshEntityData> &&mesh_entity_datas,
+               std::vector<LightEntityData> &&light_entity_datas) {
     auto driver = g_engine.getDriver();
     auto &dat = imported_scene_datas_[driver->getCurFrameIndex()].emplace_back();
     dat.scene_root_tr = tr;
     dat.mesh_entity_datas = std::move(mesh_entity_datas);
+    dat.light_entity_datas = std::move(light_entity_datas);
   }
 
   void focusCamera2World() { focus_camera2world_ = true; }
