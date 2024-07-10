@@ -11,8 +11,8 @@
 #include <engine/utils/vk/pipeline.h>
 #include <engine/utils/vk/render_pass.h>
 #include <engine/utils/vk/resource_cache.h>
-#include <engine/utils/vk/vk_driver.h>
 #include <engine/utils/vk/swapchain.h>
+#include <engine/utils/vk/vk_driver.h>
 #include <imgui/backends/imgui_impl_glfw.h>
 #include <imgui/backends/imgui_impl_vulkan.h>
 #include <imgui/imgui.h>
@@ -24,7 +24,19 @@ void check_vk_result(VkResult err) { VK_ASSERT(err, "Imgui init error"); }
 
 void UIPass::init() {
   createRenderPassAndFramebuffer();
+  createDescriptorPool();
   initImgui();
+}
+
+void UIPass::createDescriptorPool() {
+  // descriptor pool
+  VkDescriptorPoolSize pool_size[] = {
+      {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 100},
+      {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 100},
+      {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 100}};
+  desc_pool_ = std::make_shared<DescriptorPool>(
+      g_engine.getDriver(), VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
+      pool_size, sizeof(pool_size) / sizeof(pool_size[0]), MAX_GLOBAL_DESC_SET);
 }
 
 UIPass::~UIPass() {
@@ -63,7 +75,7 @@ void UIPass::initImgui() {
   init_info.QueueFamily = queue->getFamilyIndex();
   init_info.Queue = queue->getHandle();
   init_info.PipelineCache = g_engine.getResourceCache()->getPipelineCache();
-  init_info.DescriptorPool = driver->getDescriptorPool()->getHandle();
+  init_info.DescriptorPool = desc_pool_->getHandle();
   init_info.Allocator = nullptr;
   init_info.MinImageCount = MAX_FRAMES_IN_FLIGHT;
   init_info.ImageCount = MAX_FRAMES_IN_FLIGHT;
@@ -171,8 +183,7 @@ void UIPass::render(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
       .src_queue_family_index = VK_QUEUE_FAMILY_IGNORED,
       .dst_queue_family_index = VK_QUEUE_FAMILY_IGNORED};
   cmd_buffer->imageMemoryBarrier(
-      barrier,
-      frame_buffer->getRenderTarget()->getImageViews()[0]);
+      barrier, frame_buffer->getRenderTarget()->getImageViews()[0]);
 }
 
 void UIPass::onCreateSwapchainObject(const uint32_t width,

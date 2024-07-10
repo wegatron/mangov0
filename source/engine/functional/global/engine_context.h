@@ -34,7 +34,6 @@ public:
   void logicTick(float delta_time);
   void renderTick(float delta_time);
 
-  const auto &getVkConfig() const { return vk_config_; }
   const auto &getWindow() const { return window_; }
   const auto &getDriver() const { return driver_; }
   const auto &getFileSystem() const { return file_system_; }

@@ -19,8 +19,6 @@ EngineContext g_engine;
 
 bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
                          const std::string &window_title) {
-  vk_config_ = vk_config;
-
   // file system
   file_system_ = std::make_shared<FileSystem>();
   file_system_->init();
@@ -42,7 +40,7 @@ bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
 
   // vulkan driver
   driver_ = std::make_shared<VkDriver>();
-  driver_->init();
+  driver_->init(vk_config);
 
   // resource cache
   resource_cache_ = std::make_shared<ResourceCache>();
@@ -106,8 +104,6 @@ void EngineContext::destroy() {
   event_system_.reset();
   file_system_.reset();
   log_system_.reset();
-  // gpu_asset_manager.reset();
-  // global_param_set.reset();
 }
 
 float EngineContext::calcDeltaTime() {

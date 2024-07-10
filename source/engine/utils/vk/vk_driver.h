@@ -47,7 +47,7 @@ public:
    * device -> create logical device and command queue; create vma allocator;
    * create swapchain and render targets.
    */
-  void init();
+  void init(const std::shared_ptr<VkConfig> &config);
 
   /**
    * @brief destroy all resources created by this driver, resource may have
@@ -146,22 +146,22 @@ private:
    */
   void createFramesData();
 
-  void createDescriptorPool();
-
   void setupDebugMessenger();
 
-  bool isDeviceExtensionEnabled(const char *extension_name);
+  void destroyDebugMessenger();
 
+  bool isDeviceExtensionEnabled(const char *extension_name);
+  
+  std::shared_ptr<VkConfig> config_;
+  
   VkInstance instance_{VK_NULL_HANDLE};
   VkPhysicalDevice physical_device_{VK_NULL_HANDLE};
   VkDevice device_{VK_NULL_HANDLE};
   VkSurfaceKHR surface_{VK_NULL_HANDLE};
 
-  std::vector<const char *> enabled_device_extensions_;
-
   VmaAllocator allocator_{VK_NULL_HANDLE};
 
-  VkDebugUtilsMessengerEXT debug_messenger_;
+  VkDebugUtilsMessengerEXT debug_messenger_{VK_NULL_HANDLE};
 
   uint32_t cur_frame_index_{0};
   uint32_t cur_image_index_{0};

@@ -26,7 +26,8 @@ public:
 private:
   void initImgui();
   void createRenderPassAndFramebuffer();
-
+  void createDescriptorPool();
+  std::shared_ptr<DescriptorPool> desc_pool_;
   std::shared_ptr<class RenderPass> render_pass_;
 };
 } // namespace mango

@@ -96,6 +96,8 @@ ResourceBindingMgr::requestStandardMaterial() {
 
 ResourceBindingMgr::~ResourceBindingMgr()
 {
+  glob_desc_set_.reset();
+  lighting_buffer_.reset();
   umaterial_buffer_.reset();
   desc_pool_.reset();
 }

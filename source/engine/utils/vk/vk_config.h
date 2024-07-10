@@ -13,6 +13,30 @@
 #endif
 
 namespace mango {
+constexpr char const * kFeatureExtensionNames[] = {
+    "LAYER_BEGIN_PIVOT",           // 0
+    "VK_LAYER_KHRONOS_validation", // 1
+    "LAYER_END_PIVOT",             // 2
+
+    "INSTANCE_EXTENSION_BEGIN_PIVOT",                       // 3
+    "GLFW_EXTENSION",                                       // 4
+    VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, // 5
+    VK_KHR_DEVICE_GROUP_CREATION_EXTENSION_NAME,            // 6
+    VK_EXT_DEBUG_UTILS_EXTENSION_NAME,                      // 7
+    "INSTANCE_EXTENSION_END_PIVOT",                         // 8
+
+    "DEVICE_EXTENSION_BEGIN_PIVOT",                       // 9
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME,                      // 10
+    VK_KHR_UNIFORM_BUFFER_STANDARD_LAYOUT_EXTENSION_NAME, // 11
+    VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME,       // 12
+    VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,            // 13
+    VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,                   // 14
+    VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,      // 15
+    VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME,           // 16
+    VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,          // 17
+    VK_KHR_DEVICE_GROUP_EXTENSION_NAME,                   // 18
+    "DEVICE_EXTENSION_END_PIVOT",                         // 19
+};
 class VkConfig {
 public:
   enum class EnableState : uint8_t { DISABLED = 0, OPTIONAL, REQUIRED };
@@ -48,32 +72,6 @@ public:
 
     //// Device features
     MAX_FEATURE_EXTENSION_COUNT
-  };
-
-  const char *const kFeatureExtensionNames[static_cast<uint32_t>(
-      FeatureExtension::MAX_FEATURE_EXTENSION_COUNT)] = {
-      "LAYER_BEGIN_PIVOT",           // 0
-      "VK_LAYER_KHRONOS_validation", // 1
-      "LAYER_END_PIVOT",             // 2
-
-      "INSTANCE_EXTENSION_BEGIN_PIVOT",                       // 3
-      "GLFW_EXTENSION",                                       // 4
-      VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, // 5
-      VK_KHR_DEVICE_GROUP_CREATION_EXTENSION_NAME,            // 6
-      VK_EXT_DEBUG_UTILS_EXTENSION_NAME,                      // 7
-      "INSTANCE_EXTENSION_END_PIVOT",                         // 8
-
-      "DEVICE_EXTENSION_BEGIN_PIVOT",                       // 9
-      VK_KHR_SWAPCHAIN_EXTENSION_NAME,                      // 10
-      VK_KHR_UNIFORM_BUFFER_STANDARD_LAYOUT_EXTENSION_NAME, // 11
-      VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME,       // 12
-      VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,            // 13
-      VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,                   // 14
-      VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,      // 15
-      VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME,           // 16
-      VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,          // 17
-      VK_KHR_DEVICE_GROUP_EXTENSION_NAME,                   // 18
-      "DEVICE_EXTENSION_END_PIVOT",                         // 19
   };
 
   VkConfig()
@@ -116,6 +114,10 @@ public:
 
   uint32_t getVersion() const noexcept { return version_; }
 
+  const std::vector<EnableState> &getEnableds() const noexcept {
+    return enableds_;
+  }
+
 protected:
   virtual void checkAndUpdateLayers(VkInstanceCreateInfo &create_info) = 0;
   virtual void checkAndUpdateExtensions(VkInstanceCreateInfo &create_info) = 0;
@@ -139,12 +141,14 @@ class Vk13Config : public VkConfig {
 public:
   Vk13Config() : VkConfig() {
     version_ = VK_API_VERSION_1_3;
-    #if !NDEBUG
+#if !NDEBUG
     // for validation and debug message
-    enableds_[static_cast<uint32_t>(VkConfig::FeatureExtension::KHR_VALIDATION_LAYER)]= VkConfig::EnableState::REQUIRED;
     enableds_[static_cast<uint32_t>(
-        FeatureExtension::EXT_DEBUG_UTILS)] = EnableState::REQUIRED;
-    #endif
+        VkConfig::FeatureExtension::KHR_VALIDATION_LAYER)] =
+        VkConfig::EnableState::REQUIRED;
+    enableds_[static_cast<uint32_t>(FeatureExtension::EXT_DEBUG_UTILS)] =
+        EnableState::REQUIRED;
+#endif
 
     // for vma
     enableds_[static_cast<uint32_t>(
@@ -158,7 +162,8 @@ public:
         FeatureExtension::KHR_DEVICE_GROUP_CREATION)] = EnableState::REQUIRED;
     enableds_[static_cast<uint32_t>(FeatureExtension::KHR_DEVICE_GROUP)] =
         EnableState::REQUIRED;
-    enableds_[static_cast<uint32_t>(FeatureExtension::DESCRIPTOR_INDEX)] = EnableState::REQUIRED;
+    enableds_[static_cast<uint32_t>(FeatureExtension::DESCRIPTOR_INDEX)] =
+        EnableState::REQUIRED;
 
     // enableds_[static_cast<uint32_t>(FeatureExtension::KHR_UNIFORM_BUFFER_STANDARD_LAYOUT)]
     // = EnableState::REQUIRED;

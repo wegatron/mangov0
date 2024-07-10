@@ -36,12 +36,12 @@ void VkDriver::initInstance() {
   app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
   app_info.pEngineName = "No Engine";
   app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0); // 以上这些意义不大
-  app_info.apiVersion = g_engine.getVkConfig()->getVersion();
+  app_info.apiVersion = config_->getVersion();
 
   VkInstanceCreateInfo instance_info{};
   instance_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
   instance_info.pApplicationInfo = &app_info;
-  g_engine.getVkConfig()->checkAndUpdate(instance_info);
+  config_->checkAndUpdate(instance_info);
 
   if (VK_SUCCESS != vkCreateInstance(&instance_info, nullptr, &instance_))
     throw std::runtime_error("failed to create instance");
@@ -54,7 +54,7 @@ void VkDriver::initDevice() {
   auto physical_devices = PhysicalDevice::getPhysicalDevices(instance_);
   VkDeviceCreateInfo device_info{VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO};
   const uint32_t physical_device_index =
-      g_engine.getVkConfig()->checkSelectAndUpdate(physical_devices,
+      config_->checkSelectAndUpdate(physical_devices,
                                                    device_info, surface_);
 
   if (physical_device_index == -1) {
@@ -148,7 +148,8 @@ ThreadLocalCommandBufferManager & VkDriver::getThreadLocalCommandBufferManager()
   return *itr;
 }
 
-void VkDriver::init() {
+void VkDriver::init(const std::shared_ptr<VkConfig> &config) {
+  config_ = config;
   initInstance();
   assert(g_engine.getWindow() != nullptr);
   initDevice();
@@ -156,7 +157,6 @@ void VkDriver::init() {
 
   createSwapchain();
   createFramesData();
-  createDescriptorPool();
   stage_pool_ = new StagePool(shared_from_this());
   #if !NDEBUG
     setupDebugMessenger();
@@ -239,23 +239,25 @@ void VkDriver::presentFrame() {
   cur_frame_index_ = (cur_frame_index_ + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void VkDriver::createDescriptorPool() {
-  // descriptor pool
-  VkDescriptorPoolSize pool_size[] = {
-      {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-       MAX_GLOBAL_DESC_SET * CONFIG_UNIFORM_BINDING_COUNT},
-      {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-       MAX_GLOBAL_DESC_SET * MAX_TEXTURE_NUM_COUNT},
-      {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-       MAX_GLOBAL_DESC_SET * CONFIG_STORAGE_BINDING_COUNT}};
-  descriptor_pool_ = new DescriptorPool(
-      shared_from_this(), VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
-      pool_size, sizeof(pool_size) / sizeof(pool_size[0]), MAX_GLOBAL_DESC_SET);
-}
+// void VkDriver::createDescriptorPool() {
+//   // descriptor pool
+//   VkDescriptorPoolSize pool_size[] = {
+//       {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+//        MAX_GLOBAL_DESC_SET * CONFIG_UNIFORM_BINDING_COUNT},
+//       {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+//        MAX_GLOBAL_DESC_SET * MAX_TEXTURE_NUM_COUNT},
+//       {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+//        MAX_GLOBAL_DESC_SET * CONFIG_STORAGE_BINDING_COUNT}};
+//   descriptor_pool_ = new DescriptorPool(
+//       shared_from_this(), VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
+//       pool_size, sizeof(pool_size) / sizeof(pool_size[0]), MAX_GLOBAL_DESC_SET);
+// }
 
 bool VkDriver::isDeviceExtensionEnabled(const char *extension_name) {
-  for (const auto &ext : enabled_device_extensions_) {
-    if (strcmp(ext, extension_name) == 0)
+  const auto &enables = config_->getEnableds();
+  for (auto i = 0; i < enables.size(); ++i) {
+    auto e = enables[i];
+    if (e == VkConfig::EnableState::REQUIRED && strcmp(extension_name, kFeatureExtensionNames[i])==0)
       return true;
   }
   return false;
@@ -281,6 +283,18 @@ VkResult CreateDebugUtilsMessengerEXT(
   } else {
     return VK_ERROR_EXTENSION_NOT_PRESENT;
   }
+}
+
+VkResult vkDestroyDebugReportCallbackEXT(VkInstance instance,
+                                         VkDebugUtilsMessengerEXT messager,
+                                         const VkAllocationCallbacks *pAllocator) {
+  auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
+      instance, "vkDestroyDebugUtilsMessengerEXT");
+  if (func != nullptr) {
+    func(instance, messager, pAllocator);
+    return VK_SUCCESS;
+  }
+  return VK_ERROR_EXTENSION_NOT_PRESENT;
 }
 
 void VkDriver::setupDebugMessenger() {
@@ -378,7 +392,7 @@ void VkDriver::initAllocator() {
   vma_vulkan_func.vkUnmapMemory = vkUnmapMemory;
   vma_vulkan_func.vkCmdCopyBuffer = vkCmdCopyBuffer;
 
-  if (g_engine.getVkConfig()->getVersion() >= VK_MAKE_VERSION(1, 3, 0)) {
+  if (config_->getVersion() >= VK_MAKE_VERSION(1, 3, 0)) {
     vma_vulkan_func.vkGetDeviceBufferMemoryRequirements =
         vkGetDeviceBufferMemoryRequirements;
     vma_vulkan_func.vkGetDeviceImageMemoryRequirements =
@@ -389,7 +403,7 @@ void VkDriver::initAllocator() {
   allocator_info.physicalDevice = physical_device_;
   allocator_info.device = device_;
   allocator_info.instance = instance_;
-  allocator_info.vulkanApiVersion = g_engine.getVkConfig()->getVersion();
+  allocator_info.vulkanApiVersion = config_->getVersion();
   allocator_info.pVulkanFunctions = &vma_vulkan_func;
 
   bool can_get_memory_requirements =
@@ -433,6 +447,9 @@ void VkDriver::destroy() {
 
   vkDestroyDevice(device_, nullptr);
   vkDestroySurfaceKHR(instance_, surface_, nullptr);
+  if (debug_messenger_ != VK_NULL_HANDLE) {
+    vkDestroyDebugReportCallbackEXT(instance_, debug_messenger_, nullptr);
+  }
   vkDestroyInstance(instance_, nullptr);
 }
 } // namespace mango
