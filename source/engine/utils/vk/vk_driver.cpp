@@ -158,6 +158,9 @@ void VkDriver::init() {
   createFramesData();
   createDescriptorPool();
   stage_pool_ = new StagePool(shared_from_this());
+  #if !NDEBUG
+    setupDebugMessenger();
+  #endif
 }
 
 void VkDriver::createSwapchain() {

@@ -38,11 +38,11 @@ void LogSystem::init() {
   // create multi-sink logger
   spdlog::init_thread_pool(8192, 1);
 
-#ifdef DEBUG
-  const spdlog::sinks_init_list sink_list = {console_sink, file_sink,
-                                             m_ringbuffer_sink};
+#if NDEBUG
+    const spdlog::sinks_init_list sink_list = {file_sink, m_ringbuffer_sink};
 #else
-  const spdlog::sinks_init_list sink_list = {file_sink, m_ringbuffer_sink};
+  const spdlog::sinks_init_list sink_list = {console_sink, file_sink,
+                                             m_ringbuffer_sink}; 
 #endif
 
   m_logger = std::make_shared<spdlog::async_logger>(

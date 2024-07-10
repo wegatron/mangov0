@@ -28,11 +28,6 @@ void Editor::init() {
       mango::VkConfig::FeatureExtension::
           INSTANCE_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2,
       mango::VkConfig::EnableState::REQUIRED);
-#if !NDEBUG
-  vk_config->setFeatureEnabled(
-      mango::VkConfig::FeatureExtension::KHR_VALIDATION_LAYER,
-      mango::VkConfig::EnableState::REQUIRED);
-#endif
   g_engine.init(vk_config, "editor");
 
   // create editor ui

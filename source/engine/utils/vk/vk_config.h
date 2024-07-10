@@ -28,22 +28,23 @@ public:
     GLFW_EXTENSION = 4,
     INSTANCE_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2 = 5,
     KHR_DEVICE_GROUP_CREATION = 6,
-    INSTANCE_EXTENSION_END_PIVOT = 7,
+    EXT_DEBUG_UTILS = 7,
+    INSTANCE_EXTENSION_END_PIVOT = 8,
 
     //// device extension
-    DEVICE_EXTENSION_BEGIN_PIVOT = 8,
-    KHR_SWAPCHAIN = 9,
-    KHR_UNIFORM_BUFFER_STANDARD_LAYOUT = 10,
-    VK_KHR_SHADER_NON_SEMANTIC_INFO = 11,
-    DESCRIPTOR_INDEX = 12,
-    VK_EXT_ROBUSTNESS_2 = 13,
+    DEVICE_EXTENSION_BEGIN_PIVOT = 9,
+    KHR_SWAPCHAIN = 10,
+    KHR_UNIFORM_BUFFER_STANDARD_LAYOUT = 11,
+    VK_KHR_SHADER_NON_SEMANTIC_INFO = 12,
+    DESCRIPTOR_INDEX = 13,
+    VK_EXT_ROBUSTNESS_2 = 14,
 
     // VMA support these extensions
-    KHR_GET_MEMORY_REQUIREMENTS_2 = 14,
-    KHR_DEDICATED_ALLOCATION = 15,
-    KHR_BUFFER_DEVICE_ADDRESS = 16,
-    KHR_DEVICE_GROUP = 17,
-    DEVICE_EXTENSION_END_PIVOT = 18,
+    KHR_GET_MEMORY_REQUIREMENTS_2 = 15,
+    KHR_DEDICATED_ALLOCATION = 16,
+    KHR_BUFFER_DEVICE_ADDRESS = 17,
+    KHR_DEVICE_GROUP = 18,
+    DEVICE_EXTENSION_END_PIVOT = 19,
 
     //// Device features
     MAX_FEATURE_EXTENSION_COUNT
@@ -59,19 +60,20 @@ public:
       "GLFW_EXTENSION",                                       // 4
       VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, // 5
       VK_KHR_DEVICE_GROUP_CREATION_EXTENSION_NAME,            // 6
-      "INSTANCE_EXTENSION_END_PIVOT",                         // 7
+      VK_EXT_DEBUG_UTILS_EXTENSION_NAME,                      // 7
+      "INSTANCE_EXTENSION_END_PIVOT",                         // 8
 
-      "DEVICE_EXTENSION_BEGIN_PIVOT",                       // 8
-      VK_KHR_SWAPCHAIN_EXTENSION_NAME,                      // 9
-      VK_KHR_UNIFORM_BUFFER_STANDARD_LAYOUT_EXTENSION_NAME, // 10
-      VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME,       // 11
-      VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,            // 12
-      VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,                   // 13
-      VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,      // 14
-      VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME,           // 15
-      VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,          // 16
-      VK_KHR_DEVICE_GROUP_EXTENSION_NAME,                   // 17
-      "DEVICE_EXTENSION_END_PIVOT",                         // 18
+      "DEVICE_EXTENSION_BEGIN_PIVOT",                       // 9
+      VK_KHR_SWAPCHAIN_EXTENSION_NAME,                      // 10
+      VK_KHR_UNIFORM_BUFFER_STANDARD_LAYOUT_EXTENSION_NAME, // 11
+      VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME,       // 12
+      VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,            // 13
+      VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,                   // 14
+      VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,      // 15
+      VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME,           // 16
+      VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,          // 17
+      VK_KHR_DEVICE_GROUP_EXTENSION_NAME,                   // 18
+      "DEVICE_EXTENSION_END_PIVOT",                         // 19
   };
 
   VkConfig()
@@ -137,6 +139,13 @@ class Vk13Config : public VkConfig {
 public:
   Vk13Config() : VkConfig() {
     version_ = VK_API_VERSION_1_3;
+    #if !NDEBUG
+    // for validation and debug message
+    enableds_[static_cast<uint32_t>(VkConfig::FeatureExtension::KHR_VALIDATION_LAYER)]= VkConfig::EnableState::REQUIRED;
+    enableds_[static_cast<uint32_t>(
+        FeatureExtension::EXT_DEBUG_UTILS)] = EnableState::REQUIRED;
+    #endif
+
     // for vma
     enableds_[static_cast<uint32_t>(
         FeatureExtension::KHR_GET_MEMORY_REQUIREMENTS_2)] =
