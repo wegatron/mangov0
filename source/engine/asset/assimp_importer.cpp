@@ -145,37 +145,18 @@ processMaterials(const aiScene *a_scene, const std::string &dir) {
   return ret_mats;
 }
 
-std::pair<ULighting, std::vector<std::pair<const char *, uint32_t>>>
+std::pair<ULighting, std::vector<std::tuple<const char *, uint16_t, uint16_t>>>
 processLights(const aiScene *a_scene) {
   ULighting lights;
-  lights.directional_light_num = 0;
-  lights.point_light_num = 0;
-  std::vector<std::pair<const char *, uint32_t>> light_nodes_info;
+  std::vector<std::tuple<const char *, uint16_t, uint16_t>> light_nodes_info;
   light_nodes_info.reserve(a_scene->mNumLights);
   for (auto i = 0; i < a_scene->mNumLights; ++i) {
     auto a_light = a_scene->mLights[i];
     switch (a_light->mType) {
-    case aiLightSource_POINT:
-      if (lights.point_light_num < MAX_POINT_LIGHT_NUM) {
-        auto &l = lights.point_lights[lights.point_light_num];
-        l.position =
-            Eigen::Vector4f(a_light->mPosition[0], a_light->mPosition[1],
-                            a_light->mPosition[2], 1.0f);
-        l.luminous_intensity = Eigen::Vector4f(a_light->mColorDiffuse[0],
-                                               a_light->mColorDiffuse[1],
-                                               a_light->mColorDiffuse[2], 1.0f);
-        light_nodes_info.emplace_back(a_light->mName.C_Str(),
-                                      static_cast<uint16_t>(LightType::POINT)
-                                              << 16 |
-                                          lights.point_light_num);
-        ++lights.point_light_num;
-      } else {
-        LOGW("Point light number exceeds the limit.");
-      }
-      break;
-    case aiLightSource_DIRECTIONAL:
-      if (lights.directional_light_num < MAX_DIRECTIONAL_LIGHT_NUM) {
-        auto &l = lights.directional_light[lights.directional_light_num];
+    case aiLightSource_DIRECTIONAL: {
+      auto &light_num = lights.light_num[LightType::DIRECTIONAL];
+      if (light_num < MAX_DIRECTIONAL_LIGHT_NUM) {
+        auto &l = lights.directional_lights[light_num];
         l.direction =
             Eigen::Vector4f(a_light->mDirection[0], a_light->mDirection[1],
                             a_light->mDirection[2], 0.0f);
@@ -184,13 +165,30 @@ processLights(const aiScene *a_scene) {
                                         a_light->mColorDiffuse[2], 1.0f);
         light_nodes_info.emplace_back(
             a_light->mName.C_Str(),
-            static_cast<uint16_t>(LightType::DIRECTIONAL) << 16 |
-                lights.directional_light_num);
-        ++lights.directional_light_num;
+            static_cast<uint16_t>(LightType::DIRECTIONAL), light_num);
+        ++light_num;
       } else {
-        LOGW("Directional light number exceeds the limit.");
+        LOGW("Directional light number in imported scene exceeds the limit.");
       }
-      break;
+    } break;
+    case aiLightSource_POINT: {
+      auto &light_num = lights.light_num[LightType::POINT];
+      if (light_num < MAX_POINT_LIGHT_NUM) {
+        auto &l = lights.point_lights[light_num];
+        l.position =
+            Eigen::Vector4f(a_light->mPosition[0], a_light->mPosition[1],
+                            a_light->mPosition[2], 1.0f);
+        l.luminous_intensity = Eigen::Vector4f(a_light->mColorDiffuse[0],
+                                               a_light->mColorDiffuse[1],
+                                               a_light->mColorDiffuse[2], 1.0f);
+        light_nodes_info.emplace_back(a_light->mName.C_Str(),
+                                      static_cast<uint16_t>(LightType::POINT),
+                                      light_num);
+        ++light_num;
+      } else {
+        LOGW("Point light number in imported scene exceeds the limit.");
+      }
+    } break;
     default:
       LOGW("Unsupported light type.");
       break;
@@ -200,12 +198,12 @@ processLights(const aiScene *a_scene) {
 }
 
 std::pair<std::vector<MeshEntityData>, std::vector<LightEntityData>>
-processNode(
-    const std::shared_ptr<TransformRelationship> &root_tr,
-    const aiScene *a_scene,
-    const std::vector<std::shared_ptr<StaticMesh>> &meshes,
-    const std::vector<std::shared_ptr<Material>> &materials,
-    const std::vector<std::pair<const char *, uint32_t>> &light_nodes_info) {
+processNode(const std::shared_ptr<TransformRelationship> &root_tr,
+            const aiScene *a_scene,
+            const std::vector<std::shared_ptr<StaticMesh>> &meshes,
+            const std::vector<std::shared_ptr<Material>> &materials,
+            const std::vector<std::tuple<const char *, uint16_t, uint16_t>>
+                &light_nodes_info) {
   std::vector<MeshEntityData> mesh_entity_datas;
   std::vector<LightEntityData> light_entity_datas;
   std::queue<std::pair<aiNode *, std::shared_ptr<TransformRelationship>>> q;
@@ -213,14 +211,15 @@ processNode(
   while (!q.empty()) {
     auto [node, tr] = q.front();
     q.pop();
-    auto light_node =
-        std::find_if(light_nodes_info.begin(), light_nodes_info.end(),
-                     [&node](const std::pair<const char *, uint32_t> &info) {
-                       return strcmp(node->mName.C_Str(), info.first) == 0;
-                     });
+    auto light_node = std::find_if(
+        light_nodes_info.begin(), light_nodes_info.end(),
+        [&node](const std::tuple<const char *, uint16_t, uint16_t> &info) {
+          return strcmp(node->mName.C_Str(), std::get<0>(info)) == 0;
+        });
     if (light_node != light_nodes_info.end()) {
       light_entity_datas.emplace_back(node->mName.C_Str(), tr,
-                                      light_node->second);
+                                      std::get<1>(*light_node),
+                                      std::get<2>(*light_node));
     }
     memcpy(tr->ltransform.data(), &node->mTransformation,
            sizeof(Eigen::Matrix4f));
@@ -274,7 +273,7 @@ bool AssimpImporter::import(const URL &url, World *world) {
   auto [mesh_entity_datas, light_entity_datas] =
       processNode(scene_tr, a_scene, meshes, materials, light_nodes_info);
   world->enqueue(scene_tr, std::move(mesh_entity_datas),
-                 std::move(light_entity_datas));
+                 std::move(light_entity_datas), lights);
   // load the default camera if have
   LOGI("load scene: {}", path.c_str());
   return true;

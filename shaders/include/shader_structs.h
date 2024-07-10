@@ -33,13 +33,19 @@ struct UPointLight {
   vec4 luminous_intensity; //!< candela(cd), last float for padding
 };
 
+enum LightType {
+  DIRECTIONAL = 0,
+  POINT = 1,
+  //SPOT = 2,
+  LIGHT_TYPE_NUM
+};
+
 struct ULighting {
   // lights
-  UDirectionalLight directional_light[MAX_DIRECTIONAL_LIGHT_NUM];
+  UDirectionalLight directional_lights[MAX_DIRECTIONAL_LIGHT_NUM];
   UPointLight point_lights[MAX_POINT_LIGHT_NUM];
 
-  int directional_light_num;
-  int point_light_num;
+  ushort light_num[LIGHT_TYPE_NUM];
   float ev100;
   // // debug
   // vec3 camera_dir;
