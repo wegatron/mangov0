@@ -112,6 +112,7 @@ void MainPass::draw(
     const std::vector<StaticMeshRenderData> &static_meshe_datas) {
 
   cmd_buffer->bindPipeline(pipeline_);
+  cmd_buffer->bindDescriptorSets(pipeline_, {g_engine.getResourceBindingMgr()->getGlobalDescSet()}, {}, 0);
   for (auto &data : static_meshe_datas) {
     // descriptor set layout compatibility: https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#descriptorsets-compatibility
     cmd_buffer->bindDescriptorSets(pipeline_, {data.material_descriptor_set}, {}, 1);

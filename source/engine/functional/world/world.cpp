@@ -100,6 +100,8 @@ void World::loadedMesh2World() {
         LOGW("light num of light type {} exceed max limit", light_type);
       }
     }
+
+    // copy lighting data to ubo
     void *ptr[] = {lighting_.directional_lights +
                        sizeof(UDirectionalLight) *
                            lighting_.light_num[LightType::DIRECTIONAL],
@@ -120,6 +122,7 @@ void World::loadedMesh2World() {
       memcpy(ptr[light_type], scene_data.lighting.directional_lights,
              cp_size[light_type] * cp_num);
       lighting_.light_num[light_type] += cp_num;
+      lighting_dirty_ = true;
     }
   }
   scene_data_list.clear();

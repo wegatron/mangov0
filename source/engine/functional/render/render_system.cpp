@@ -70,6 +70,12 @@ void RenderSystem::collectRenderDatas() {
     static_mesh_data.emplace_back(data);
   }
   main_pass_->setRenderData(render_data);
+
+  // update light data
+  if(world->lighting_dirty_)
+  {
+    g_engine.getResourceBindingMgr()->getLightingUbo()->update(world->lighting_, sizeof(ULighting), 0);
+  }
 }
 
 void RenderSystem::tick(float delta_time) {

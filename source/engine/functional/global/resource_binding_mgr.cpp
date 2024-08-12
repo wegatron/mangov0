@@ -84,6 +84,16 @@ ResourceBindingMgr::ResourceBindingMgr(const std::shared_ptr<VkDriver> &driver)
       VMA_MEMORY_USAGE_AUTO_PREFER_HOST);
   glob_desc_set_ = desc_pool_->requestDescriptorSet(DescriptorSetLayout(driver, kGlobResources,
                                 sizeof(kGlobResources) / sizeof(ShaderResource)));
+  driver_->update({
+      VkWriteDescriptorSet{.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                           .dstSet = glob_desc_set_->getHandle(),
+                           .dstBinding = 0,
+                           .descriptorCount = 1,
+                           .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                           .pBufferInfo = &VkDescriptorBufferInfo{.buffer = lighting_buffer_->getHandle(),
+                                                                 .offset = 0,
+                                                                 .range = sizeof(ULighting)}}
+  });
 }
 
 std::tuple<std::shared_ptr<DescriptorSet>, std::shared_ptr<Buffer>, uint32_t>

@@ -35,4 +35,6 @@ mindmap
     Architecture
         引擎架构分层 <br> https://blog.csdn.net/qq_48185715/article/details/123939639
         ECS <br> why_ecs.md
+    Demo Engine
+        vulkan guide https://vkguide.dev/docs/new_chapter_4/engine_arch/
 ```
