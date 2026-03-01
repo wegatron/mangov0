@@ -80,11 +80,12 @@ void UIPass::initImgui() {
   init_info.MinImageCount = MAX_FRAMES_IN_FLIGHT;
   init_info.ImageCount = MAX_FRAMES_IN_FLIGHT;
   init_info.CheckVkResultFn = check_vk_result;
-  init_info.RenderPass = render_pass_->getHandle();
+  init_info.PipelineInfoMain.RenderPass = render_pass_->getHandle();
 
   // 若要与volk一起使用的话, 参考: https://zhuanlan.zhihu.com/p/634912614
   auto instance = driver->getInstance();
   ImGui_ImplVulkan_LoadFunctions(
+      VK_API_VERSION_1_0,
       [](const char *function_name, void *vulkan_instance) {
         return vkGetInstanceProcAddr(
             *(reinterpret_cast<VkInstance *>(vulkan_instance)), function_name);
@@ -152,7 +153,7 @@ void UIPass::prepare() {
 
   // set docking over viewport
   ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
-  ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dockspace_flags);
+  ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), dockspace_flags);
 
   // construct imgui widgets
   g_engine.getEventSystem()->syncDispatch(
