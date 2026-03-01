@@ -1,4 +1,5 @@
 #include <engine/functional/global/engine_context.h>
+#include <engine/functional/global/resource_binding_mgr.h>
 #include <engine/functional/render/pass/main_pass.h>
 #include <engine/functional/render/pass/ui_pass.h>
 #include <engine/functional/render/render_system.h>
@@ -74,7 +75,7 @@ void RenderSystem::collectRenderDatas() {
   // update light data
   if(world->isLightingDirty())
   {
-    g_engine.getResourceBindingMgr()->getLightingUbo()->update(world->getLighting(), sizeof(ULighting), 0);
+    g_engine.getResourceBindingMgr()->getLightingUbo()->update(&world->getLighting(), sizeof(ULighting), 0);
     world->clearLightingDirty();
   }
 }

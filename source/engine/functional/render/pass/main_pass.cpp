@@ -1,6 +1,7 @@
 #include "main_pass.h"
 
 #include <engine/functional/global/engine_context.h>
+#include <engine/functional/global/resource_binding_mgr.h>
 #include <engine/utils/vk/commands.h>
 #include <engine/utils/vk/framebuffer.h>
 #include <engine/utils/vk/image.h>
