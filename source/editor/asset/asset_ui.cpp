@@ -227,26 +227,26 @@ void AssetUI::constructFolderFiles() {
 }
 
 void AssetUI::constructAsset(const std::string &filename, const ImVec2 &size) {
-  ImTextureID tex_id = nullptr;
+  ImTextureID tex_id = ImTextureID_Invalid;
   std::string basename = g_engine.getFileSystem()->basename(filename);
 
   const auto &asset_manager = g_engine.getAssetManager();
 
   if (g_engine.getFileSystem()->isFile(filename)) {
     EAssetType asset_type = asset_manager->getAssetType(filename);
-    tex_id = asset_images_[asset_type]->tex_id;
+    tex_id = (ImTextureID)(uintptr_t)asset_images_[asset_type]->tex_id;
     if (asset_type == EAssetType::TEXTURE2D) {
       if (isImGuiImageLoaded(filename)) {
-        tex_id = getImGuiImageFromCache(filename)->tex_id;
+        tex_id = (ImTextureID)(uintptr_t)getImGuiImageFromCache(filename)->tex_id;
       } else {
         auto imgui_image = loadImGuiImageFromFile(filename);
-        tex_id = imgui_image->tex_id;
+        tex_id = (ImTextureID)(uintptr_t)imgui_image->tex_id;
       }
     }
   } else if (g_engine.getFileSystem()->isDir(filename)) {
     bool is_empty = g_engine.getFileSystem()->isEmptyDir(filename);
-    tex_id = is_empty ? empty_folder_image_->tex_id
-                      : non_empty_folder_image_->tex_id;
+    tex_id = is_empty ? (ImTextureID)(uintptr_t)empty_folder_image_->tex_id
+                      : (ImTextureID)(uintptr_t)non_empty_folder_image_->tex_id;
   } else {
     return;
   }

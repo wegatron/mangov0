@@ -4,6 +4,7 @@
 #include <engine/functional/world/world.h>
 #include <engine/utils/event/event_system.h>
 #include <engine/utils/base/macro.h>
+#include <IconsFontAwesome5.h>
 // #include "editor/global/editor_context.h"
 
 // #include "engine/core/vulkan/vulkan_rhi.h"
@@ -289,7 +290,7 @@ void SimulationUI::constructCheckboxPopup(
 }
 
 void SimulationUI::constructOperationModeButtons() {
-  std::vector<std::string> names = {ICON_FA_MOUSE_POINTER, ICON_FA_MOVE,
+  std::vector<std::string> names = {ICON_FA_MOUSE_POINTER, ICON_FA_ARROWS_ALT,
                                     ICON_FA_SYNC_ALT, ICON_FA_EXPAND};
   for (size_t i = 0; i < names.size(); ++i) {
     ImGui::SameLine(i == 0 ? ImGui::GetContentRegionAvail().x - 130 : 0.0f);
