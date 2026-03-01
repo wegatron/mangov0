@@ -72,9 +72,10 @@ void RenderSystem::collectRenderDatas() {
   main_pass_->setRenderData(render_data);
 
   // update light data
-  if(world->lighting_dirty_)
+  if(world->isLightingDirty())
   {
-    g_engine.getResourceBindingMgr()->getLightingUbo()->update(world->lighting_, sizeof(ULighting), 0);
+    g_engine.getResourceBindingMgr()->getLightingUbo()->update(world->getLighting(), sizeof(ULighting), 0);
+    world->clearLightingDirty();
   }
 }
 

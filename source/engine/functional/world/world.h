@@ -100,6 +100,11 @@ public:
 
   void focusCamera2World() { focus_camera2world_ = true; }
 
+  // Lighting data accessors
+  bool isLightingDirty() const { return lighting_dirty_; }
+  const ULighting& getLighting() const { return lighting_; }
+  void clearLightingDirty() { lighting_dirty_ = false; }
+
   // disable copy/move
   World(const World &) = delete;
   World(World &&) = delete;
