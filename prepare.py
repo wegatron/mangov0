@@ -3,6 +3,7 @@ import subprocess
 import shutil
 
 rebuild_install = True
+root_dir = os.getcwd()
 
 print(f"rebuilding install {rebuild_install}")
 
@@ -52,7 +53,8 @@ else:
 if not os.path.exists("thirdparty/cereal"):
     subprocess.run("git clone https://github.com/USCiLab/cereal.git thirdparty/cereal")
     os.chdir("thirdparty/cereal")
-    subprocess.run("git checkout tags/v1.3.2")
+    subprocess.run("git checkout tags/v1.3.2", shell=True)
+    os.chdir(root_dir)
 else:
     print("cereal found")
 
@@ -94,10 +96,11 @@ else:
 
 # Check if spdlog is found
 if not os.path.exists("thirdparty/spdlog"):
-    subprocess.run("git clone https://github.com/gabime/spdlog.git thirdparty/spdlog")
+    subprocess.run("git clone https://github.com/gabime/spdlog.git thirdparty/spdlog", shell=True)
     os.chdir("thirdparty/spdlog")
-    subprocess.run("git checkout tags/v1.13.0")
-    subprocess.run("cmake thirdparty/spdlog -DCMAKE_INSTALL_PREFIX=./thirdparty/install -B thirdparty/spdlog/build -DCMAKE_BUILD_TYPE=Debug")
+    subprocess.run("git checkout tags/v1.17.0", shell=True)
+    os.chdir(root_dir)
+    subprocess.run("cmake thirdparty/spdlog -DCMAKE_INSTALL_PREFIX=./thirdparty/install -B thirdparty/spdlog/build -DCMAKE_BUILD_TYPE=Debug", shell=True)
     subprocess.run("cmake --build thirdparty/spdlog/build")
     subprocess.run("cmake --install thirdparty/spdlog/build --config Debug")
 else:
@@ -156,10 +159,11 @@ else:
 
 # Check if assimp is found
 if not os.path.exists("thirdparty/assimp"):
-    subprocess.run("git clone https://github.com/assimp/assimp.git thirdparty/assimp")
+    subprocess.run("git clone https://github.com/assimp/assimp.git thirdparty/assimp", shell=True)
     os.chdir("thirdparty/assimp")
-    subprocess.run("git checkout tags/v5.3.1")
-    subprocess.run("cmake thirdparty/assimp -DCMAKE_INSTALL_PREFIX=./thirdparty/install -B thirdparty/assimp/build -DCMAKE_BUILD_TYPE=Debug")
+    subprocess.run("git checkout tags/v6.0.4", shell=True)
+    os.chdir(root_dir)
+    subprocess.run("cmake thirdparty/assimp -DCMAKE_INSTALL_PREFIX=./thirdparty/install -DASSIMP_WARNINGS_AS_ERRORS=OFF -B thirdparty/assimp/build -DCMAKE_BUILD_TYPE=Debug", shell=True)
     subprocess.run("cmake --build thirdparty/assimp/build")
     subprocess.run("cmake --install thirdparty/assimp/build --config Debug")
     os.makedirs("thirdparty/install/include/contrib/utf8cpp", exist_ok=True)
@@ -169,11 +173,11 @@ else:
     if rebuild_install:
         if os.path.exists("thirdparty/assimp/build"):
             shutil.rmtree("thirdparty/assimp/build")
-        subprocess.run("cmake thirdparty/assimp -DCMAKE_INSTALL_PREFIX=./thirdparty/install -B thirdparty/assimp/build -DCMAKE_BUILD_TYPE=Debug")
+        subprocess.run("cmake thirdparty/assimp -DCMAKE_INSTALL_PREFIX=./thirdparty/install -DASSIMP_WARNINGS_AS_ERRORS=OFF -B thirdparty/assimp/build -DCMAKE_BUILD_TYPE=Debug")
         subprocess.run("cmake --build thirdparty/assimp/build")
         subprocess.run("cmake --install thirdparty/assimp/build --config Debug")
-        os.makedirs("install/include/contrib/utf8cpp", exist_ok=True)
-        shutil.copytree("thirdparty/assimp/contrib/utf8cpp", "install/include/contrib", dirs_exist_ok=True)
+        os.makedirs("thirdparty/install/include/contrib/utf8cpp", exist_ok=True)
+        shutil.copytree("thirdparty/assimp/contrib/utf8cpp", "thirdparty/install/include/contrib", dirs_exist_ok=True)
 
 # Check if entt is found
 if not os.path.exists("thirdparty/entt"):

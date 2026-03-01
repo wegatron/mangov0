@@ -24,9 +24,9 @@ list(APPEND CMAKE_PREFIX_PATH
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/share/spirv_cross_reflect/cmake
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/share/spirv_cross_core/cmake
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/share/spirv_cross_glsl/cmake
-    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/lib/cmake/assimp-5.3
+    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/lib/cmake/assimp-6.0
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/lib/cmake/eventpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install lib/cmake/spdlog
+    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/lib/cmake/spdlog
 )
 
 find_package(glslang REQUIRED)
