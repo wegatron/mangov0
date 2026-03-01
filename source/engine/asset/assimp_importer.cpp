@@ -154,7 +154,7 @@ processLights(const aiScene *a_scene) {
     auto a_light = a_scene->mLights[i];
     switch (a_light->mType) {
     case aiLightSource_DIRECTIONAL: {
-      auto &light_num = lights.light_num[LightType::DIRECTIONAL];
+      auto &light_num = lights.light_num[LightType::LIGHT_DIRECTIONAL];
       if (light_num < MAX_DIRECTIONAL_LIGHT_NUM) {
         auto &l = lights.directional_lights[light_num];
         l.direction =
@@ -165,14 +165,14 @@ processLights(const aiScene *a_scene) {
                                         a_light->mColorDiffuse[2], 1.0f);
         light_nodes_info.emplace_back(
             a_light->mName.C_Str(),
-            static_cast<uint16_t>(LightType::DIRECTIONAL), light_num);
+            static_cast<uint16_t>(LightType::LIGHT_DIRECTIONAL), light_num);
         ++light_num;
       } else {
         LOGW("Directional light number in imported scene exceeds the limit.");
       }
     } break;
     case aiLightSource_POINT: {
-      auto &light_num = lights.light_num[LightType::POINT];
+      auto &light_num = lights.light_num[LightType::LIGHT_POINT];
       if (light_num < MAX_POINT_LIGHT_NUM) {
         auto &l = lights.point_lights[light_num];
         l.position =
@@ -182,7 +182,7 @@ processLights(const aiScene *a_scene) {
                                                a_light->mColorDiffuse[1],
                                                a_light->mColorDiffuse[2], 1.0f);
         light_nodes_info.emplace_back(a_light->mName.C_Str(),
-                                      static_cast<uint16_t>(LightType::POINT),
+                                      static_cast<uint16_t>(LightType::LIGHT_POINT),
                                       light_num);
         ++light_num;
       } else {

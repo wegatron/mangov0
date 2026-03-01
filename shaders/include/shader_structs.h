@@ -24,8 +24,8 @@ struct UPointLight {
 };
 
 enum LightType {
-  DIRECTIONAL = 0,
-  POINT = 1,
+  LIGHT_DIRECTIONAL = 0,
+  LIGHT_POINT = 1,
   //SPOT = 2,
   LIGHT_TYPE_NUM
 };

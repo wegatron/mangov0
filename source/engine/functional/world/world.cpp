@@ -104,10 +104,10 @@ void World::loadedMesh2World() {
     // copy lighting data to ubo
     void *ptr[] = {lighting_.directional_lights +
                        sizeof(UDirectionalLight) *
-                           lighting_.light_num[LightType::DIRECTIONAL],
+                           lighting_.light_num[LightType::LIGHT_DIRECTIONAL],
                    lighting_.point_lights +
                        sizeof(UPointLight) *
-                           lighting_.light_num[LightType::POINT]};
+                           lighting_.light_num[LightType::LIGHT_POINT]};
     size_t cp_size[] = {sizeof(UDirectionalLight), sizeof(UPointLight)};
     static_assert(sizeof(ptr) / sizeof(void *) == LightType::LIGHT_TYPE_NUM,
                   "light type num not match");

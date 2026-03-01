@@ -79,7 +79,7 @@ void PbrMaterial::compile() {
   ShaderVariant variant;
 
   variant.addDefine("DIRECTIONAL " + std::to_string(static_cast<uint32_t>(
-                                         LightType::DIRECTIONAL)));
+                                         LightType::LIGHT_DIRECTIONAL)));
   variant.addDefine("AREA " +
                     std::to_string(static_cast<uint32_t>(LightType::AREA)));
 
