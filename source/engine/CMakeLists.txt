@@ -46,6 +46,9 @@ ${resource}
 ${IMGUI_SRC}
 )
 
+# Fix C1041 error: allow multiple CL.EXE to write to the same PDB file
+target_compile_options(engine PRIVATE /FS)
+
 target_include_directories(engine PRIVATE
     $<TARGET_PROPERTY:volk,INTERFACE_INCLUDE_DIRECTORIES>
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/ImGuiFileDialog    

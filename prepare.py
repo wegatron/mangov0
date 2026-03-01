@@ -2,7 +2,7 @@ import os
 import subprocess
 import shutil
 
-rebuild_install = True
+rebuild_install = False
 root_dir = os.getcwd()
 
 print(f"rebuilding install {rebuild_install}")
@@ -182,16 +182,16 @@ else:
 # Check if entt is found
 if not os.path.exists("thirdparty/entt"):
     subprocess.run("git clone https://github.com/skypjack/entt.git thirdparty/entt")
-    subprocess.run("cmake thirdparty/entt -DCMAKE_INSTALL_PREFIX=./thirdparty/install -B thirdparty/entt/build -DCMAKE_BUILD_TYPE=Debug")
-    subprocess.run("cmake --build thirdparty/entt/build")
+    install_prefix = os.path.join(root_dir, "thirdparty/install")
+    subprocess.run(f'cmake thirdparty/entt -DCMAKE_INSTALL_PREFIX="{install_prefix}" -DENTT_INSTALL=ON -B thirdparty/entt/build -DCMAKE_BUILD_TYPE=Debug', shell=True)
     subprocess.run("cmake --install thirdparty/entt/build --config Debug")
 else:
     print("entt found")
-    if rebuild_install:
+    if True:
+    # if rebuild_install:
         if os.path.exists("thirdparty/entt/build"):
             shutil.rmtree("thirdparty/entt/build")
-        subprocess.run("cmake thirdparty/entt -DCMAKE_INSTALL_PREFIX=./thirdparty/install -B thirdparty/entt/build -DCMAKE_BUILD_TYPE=Debug")
-        subprocess.run("cmake --build thirdparty/entt/build")
+        subprocess.run(f'cmake thirdparty/entt -DCMAKE_INSTALL_PREFIX=./thirdparty/install -DENTT_INSTALL=ON -B thirdparty/entt/build -DCMAKE_BUILD_TYPE=Debug', shell=True)
         subprocess.run("cmake --install thirdparty/entt/build --config Debug")
 
 # Check if eventpp is found

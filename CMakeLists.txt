@@ -13,12 +13,16 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 if(WIN32)
     set(GLFW_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/lib/glfw3.lib)
-    add_definitions(-DNOMINMAX)
+    add_definitions(-DNOMINMAX -DWIN32_LEAN_AND_MEAN)
+    if(MSVC)
+        add_compile_options(/utf-8)
+    endif()
 else()
     set(GLFW_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/lib/libglfw3.a)
 endif()
 
 list(APPEND CMAKE_PREFIX_PATH 
+    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/lib/EnTT/cmake
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/lib/cmake/glslang
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/share/cmake/VulkanMemoryAllocator
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/share/spirv_cross_reflect/cmake
@@ -28,6 +32,8 @@ list(APPEND CMAKE_PREFIX_PATH
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/lib/cmake/eventpp
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/install/lib/cmake/spdlog
 )
+
+find_package(EnTT REQUIRED CONFIG)
 
 find_package(glslang REQUIRED)
 

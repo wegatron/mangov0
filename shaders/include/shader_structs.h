@@ -3,16 +3,6 @@
 
 #include "shaders/include/constants.h"
 
-#ifdef __cplusplus
-#include <Eigen/Dense>
-
-using vec3 = Eigen::Vector3f;
-using vec4 = Eigen::Vector4f;
-using mat4 = Eigen::Matrix4f;
-using mat3 = Eigen::Matrix3f;
-using uint = uint32_t;
-#endif // __cplusplus
-
 struct UMaterial {
   uint albedo_type;
   uint emissive_type;

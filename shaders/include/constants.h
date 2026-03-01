@@ -13,6 +13,18 @@
 #define MAX_DIRECTIONAL_LIGHT_NUM 8
 #define MAX_POINT_LIGHT_NUM 8
 
+#ifdef __cplusplus
+#include <Eigen/Dense>
+#include <cstdint>
+
+using vec3 = Eigen::Vector3f;
+using vec4 = Eigen::Vector4f;
+using mat4 = Eigen::Matrix4f;
+using mat3 = Eigen::Matrix3f;
+using uint = uint32_t;
+using ushort = uint16_t;
+#endif // __cplusplus
+
 const ushort MAX_LIGHT_NUM[] = {
     MAX_DIRECTIONAL_LIGHT_NUM,
     MAX_POINT_LIGHT_NUM
