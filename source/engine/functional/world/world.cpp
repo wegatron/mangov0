@@ -116,8 +116,8 @@ void World::loadedMesh2World() {
     for (auto light_type = 0; light_type < LightType::LIGHT_TYPE_NUM;
          ++light_type) {
       auto cp_num =
-          std::min(static_cast<ushort>(MAX_LIGHT_NUM[light_type] -
-                                       lighting_.light_num[light_type]),
+          std::min(static_cast<uint>(MAX_LIGHT_NUM[light_type]) -
+                       lighting_.light_num[light_type],
                    scene_data.lighting.light_num[light_type]);
       memcpy(ptr[light_type], scene_data.lighting.directional_lights,
              cp_size[light_type] * cp_num);

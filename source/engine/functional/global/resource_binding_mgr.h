@@ -33,6 +33,7 @@ private:
   // used for static standard material
   std::unique_ptr<DescriptorPool> desc_pool_;
   DescriptorSetLayout standard_material_layout_;
+  DescriptorSetLayout glob_desc_set_layout_;
   std::shared_ptr<Buffer> umaterial_buffer_; //!< support 100 materials
   std::shared_ptr<Buffer> lighting_buffer_; //!< support lighting ubo
   std::shared_ptr<DescriptorSet> glob_desc_set_; //!< global descriptor set, including lighting ubo

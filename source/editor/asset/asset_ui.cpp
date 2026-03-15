@@ -36,6 +36,8 @@ void AssetUI::init() {
       loadImGuiImageFromFile("asset/engine/texture/ui/animation.png");
   asset_images_[EAssetType::WORLD] =
       loadImGuiImageFromFile("asset/engine/texture/ui/world.png");
+  asset_images_[EAssetType::SCENE] =
+      loadImGuiImageFromFile("asset/engine/texture/ui/scene.png");
   empty_folder_image_ =
       loadImGuiImageFromFile("asset/engine/texture/ui/empty_folder.png");
   non_empty_folder_image_ =

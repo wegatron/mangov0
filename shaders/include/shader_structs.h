@@ -1,7 +1,7 @@
 #ifndef SHADERS_UBO_STRUCTURES_H
 #define SHADERS_UBO_STRUCTURES_H
 
-#include "shaders/include/constants.h"
+#include "constants.h"
 
 struct UMaterial {
   uint albedo_type;
@@ -23,19 +23,25 @@ struct UPointLight {
   vec4 luminous_intensity; //!< candela(cd), last float for padding
 };
 
+#ifdef __cplusplus
 enum LightType {
   LIGHT_DIRECTIONAL = 0,
   LIGHT_POINT = 1,
   //SPOT = 2,
   LIGHT_TYPE_NUM
 };
+#else
+#define LIGHT_DIRECTIONAL 0
+#define LIGHT_POINT 1
+#define LIGHT_TYPE_NUM 2
+#endif
 
 struct ULighting {
   // lights
   UDirectionalLight directional_lights[MAX_DIRECTIONAL_LIGHT_NUM];
   UPointLight point_lights[MAX_POINT_LIGHT_NUM];
 
-  ushort light_num[LIGHT_TYPE_NUM];
+  uint light_num[LIGHT_TYPE_NUM];
   float ev100;
   // // debug
   // vec3 camera_dir;
