@@ -16,6 +16,11 @@
 #include <imgui/backends/imgui_impl_glfw.h>
 #include <imgui/backends/imgui_impl_vulkan.h>
 #include <imgui/imgui.h>
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+#include <imgui_te_engine.h>
+#include <imgui_te_ui.h>
+#include <imgui_te_coroutine.h>
+#endif
 #include <iostream>
 
 namespace mango {
@@ -40,9 +45,18 @@ void UIPass::createDescriptorPool() {
 }
 
 UIPass::~UIPass() {
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+  shutdownTestEngine();
+#endif
   ImGui_ImplVulkan_Shutdown();
   ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+  if (test_engine_) {
+    ImGuiTestEngine_DestroyContext(static_cast<ImGuiTestEngine*>(test_engine_));
+    test_engine_ = nullptr;
+  }
+#endif
 }
 
 void UIPass::initImgui() {
@@ -125,6 +139,35 @@ void UIPass::initImgui() {
       fs->absolute("asset/engine/font/fa-solid-900.ttf").c_str(),
       k_big_icon_font_size, &icons_config, icons_ranges);
   LOGI("ui pass init time: {}ms", stop_watch.stopMs());
+
+  // Register a passthrough settings handler for [GlfwWindow][Data].
+  // ImGui overwrites imgui.ini on shutdown and discards unknown sections unless
+  // a handler is registered. This handler caches the values read from the file
+  // and writes them back unchanged, so the user's Width/Height settings survive
+  // every session without being modified by the engine.
+  static struct { int width = 1280; int height = 720; } s_glfw_win;
+  ImGuiSettingsHandler h{};
+  h.TypeName   = "GlfwWindow";
+  h.TypeHash   = ImHashStr("GlfwWindow");
+  h.ReadOpenFn = [](ImGuiContext*, ImGuiSettingsHandler*, const char*) -> void* {
+      return &s_glfw_win; // non-null = accept this section
+  };
+  h.ReadLineFn = [](ImGuiContext*, ImGuiSettingsHandler*, void*, const char* line) {
+      int v;
+      if      (sscanf(line, "Width=%d",  &v) == 1) s_glfw_win.width  = v;
+      else if (sscanf(line, "Height=%d", &v) == 1) s_glfw_win.height = v;
+  };
+  h.WriteAllFn = [](ImGuiContext*, ImGuiSettingsHandler* handler, ImGuiTextBuffer* buf) {
+      buf->appendf("[%s][Data]\n", handler->TypeName);
+      buf->appendf("Width=%d\n",  s_glfw_win.width);
+      buf->appendf("Height=%d\n", s_glfw_win.height);
+      buf->appendf("\n");
+  };
+  ImGui::AddSettingsHandler(&h);
+
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+  initTestEngine();
+#endif
 }
 
 void UIPass::createRenderPassAndFramebuffer() {
@@ -159,6 +202,11 @@ void UIPass::prepare() {
   g_engine.getEventSystem()->syncDispatch(
       std::make_shared<RenderConstructUIEvent>());
 
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+  if (test_engine_)
+    ImGuiTestEngine_ShowTestEngineWindows(static_cast<ImGuiTestEngine*>(test_engine_), nullptr);
+#endif
+
   ImGui::Render(); // prepare render data and command
 }
 
@@ -191,5 +239,22 @@ void UIPass::onCreateSwapchainObject(const uint32_t width,
                                      const uint32_t height) {
   g_engine.getDriver()->getSwapchain()->createFrameBuffer(render_pass_);
 }
+
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+void UIPass::initTestEngine() {
+  ImGuiTestEngine* engine = ImGuiTestEngine_CreateContext();
+  ImGuiTestEngineIO &test_io = ImGuiTestEngine_GetIO(engine);
+  test_io.ConfigVerboseLevel = ImGuiTestVerboseLevel_Info;
+  test_io.ConfigRunSpeed = ImGuiTestRunSpeed_Normal;
+  test_io.CoroutineFuncs = Coroutine_ImplStdThread_GetInterface();
+  ImGuiTestEngine_Start(engine, ImGui::GetCurrentContext());
+  test_engine_ = engine;
+}
+
+void UIPass::shutdownTestEngine() {
+  if (test_engine_)
+    ImGuiTestEngine_Stop(static_cast<ImGuiTestEngine*>(test_engine_));
+}
+#endif
 
 } // namespace mango

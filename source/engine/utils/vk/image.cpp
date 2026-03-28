@@ -224,8 +224,8 @@ ImageView::ImageView(const std::shared_ptr<Image> &image,
 #ifndef NDEBUG
   view_type_ = view_type;
   format_ = format;
-  subresource_range_ = view_info.subresourceRange;
 #endif
+  subresource_range_ = view_info.subresourceRange;
 
   auto result = vkCreateImageView(image->getDriver()->getDevice(), &view_info,
                                   nullptr, &image_view_);

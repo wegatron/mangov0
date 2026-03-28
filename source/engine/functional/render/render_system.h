@@ -25,6 +25,10 @@ public:
 
   std::shared_ptr<ImageView> getColorImageView() const;
 
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+  void* getTestEngine() const;
+#endif
+
   /**
    * @brief recreate color and depth image view after resize
    *

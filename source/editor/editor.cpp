@@ -66,7 +66,7 @@ void Editor::destroy() {
   g_engine.destroy();
 }
 
-void Editor::run() {
+void Editor::run(std::function<bool()> exit_check) {
   auto window = g_engine.getWindow();
   auto driver = g_engine.getDriver();
   while (!window->shouldClose()) {
@@ -76,7 +76,8 @@ void Editor::run() {
     g_engine.gcTick(delta_time);
     g_engine.logicTick(delta_time);
     g_engine.renderTick(delta_time);    
-    g_engine.threadSync();    
+    g_engine.threadSync();
+    if (exit_check && exit_check()) break;
   }
 }
 

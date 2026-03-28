@@ -12,21 +12,27 @@ public:
   UIPass() = default;
   ~UIPass();
 
-  /**
-   * @brief create render stuffs including Graphics pipeline, RenderPass,
-   * FrameBuffer, DescriptorSet, buffers/images.
-   */
   void init() override;
   void prepare();
   void render(const std::shared_ptr<CommandBuffer> &cmd_buffer) override;
-
   void onCreateSwapchainObject(const uint32_t width,
                                const uint32_t height) override;
+
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+  void* getTestEngine() const { return test_engine_; }
+#endif
 
 private:
   void initImgui();
   void createRenderPassAndFramebuffer();
   void createDescriptorPool();
+
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+  void initTestEngine();
+  void shutdownTestEngine();
+  void* test_engine_ = nullptr;
+#endif
+
   std::shared_ptr<DescriptorPool> desc_pool_;
   std::shared_ptr<class RenderPass> render_pass_;
 };

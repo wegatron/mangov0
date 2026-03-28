@@ -77,13 +77,9 @@ public:
 
   std::shared_ptr<Image> getImage() const { return image_ptr_; }
 
-  // VkImage getVkImage() const { return image_ptr_->getHandle(); }
-
-#ifndef NDEBUG
   VkImageSubresourceRange getSubresourceRange() const {
     return subresource_range_;
   }
-#endif
 
   ~ImageView();
 
@@ -96,8 +92,8 @@ private:
 #ifndef NDEBUG
   VkImageViewType view_type_;
   VkFormat format_;
-  VkImageSubresourceRange subresource_range_;
 #endif
+  VkImageSubresourceRange subresource_range_;
   VkImageView image_view_{VK_NULL_HANDLE};
 
   std::shared_ptr<VkDriver> driver_;

@@ -1,10 +1,14 @@
 #include "asset_ui.h"
 #include <engine/asset/asset_texture.h>
+#include <engine/functional/global/engine_context.h>
 #include <engine/utils/base/macro.h>
 #include <engine/utils/base/string_util.h>
 #include <engine/utils/base/timer.h>
 #include <engine/utils/event/event_system.h>
 #include <queue>
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+#include <imgui_te_engine.h>
+#endif
 
 namespace mango {
 void AssetUI::init() {
@@ -53,6 +57,15 @@ void AssetUI::construct() {
   // draw asset widget
   sprintf(title_buf_, "%s %s###%s", ICON_FA_FAN, title_.c_str(),
           title_.c_str());
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+  // When tests are running, force Asset to be the active dock tab every frame.
+  // ImGui::Begin() returns false for a docked-but-not-selected window; calling
+  // SetNextWindowFocus() makes Begin() invoke FocusWindow() internally, which
+  // updates DockNode->SelectedTabId so that on the next frame Begin() returns true.
+  if (auto* te = static_cast<ImGuiTestEngine*>(g_engine.getTestEngine()))
+    if (ImGuiTestEngine_GetIO(te).IsRunningTests)
+      ImGui::SetNextWindowFocus();
+#endif
   if (!ImGui::Begin(title_buf_)) {
     m_imported_files.clear();
     ImGui::End();
@@ -253,6 +266,18 @@ void AssetUI::constructAsset(const std::string &filename, const ImVec2 &size) {
     return;
   }
 
+  // InvisibleButton with the folder/file basename as ID so the test engine
+  // can locate this asset icon by name (e.g. ctx->ItemInfo("###Asset/**/cube")).
+  // ImGui::Text() has no ID and is invisible to ItemInfo; InvisibleButton fixes that.
+  // We restore the cursor afterward so the visual group draws at the same position.
+  float label_h = ImGui::GetTextLineHeightWithSpacing();
+  ImVec2 cursor_before = ImGui::GetCursorPos();
+  ImGui::SetNextItemAllowOverlap();
+  bool btn_left    = ImGui::InvisibleButton(basename.c_str(), ImVec2(size.x, size.y + label_h));
+  bool btn_right   = ImGui::IsItemClicked(ImGuiMouseButton_Right);
+  bool btn_hovered = ImGui::IsItemHovered();
+  ImGui::SetCursorPos(cursor_before); // restore so BeginGroup draws over the button
+
   ImGui::BeginGroup();
 
   // draw hovered/selected background rect
@@ -297,10 +322,9 @@ void AssetUI::constructAsset(const std::string &filename, const ImVec2 &size) {
   }
   ImGui::EndGroup();
 
-  // update asset hover and selection status
-  is_asset_hovered |= hover_state.is_hovered = ImGui::IsItemHovered();
-  if (ImGui::IsItemClicked(ImGuiMouseButton_Left) ||
-      ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+  // Use InvisibleButton state for hover/selection (covers the full icon+label area)
+  is_asset_hovered |= hover_state.is_hovered = btn_hovered;
+  if (btn_left || btn_right) {
     m_selected_file = filename;
   }
 

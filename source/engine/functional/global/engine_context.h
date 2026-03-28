@@ -46,6 +46,10 @@ public:
   const auto &getRenderSystem() const { return render_system_; }
   const auto &getResourceBindingMgr() const { return resource_binding_mgr_; }
 
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+  void* getTestEngine() const;
+#endif
+
 private:
   std::shared_ptr<class VkConfig> vk_config_;
   std::shared_ptr<class Window> window_;

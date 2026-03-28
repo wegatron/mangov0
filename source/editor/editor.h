@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <vector>
 
@@ -8,7 +9,8 @@ class Editor {
 public:
   void init();
   void destroy();
-  void run();
+  // exit_check: called after each frame; return true to stop the loop early.
+  void run(std::function<bool()> exit_check = nullptr);
 
 private:
   void constructUI();

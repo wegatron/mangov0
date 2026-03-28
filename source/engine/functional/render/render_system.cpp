@@ -8,6 +8,9 @@
 #include <engine/utils/event/event_system.h>
 #include <engine/utils/vk/commands.h>
 #include <engine/functional/world/world.h>
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+#include <imgui_te_engine.h>
+#endif
 
 namespace mango {
 
@@ -126,6 +129,10 @@ void RenderSystem::tick(float delta_time) {
   submit_info.pSignalSemaphores = &render_result_available_semaphore_handle;
   cmd_queue->submit({submit_info}, cur_fence->getHandle());
   driver->presentFrame();
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+  if (auto *te = static_cast<ImGuiTestEngine*>(ui_pass_->getTestEngine()))
+    ImGuiTestEngine_PostSwap(te);
+#endif
 }
 
 std::shared_ptr<ImageView> RenderSystem::getColorImageView() const {
@@ -134,6 +141,12 @@ std::shared_ptr<ImageView> RenderSystem::getColorImageView() const {
          frame_buffer_->getRenderTarget()->getImageViews().size() > 0);
   return frame_buffer_->getRenderTarget()->getImageViews()[0];
 }
+
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+void* RenderSystem::getTestEngine() const {
+  return ui_pass_ ? ui_pass_->getTestEngine() : nullptr;
+}
+#endif
 
 void RenderSystem::resize3DView(int width, int height) {
   // recreate render target, frame buffer

@@ -12,10 +12,35 @@
 #include <engine/utils/vk/stage_pool.h>
 #include <engine/utils/vk/vk_driver.h>
 #include <engine/utils/base/macro.h>
+#include <cstdio>
+#include <cstring>
 
 
 namespace mango {
 EngineContext g_engine;
+
+// Parse [GlfwWindow][Data] Width/Height from imgui.ini before GLFW window creation.
+// The ini file is written back by UIPass's registered settings handler on shutdown.
+static void parse_window_size_from_ini(int &width, int &height) {
+  width = 1280;
+  height = 720;
+  FILE *f = fopen("imgui.ini", "r");
+  if (!f) return;
+  char line[256];
+  bool in_section = false;
+  while (fgets(line, sizeof(line), f)) {
+    if (strncmp(line, "[GlfwWindow][Data]", 18) == 0) {
+      in_section = true;
+    } else if (line[0] == '[') {
+      in_section = false;
+    } else if (in_section) {
+      int v;
+      if (sscanf(line, "Width=%d", &v) == 1)       width  = v;
+      else if (sscanf(line, "Height=%d", &v) == 1) height = v;
+    }
+  }
+  fclose(f);
+}
 
 bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
                          const std::string &window_title) {
@@ -35,8 +60,10 @@ bool EngineContext::init(const std::shared_ptr<class VkConfig> &vk_config,
   timer_manager_ = std::make_shared<TimerManager>();
   timer_manager_->init();
 
-  // window
-  window_ = std::make_shared<GlfwWindow>(window_title, 800, 600);
+  // window — read preferred size from imgui.ini [GlfwWindow][Data]
+  int win_width, win_height;
+  parse_window_size_from_ini(win_width, win_height);
+  window_ = std::make_shared<GlfwWindow>(window_title, win_width, win_height);
 
   // vulkan driver
   driver_ = std::make_shared<VkDriver>();
@@ -129,5 +156,11 @@ void EngineContext::logicTick(float delta_time) {
 void EngineContext::renderTick(float delta_time) {
   render_system_->tick(delta_time);
 }
+
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+void* EngineContext::getTestEngine() const {
+  return render_system_ ? render_system_->getTestEngine() : nullptr;
+}
+#endif
 
 } // namespace mango
